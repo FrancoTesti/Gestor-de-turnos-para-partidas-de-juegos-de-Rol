@@ -1,14 +1,14 @@
-#Propuesta TP DSW
-#Integrantes
-53958 - Gudiño, Octavio Alejandro
-54241 - Salomon, Emanuel
-54279 - Scollo, Renzo
-54307 - Testi, Franco 
-54342 - Ciesco, Alejandro Mario
+#Propuesta TP DSW <br>
+#Integrantes <br>
+53958 - Gudiño, Octavio Alejandro <br>
+54241 - Salomon, Emanuel <br> 
+54279 - Scollo, Renzo <br>
+54307 - Testi, Franco  <br> 
+54342 - Ciesco, Alejandro Mario<br>
 
-#Repositorios
-frontend app
-backend app 
+#Repositorios<br>
+frontend app<br>
+backend app <br>
 
 #Tema
 #Descripción
