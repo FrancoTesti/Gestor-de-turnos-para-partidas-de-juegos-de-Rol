@@ -37,8 +37,8 @@ Regularidad:
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
-|CRUD |1. CRUD Tipo Habitacion<br>2. CRUD Servicio<br>3. CRUD Localidad<br>4. CRUD Provincia<br>5. CRUD Habitación<br>6. CRUD Empleado<br>7. CRUD Cliente|
-|CUU/Epic|1. Reservar una habitación para la estadía<br>2. Realizar el check-in de una reserva<br>3. Realizar el check-out y facturación de estadía y servicios|
+|CRUD |1. CRUD Usuario<br>2. CRUD Objeto <br>3. CRUD Partida <br>4. CRUD Tienda<br>5. CRUD Misión<br>6. CRUD Personaje<br>7. CRUD Jugador <br>8.CRUD Sesión <br>9. CRUD Anfitrión <br>10. CRUD Inventario|
+|CUU/Epic|1. Gestionar inventario<br>2. Calificar anfitrión<br>3. Realizar el check-out y facturación de estadía y servicios|
 
 
 ### Alcance Adicional Voluntario
