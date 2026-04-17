@@ -1,5 +1,5 @@
-𝐏𝐫𝐨𝐩𝐮𝐞𝐬𝐭𝐚 𝐓𝐏 𝐃𝐒𝐖 <𝐛𝐫>
-𝐈𝐧𝐭𝐞𝐠𝐫𝐚𝐧𝐭𝐞𝐬 <𝐛𝐫>
+𝐏𝐫𝐨𝐩𝐮𝐞𝐬𝐭𝐚 𝐓𝐏 𝐃𝐒𝐖 <br>
+𝐈𝐧𝐭𝐞𝐠𝐫𝐚𝐧𝐭𝐞𝐬  <br>
 53958 - Gudiño, Octavio Alejandro <br>
 54241 - Salomon, Emanuel <br> 
 54279 - Scollo, Renzo <br>
@@ -20,9 +20,9 @@ LINK:https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=
 
 
 
-## Alcance Funcional 
+## 𝘼𝙡𝙘𝙖𝙣𝙘𝙚 𝙁𝙪𝙣𝙘𝙞𝙤𝙣𝙖𝙡 
 
-### Alcance Mínimo
+### 𝘼𝙡𝙘𝙖𝙣𝙘𝙚 𝙈𝙞́𝙣𝙞𝙢𝙤
 
 Regularidad:
 |Req|Detalle|
@@ -41,7 +41,7 @@ Adicionales para Aprobación
 |CUU/Epic|1. Gestionar inventario<br>2. Calificar anfitrión<br>3.|
 
 
-### Alcance Adicional Voluntario
+### 𝘼𝙡𝙘𝙖𝙣𝙘𝙚 𝘼𝙙𝙞𝙘𝙞𝙤𝙣𝙖𝙡 𝙑𝙤𝙡𝙪𝙣𝙩𝙖𝙧𝙞𝙤
 
 |Req|Detalle|
 |:-|:-|
