@@ -6,7 +6,7 @@
 54307 - Testi, Franco  <br> 
 54342 - Ciesco, Alejandro Mario<br>
 
-𝐑𝐞𝐩𝐨𝐬𝐢𝐭𝐨𝐫𝐢𝐨𝐬<𝐛𝐫>
+𝐑𝐞𝐩𝐨𝐬𝐢𝐭𝐨𝐫𝐢𝐨𝐬 <br>
 frontend app<br>
 backend app <br>
 
