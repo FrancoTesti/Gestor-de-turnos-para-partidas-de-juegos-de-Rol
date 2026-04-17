@@ -30,10 +30,10 @@ Regularidad:
 |Req|Detalle|
 |:-|:-|
 |CRUD simple|1. CRUD Usuario
-<br>2. CRUD Objeto 
-<br>3. CRUD Tienda
-<br>4. CRUD Misión
-<br>5. CRUD 
+              <br>2. CRUD Objeto 
+              <br>3. CRUD Tienda
+              <br>4. CRUD Misión
+              <br>5. CRUD 
 
 |
 |CRUD dependiente|1. CRUD Habitación {depende de} CRUD Tipo Habitacion<br>2. CRUD Cliente {depende de} CRUD Localidad|
