@@ -10,8 +10,8 @@
 frontend app<br>
 backend app <br>
 
-#Tema
-#Descripción
+#Tema <br>
+#Descripción <br>
 Trata de un gestor de turnos para partidas de juegos de Rol, con sistema de compra-venta de objetos del juego en las partidas, con registro y logueo tanto para “Jugador” como “Anfitrión” y sistema para crear personajes de rol.
 
 Modelo
