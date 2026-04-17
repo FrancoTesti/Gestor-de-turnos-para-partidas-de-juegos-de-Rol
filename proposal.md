@@ -6,7 +6,7 @@
 54241 - Salomon, Emanuel <br> 
 54279 - Scollo, Renzo <br>
 54307 - Testi, Franco  <br> 
-54342 - Ciesco, Alejandro Mario<br>
+54342 - Ciesco, Alejandro Mario <br>
 
 ### Repositorios
 * [frontend app](http://hyperlinkToGihubOrGitlab)
@@ -39,8 +39,8 @@ Regularidad:
 Adicionales para Aprobación
 |Req|Detalle|
 |:-|:-|
-|CRUD |1. CRUD Usuario<br>2. CRUD Objeto <br>3. CRUD Partida <br>4. CRUD Tienda<br>5. CRUD Misión<br>6. CRUD Personaje<br>7. CRUD Jugador <br>8.CRUD Sesión <br>9. CRUD Anfitrión <br>10. CRUD Inventario|
-|CUU/Epic|1. Gestionar inventario<br>2. Calificar anfitrión<br>3.Crear personaje <br>4.Gestionar partida <br>5.Actualizar usuario |
+|CRUD |1. CRUD Usuario<br>2. CRUD Objeto <br>3. CRUD Partida <br>4. CRUD Tienda<br>5. CRUD Misión<br>6. CRUD Personaje<br>7. CRUD Jugador <br>8. CRUD Sesión <br>9. CRUD Anfitrión <br>10. CRUD Inventario|
+|CUU/Epic|1. Gestionar inventario<br>2. Calificar anfitrión<br>3. Crear personaje <br>4. Gestionar partida <br>5. Actualizar usuario |
 
 
 ### 𝘼𝙡𝙘𝙖𝙣𝙘𝙚 𝘼𝙙𝙞𝙘𝙞𝙤𝙣𝙖𝙡 𝙑𝙤𝙡𝙪𝙣𝙩𝙖𝙧𝙞𝙤
