@@ -3,7 +3,7 @@
 ## Grupo
 ### Integrantes
 * legajo - Apellido(s), Nombre
-
+* 54279 - Scollo, Renzo
 ### Repositorios
 * [frontend app](http://hyperlinkToGihubOrGitlab)
 * [backend app](http://hyperlinkToGihubOrGitlab)
