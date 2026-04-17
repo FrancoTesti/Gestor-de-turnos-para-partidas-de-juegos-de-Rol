@@ -16,7 +16,7 @@ Trata de un gestor de turnos para partidas de juegos de Rol, con sistema de comp
 
 Modelo
 LINK:https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing
-
+![Texto alternativo](ModeloDominio.drawio)
 
 
 
