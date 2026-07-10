@@ -2,5 +2,8 @@
   "dependencies": {
     "mysql2": "^3.22.6",
     "prompt-sync": "^4.2.0"
+  },
+  "devDependencies": {
+    "@types/prompt-sync": "^4.2.3"
   }
 }
