@@ -1,4 +1,4 @@
-import { 
+import type { 
   Usuario, Partida, Sesion, Mision, Clase, 
   Tienda, Personaje, Inventario, Personaje_Sesion, Objeto 
 } from './interfaces'; // Asegúrense de que la ruta a sus interfaces sea la correcta
@@ -46,7 +46,7 @@ export const MOCK_PARTIDAS: Partida[] = [
     nombre: "Las Crónicas de Eldoria",
     estado: true, // Activa
     limiteJugadores: 4,
-    contraseña: "", // Sin contraseña
+    contrasenia: "", // Sin contrasenia
     idUsuario_Anfitrion: 1 // La organiza Tomi
   },
   {
@@ -54,7 +54,7 @@ export const MOCK_PARTIDAS: Partida[] = [
     nombre: "La Tumba del Horror",
     estado: true,
     limiteJugadores: 3,
-    contraseña: "gandalf_rules", // Con contraseña
+    contrasenia: "gandalf_rules", // Con contrasenia
     idUsuario_Anfitrion: 3 // La organiza Carlos
   }
 ];
@@ -96,13 +96,14 @@ export const MOCK_MISIONES: Mision[] = [
 
 // 6. TIENDAS
 export const MOCK_TIENDAS: Tienda[] = [
-  { idTienda: 1, claseTienda: "Armería", nombre: 7, idClase: 1 }, // Orientada a Guerreros
-  { idTienda: 2, claseTienda: "Bazar Arcano", nombre: 12, idClase: 2 } // Orientada a Magos
+  { idTienda: 1, claseTienda: "Armería", nombre: "La tabernera del Guerrero", idClase: 1 }, // Orientada a Guerreros
+  { idTienda: 2, claseTienda: "Bazar Arcano", nombre: "El oráculo de Delfos", idClase: 2 } // Orientada a Magos
 ];
 
 // 7. PERSONAJES (Hojas de personaje vinculadas a usuario, clase y partida)
 export const MOCK_PERSONAJES: Personaje[] = [
   {
+    nivel: 6,
     idPersonaje: 501,
     nombreFicticio: "Thorin EscudoDeRoble",
     raza: "Enano",
@@ -113,6 +114,7 @@ export const MOCK_PERSONAJES: Personaje[] = [
     idPartida: 101 // Está jugando en la partida de Tomi
   },
   {
+    nivel: 4,
     idPersonaje: 502,
     nombreFicticio: "Elminster Jr",
     raza: "Humano",

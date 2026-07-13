@@ -1,9 +1,10 @@
-// Acá SÍ va el import, porque el pool está en el otro archivo (db.ts)
-import { pool } from './db';
+const pool = require('./db');
 
-export async function obtenerDatos() {
-  const [filas] = await (
-    pool as unknown as { query: (sql: string) => Promise<[unknown[], unknown[]]> }
-  ).query('SELECT nro_contrato AS "Numero contrato" FROM tu_tabla');
-  return filas;
+async function crearUsuario(nombre:string, email:string) {
+  const [result] = await pool.query(
+    'INSERT INTO usuarios (nombre, email) VALUES (?, ?)',
+    [nombre, email]
+  );
+  console.log('ID insertado:', result.insertId);
+  return result.insertId;
 }
