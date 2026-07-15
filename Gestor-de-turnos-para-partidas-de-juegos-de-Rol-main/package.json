@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "mysql2": "^3.22.6",
+    "prompt-sync": "^4.2.0",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@types/prompt-sync": "^4.2.3",
+    "@types/react": "^19.2.17",
+    "typescript": "^7.0.2"
+  },
+  "type": "module"
+}
