@@ -6,6 +6,6 @@ export class Jugador {
   @OneToOne({ entity: () => Usuario, primary: true, fieldName: 'idUsuario' })
   usuario!: Usuario;
 
-  @Property()
+  @Property({ type: 'boolean' })
   estado!: boolean;
 }

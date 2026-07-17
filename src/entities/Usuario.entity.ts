@@ -2,18 +2,18 @@ import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'usuarios' })
 export class Usuario {
-  @PrimaryKey()
+  @PrimaryKey({ type: 'number' })
   idUsuario!: number;
 
-  @Property({ length: 50 })
+  @Property({ type: 'string', length: 50 })
   nombreUsuario!: string;
 
-  @Property({ length: 100 })
+  @Property({ type: 'string', length: 100 })
   contrasena!: string;
 
-  @Property({ length: 255 })
+  @Property({ type: 'string', length: 255 })
   imagen!: string;
 
-  @Property({ length: 50, unique: true })
+  @Property({ type: 'string', length: 50, unique: true })
   nickname!: string;
 }

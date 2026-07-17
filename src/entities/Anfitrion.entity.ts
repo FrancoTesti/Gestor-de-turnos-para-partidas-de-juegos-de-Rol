@@ -6,9 +6,9 @@ export class Anfitrion {
   @OneToOne({ entity: () => Usuario, primary: true, fieldName: 'idUsuario' })
   usuario!: Usuario;
 
-  @Property()
+  @Property({ type: 'number' })
   cantPartidasActuales!: number;
 
-  @Property()
+  @Property({ type: 'number' })
   karma!: number;
 }
