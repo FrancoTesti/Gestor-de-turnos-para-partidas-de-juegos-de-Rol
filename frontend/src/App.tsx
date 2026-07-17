@@ -140,11 +140,11 @@ function PantallaLogin({
   onLoguearse,
   onVolver,
 }: {
-  onLoguearse: (nickname: string, contrasenia: string) => void;
+  onLoguearse: (nickname: string, contrasena: string) => void;
   onVolver: () => void;
 }) {
   const [nickname, setNickname] = useState('');
-  const [contrasenia, setContrasenia] = useState('');
+  const [contrasena, setContrasena] = useState('');
  
   return (
     <div>
@@ -156,10 +156,10 @@ function PantallaLogin({
       <input
         placeholder="Contraseña"
         type="password"
-        value={contrasenia}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasenia(e.target.value)}
+        value={contrasena}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
       />
-      <button onClick={() => onLoguearse(nickname, contrasenia)}>Ingresar</button>
+      <button onClick={() => onLoguearse(nickname, contrasena)}>Ingresar</button>
       <button onClick={onVolver}>Volver</button>
     </div>
   );
@@ -172,14 +172,14 @@ function PantallaRegistro({
   onRegistrar: (
     nombreUsuario: string,
     nickname: string,
-    contrasenia: string,
+    contrasena: string,
     tipo: 'jugador' | 'anfitrion'
   ) => void;
   onVolver: () => void;
 }) {
   const [nombreUsuario, setNombreUsuario] = useState('');
   const [nickname, setNickname] = useState('');
-  const [contrasenia, setContrasenia] = useState('');
+  const [contrasena, setContrasena] = useState('');
   const [tipo, setTipo] = useState<'jugador' | 'anfitrion'>('jugador');
  
   return (
@@ -197,8 +197,8 @@ function PantallaRegistro({
       <input
         placeholder="Contraseña"
         type="password"
-        value={contrasenia}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasenia(e.target.value)}
+        value={contrasena}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
       />
       <label>
         <input
@@ -216,7 +216,7 @@ function PantallaRegistro({
         />
         Anfitrión
       </label>
-      <button onClick={() => onRegistrar(nombreUsuario, nickname, contrasenia, tipo)}>
+      <button onClick={() => onRegistrar(nombreUsuario, nickname, contrasena, tipo)}>
         Registrar
       </button>
       <button onClick={onVolver}>Volver</button>

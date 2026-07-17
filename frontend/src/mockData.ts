@@ -1,7 +1,7 @@
 import type {
   Usuario, Jugador, Anfitrion, Partida, Sesion, Mision, Clase,
   Tienda, Personaje, Inventario, Personaje_Sesion, Objeto
-} from './src/interfaces.ts'; // Asegúrense de que la ruta a sus interfaces sea la correcta
+} from './interfaces.ts';
 
 // 1. CLASES (Los arquetipos del juego)
 export const MOCK_CLASES: Clase[] = [
@@ -52,16 +52,16 @@ export const MOCK_PARTIDAS: Partida[] = [
     nombre: "Las Crónicas de Eldoria",
     estado: true, // Activa
     limiteJugadores: 4,
-    contrasenia: "", // Sin contrasenia
-    idUsuario_Anfitrion: 1 // La organiza Tomi
+    contrasena: "", // Sin contrasena
+    idUsuarioAnfitrion: 1 // La organiza Tomi
   },
   {
     idPartida: 102,
     nombre: "La Tumba del Horror",
     estado: true,
     limiteJugadores: 3,
-    contrasenia: "gandalf_rules", // Con contrasenia
-    idUsuario_Anfitrion: 3 // La organiza Carlos
+    contrasena: "gandalf_rules", // Con contrasena
+    idUsuarioAnfitrion: 3 // La organiza Carlos
   }
 ];
 
@@ -116,7 +116,7 @@ export const MOCK_PERSONAJES: Personaje[] = [
     xp: 450,
     dinero: 120,
     idClase: 1, // Guerrero
-    idUsuario_Jugador: 2, // Le pertenece a Sofi
+    idUsuarioJugador: 2, // Le pertenece a Sofi
     idPartida: 101 // Está jugando en la partida de Tomi
   },
   {
@@ -127,7 +127,7 @@ export const MOCK_PERSONAJES: Personaje[] = [
     xp: 900,
     dinero: 350,
     idClase: 2, // Mago
-    idUsuario_Jugador: 1, // Le pertenece a Tomi (como jugador)
+    idUsuarioJugador: 1, // Le pertenece a Tomi (como jugador)
     idPartida: 102 // Está jugando en la partida de Carlos
   }
 ];

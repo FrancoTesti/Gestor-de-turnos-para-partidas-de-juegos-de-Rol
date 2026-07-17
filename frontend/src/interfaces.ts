@@ -16,13 +16,14 @@ export interface Anfitrion {
   cantPartidasActuales: number;
   karma: number;
 }
+
 export interface Partida {
   idPartida: number;        // CP
   nombre: string;
   estado: boolean;
   limiteJugadores: number;
-  contrasenia: string;
-  idUsuario_Anfitrion: number; // CF -> Anfitrion(idUsuario) NN
+  contrasena: string;
+  idUsuarioAnfitrion: number; // CF -> Anfitrion(idUsuario) NN
 }
 
 export interface Sesion {
@@ -67,7 +68,7 @@ export interface Personaje {
   nivel: number;
   dinero: number;
   idClase: number;          // CF -> Clase(idClase) NN
-  idUsuario_Jugador: number; // CF -> Jugador(idUsuario) NN
+  idUsuarioJugador: number; // CF -> Jugador(idUsuario) NN
   idPartida: number;        // CF -> Partida(idPartida) NN
 }
 
