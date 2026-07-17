@@ -1,14 +1,24 @@
 {
+  "scripts": {
+    "schema:create": "mikro-orm schema:create --run"
+  },
   "dependencies": {
+    "@mikro-orm/core": "^6.6.16",
+    "@mikro-orm/mysql": "^6.6.16",
+    "@types/express": "^5.0.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "mysql2": "^3.22.6",
     "prompt-sync": "^4.2.0",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
+    "@mikro-orm/cli": "^6.6.16",
+    "@types/node": "^26.1.1",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.17",
-    "typescript": "^7.0.2"
+    "typescript": "^5.9.3"
   },
   "type": "module"
 }

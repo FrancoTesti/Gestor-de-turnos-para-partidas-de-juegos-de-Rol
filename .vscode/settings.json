@@ -1,18 +1,3 @@
 {
-  "sqltools.connections": [
-    {
-      "mysqlOptions": {
-        "authProtocol": "default",
-        "enableSsl": "Disabled"
-      },
-      "ssh": "Disabled",
-      "previewLimit": 50,
-      "server": "Faxxuz.online",
-      "port": 3306,
-      "driver": "MySQL",
-      "name": "RPG",
-      "database": "agencia_personal",
-      "username": "FrancoTesti"
-    }
-  ]
+  "sqltools.connections": []
 }

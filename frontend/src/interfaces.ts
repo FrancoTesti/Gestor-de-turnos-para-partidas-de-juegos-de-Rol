@@ -1,16 +1,20 @@
 export interface Usuario {
   idUsuario: number;        // CP
   nombreUsuario: string;
-  contrasenia: string;
+  contrasena: string;
   imagen: string;           // link a la imagen
   nickname: string;
-  datosJugador?: {
-    estado: boolean;
-  };
-  datosAnfitrion?: {
-    cantPartidasActuales: number;
-    karma: number;
-  }
+}
+
+export interface Jugador {
+  idUsuario: number;        // CP, y CF -> Usuario(idUsuario) NN
+  estado: boolean;
+}
+
+export interface Anfitrion {
+  idUsuario: number;        // CP, y CF -> Usuario(idUsuario) NN
+  cantPartidasActuales: number;
+  karma: number;
 }
 export interface Partida {
   idPartida: number;        // CP

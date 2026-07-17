@@ -10,16 +10,22 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mikro-orm/core": "^6.6.16",
+    "@mikro-orm/mysql": "^6.6.16",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
     "react": "^19.2.7",
     "react-dom": "^19.2.7"
   },
   "devDependencies": {
-    "@types/node": "^24.13.2",
+    "@mikro-orm/cli": "^6.6.16",
+    "@types/express": "^5.0.6",
+    "@types/node": "^24.13.3",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.3",
     "oxlint": "^1.71.0",
-    "typescript": "~6.0.2",
+    "typescript": "^5.9.3",
     "vite": "^8.1.1"
   }
 }

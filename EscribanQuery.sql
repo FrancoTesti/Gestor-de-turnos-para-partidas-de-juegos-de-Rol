@@ -1,1 +1,0 @@
-SELECT telefono FROM empresas WHERE telefono LIKE '4%';
