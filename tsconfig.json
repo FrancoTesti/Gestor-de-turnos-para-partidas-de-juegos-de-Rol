@@ -44,5 +44,9 @@
 
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true
-  }
+  },
+  // Este tsconfig es del BACKEND: solo mira src/ y los modulos de conexion.
+  // El frontend tiene sus propios tsconfig dentro de frontend/.
+  // TP_DSW.ts y menu.ts (app de consola vieja) quedan afuera del chequeo.
+  "include": ["src", "db.ts", "apiServices.ts"]
 }
