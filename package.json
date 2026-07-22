@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "schema:create": "node --import tsx ./node_modules/@mikro-orm/cli/cli.js schema:create --run"
+    "schema:create": "node --import tsx ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
+    "schema:dump": "node --import tsx src/valida-entities.ts"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.6.16",
