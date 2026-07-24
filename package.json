@@ -1,5 +1,7 @@
 {
   "scripts": {
+    "dev": "node --import tsx --watch src/app.ts",
+    "start": "node --import tsx src/app.ts",
     "schema:create": "node --import tsx ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
     "schema:dump": "node --import tsx src/valida-entities.ts"
   },
