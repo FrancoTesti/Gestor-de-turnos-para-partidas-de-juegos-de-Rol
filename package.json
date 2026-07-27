@@ -1,9 +1,12 @@
 {
+  "name": "gestor-turnos-backend",
+  "version": "1.0.0",
   "scripts": {
-    "dev": "node --import tsx --watch src/app.ts",
-    "start": "node --import tsx src/app.ts",
-    "schema:create": "node --import tsx ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
-    "schema:dump": "node --import tsx src/valida-entities.ts"
+    "dev": "nodemon --exec ts-node src/app.ts",
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
+    "schema:dump": "ts-node src/valida-entities.ts"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.6.16",
@@ -12,19 +15,19 @@
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "mysql2": "^3.22.6",
-    "prompt-sync": "^4.2.0"
+    "prompt-sync": "^4.2.0",
+    "reflect-metadata": "^0.2.2"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.6.16",
     "@types/node": "^26.1.1",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.17",
-    "tsx": "^4.23.1",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   },
-  "type": "module",
   "mikro-orm": {
-    "configPaths": ["./src/mikro-orm.config.ts"],
-    "alwaysAllowTs": true
+    "useTsNode": true
   }
 }

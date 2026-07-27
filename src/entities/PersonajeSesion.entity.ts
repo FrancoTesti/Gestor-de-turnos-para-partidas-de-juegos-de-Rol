@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Personaje } from './Personaje.entity.js';
-import { Sesion } from './Sesion.entity.js';
+import { Personaje } from './Personaje.entity';
+import { Sesion } from './Sesion.entity';
 
 // Tabla de union Personaje <-> Sesion (historial de asistencia).
 // CP compuesta: (idPersonaje, idPartida, numSesion) — las dos relaciones juntas.

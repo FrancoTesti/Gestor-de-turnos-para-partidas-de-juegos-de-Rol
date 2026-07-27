@@ -1,52 +1,28 @@
 {
-  // Visit https://aka.ms/tsconfig to read more about this file
+  // tsconfig del BACKEND (alineado al material de la catedra: CommonJS + ts-node).
+  // El frontend tiene sus propios tsconfig dentro de frontend/.
   "compilerOptions": {
-    // File Layout
-    // "rootDir": "./src",
-    // "outDir": "./dist",
-
-    // Environment Settings
-    // See also https://aka.ms/tsconfig/module
-    "module": "ES2022", //Revisar esto!
-    "moduleResolution": "bundler",
     "target": "ES2020",
-    "types": ["node"],
-    // For nodejs:
-    // "lib": ["esnext"],
-    // "types": ["node"],
-    // and npm install -D @types/node
+    "module": "commonjs",
+    "lib": ["ES2020"],
+    "moduleResolution": "node",
+    "outDir": "./dist",
+    "rootDir": "./src",
 
-    // Other Outputs
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+
+    // Necesarios para los decoradores de MikroORM
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
-
-    // Stricter Typechecking Options
-    "noUncheckedIndexedAccess": true,
-    "exactOptionalPropertyTypes": true,
-
-    // Style Options
-    // "noImplicitReturns": true,
-    // "noImplicitOverride": true,
-    // "noUnusedLocals": true,
-    // "noUnusedParameters": true,
-    // "noFallthroughCasesInSwitch": true,
-    // "noPropertyAccessFromIndexSignature": true,
-
-    // Recommended Options
-    "strict": true,
-    "jsx": "react-jsx",
-    "verbatimModuleSyntax": true,
-    "isolatedModules": true,
-    "noUncheckedSideEffectImports": true,
-    "moduleDetection": "force",
-    "skipLibCheck": true,
-
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "declarationMap": true
   },
-  // Este tsconfig es del BACKEND: solo mira src/ y los modulos de conexion.
-  // El frontend tiene sus propios tsconfig dentro de frontend/.
-  // TP_DSW.ts y menu.ts (app de consola vieja) quedan afuera del chequeo.
-  "include": ["src", "db.ts", "apiServices.ts"]
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
 }

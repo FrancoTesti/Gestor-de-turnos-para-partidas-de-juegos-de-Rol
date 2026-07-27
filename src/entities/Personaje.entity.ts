@@ -1,7 +1,7 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Clase } from './Clase.entity.js';
-import { Jugador } from './Jugador.entity.js';
-import { Partida } from './Partida.entity.js';
+import { Clase } from './Clase.entity';
+import { Jugador } from './Jugador.entity';
+import { Partida } from './Partida.entity';
 
 @Entity({ tableName: 'personajes' })
 export class Personaje {

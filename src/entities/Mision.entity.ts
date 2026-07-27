@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Sesion } from './Sesion.entity.js';
+import { Sesion } from './Sesion.entity';
 
 // CP compuesta: (idPartida, numSesion, numMision).
 // La CF a Sesion es compuesta -> se mapea con fieldNames (las dos columnas).

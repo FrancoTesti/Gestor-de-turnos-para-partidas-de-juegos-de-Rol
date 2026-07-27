@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Partida } from './Partida.entity.js';
+import { Partida } from './Partida.entity';
 
 // CP compuesta: (idPartida, numSesion). La partida es parte de la clave.
 @Entity({ tableName: 'sesiones' })

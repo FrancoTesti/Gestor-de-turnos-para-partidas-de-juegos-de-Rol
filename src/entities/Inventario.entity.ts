@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, PrimaryKeyProp, Property } from '@mikro-orm/core';
-import { Personaje } from './Personaje.entity.js';
+import { Personaje } from './Personaje.entity';
 
 // CP compuesta: (idPersonaje, numInventario). Cada personaje numera sus inventarios.
 @Entity({ tableName: 'inventarios' })

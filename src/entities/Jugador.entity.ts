@@ -1,5 +1,5 @@
 import { Entity, OneToOne, Property } from '@mikro-orm/core';
-import { Usuario } from './Usuario.entity.js';
+import { Usuario } from './Usuario.entity';
 
 @Entity({ tableName: 'jugadores' })
 export class Jugador {
