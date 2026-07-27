@@ -1,6 +1,6 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Inventario } from './Inventario.entity.js';
-import { Tienda } from './Tienda.entity.js';
+import { Inventario } from './Inventario.entity';
+import { Tienda } from './Tienda.entity';
 
 @Entity({ tableName: 'objetos' })
 export class Objeto {

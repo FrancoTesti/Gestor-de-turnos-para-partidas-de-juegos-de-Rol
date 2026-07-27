@@ -1,18 +1,18 @@
 import 'dotenv/config';
 import { EntityCaseNamingStrategy } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/mysql';
-import { Usuario } from './entities/Usuario.entity.js';
-import { Jugador } from './entities/Jugador.entity.js';
-import { Anfitrion } from './entities/Anfitrion.entity.js';
-import { Clase } from './entities/Clase.entity.js';
-import { Partida } from './entities/Partida.entity.js';
-import { Sesion } from './entities/Sesion.entity.js';
-import { Mision } from './entities/Mision.entity.js';
-import { Tienda } from './entities/Tienda.entity.js';
-import { Personaje } from './entities/Personaje.entity.js';
-import { Inventario } from './entities/Inventario.entity.js';
-import { PersonajeSesion } from './entities/PersonajeSesion.entity.js';
-import { Objeto } from './entities/Objeto.entity.js';
+import { Usuario } from './entities/Usuario.entity';
+import { Jugador } from './entities/Jugador.entity';
+import { Anfitrion } from './entities/Anfitrion.entity';
+import { Clase } from './entities/Clase.entity';
+import { Partida } from './entities/Partida.entity';
+import { Sesion } from './entities/Sesion.entity';
+import { Mision } from './entities/Mision.entity';
+import { Tienda } from './entities/Tienda.entity';
+import { Personaje } from './entities/Personaje.entity';
+import { Inventario } from './entities/Inventario.entity';
+import { PersonajeSesion } from './entities/PersonajeSesion.entity';
+import { Objeto } from './entities/Objeto.entity';
 
 export default defineConfig({
   entities: [

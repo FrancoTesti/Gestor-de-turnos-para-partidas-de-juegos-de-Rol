@@ -1,5 +1,5 @@
 import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
-import { Anfitrion } from './Anfitrion.entity.js';
+import { Anfitrion } from './Anfitrion.entity';
 
 @Entity({ tableName: 'partidas' })
 export class Partida {
