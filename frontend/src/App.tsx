@@ -106,7 +106,7 @@ export default function App() {
         setUsuarioSeleccionado(actualizado);
         setMensaje('Usuario actualizado correctamente.');
       } else {
-        const { contrasena, ...campos } = data;
+        const { idUsuario: _idUsuario, contrasena, ...campos } = data;
         if (!contrasena) {
           setErrorLista('La contraseña es obligatoria para crear un usuario.');
           return;
