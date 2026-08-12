@@ -3,6 +3,8 @@ import type {
   Tienda, Personaje, Inventario, Personaje_Sesion, Objeto
 } from './interfaces.ts';
 
+type UsuarioConCredenciales = Usuario & { contrasena: string };
+
 // 1. CLASES (Los arquetipos del juego)
 export const MOCK_CLASES: Clase[] = [
   { idClase: 1, nombreClase: "Guerrero", descripcionClase: "Especialista en combate cuerpo a cuerpo y resistencia física." },
@@ -11,7 +13,7 @@ export const MOCK_CLASES: Clase[] = [
 ];
 
 // 2. USUARIOS (Con sus sombreros opcionales)
-export const MOCK_USUARIOS: Usuario[] = [
+export const MOCK_USUARIOS: UsuarioConCredenciales[] = [
   {
     idUsuario: 1,
     nombreUsuario: "tomi_master",

@@ -1,235 +1,219 @@
-import * as React from 'react';
-import { useState } from 'react';
-import type { Usuario, Jugador, Anfitrion } from './interfaces.ts';
+import { useCallback, useEffect, useState } from 'react';
+import './App.css';
+import UsuarioDetalle from './components/usuarios/UsuarioDetalle';
+import UsuarioFormulario, {
+  type UsuarioFormData,
+} from './components/usuarios/UsuarioFormulario';
+import UsuarioLista from './components/usuarios/UsuarioLista';
+import type { Usuario } from './interfaces';
+import {
+  actualizarUsuario,
+  crearUsuario,
+  eliminarUsuario,
+  obtenerUsuarioPorId,
+  obtenerUsuarios,
+  type ActualizarUsuarioData,
+} from './services/usuario.service';
 
-// allow JSX in environments without @types/react
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      [elemName: string]: any;
-    }
-  }
+type Vista = 'listado' | 'formulario';
+
+function mensajeDeError(error: unknown): string {
+  return error instanceof Error ? error.message : 'Ocurrió un error inesperado';
 }
- 
-// Vista actual del "menú" (reemplaza el while + switch de la consola)
-type Vista = 'principal' | 'registro' | 'login';
- 
-let proximoId = 1; // simula el autoincrement de idUsuario (CP) hasta que haya backend
- 
-export default function MenuApp() {
-  // Modelo relacional: tres listas separadas, relacionadas por idUsuario.
+
+export default function App() {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [jugadores, setJugadores] = useState<Jugador[]>([]);
-  const [anfitriones, setAnfitriones] = useState<Anfitrion[]>([]);
-  const [vista, setVista] = useState<Vista>('principal');
-  const [usuarioLogueado, setUsuarioLogueado] = useState<Usuario | null>(null);
-  const [mensaje, setMensaje] = useState<string>('');
+  const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
+  const [usuarioEnEdicion, setUsuarioEnEdicion] = useState<Usuario | undefined>();
+  const [vista, setVista] = useState<Vista>('listado');
+  const [cargandoLista, setCargandoLista] = useState(true);
+  const [cargandoDetalle, setCargandoDetalle] = useState(false);
+  const [errorLista, setErrorLista] = useState<string | null>(null);
+  const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState<string | null>(null);
 
-  // El rol se deduce mirando en que tabla esta el usuario.
-  function rolDe(idUsuario: number): 'jugador' | 'anfitrión' | 'usuario' {
-    if (jugadores.some((j: Jugador) => j.idUsuario === idUsuario)) return 'jugador';
-    if (anfitriones.some((a: Anfitrion) => a.idUsuario === idUsuario)) return 'anfitrión';
-    return 'usuario';
+  const cargarUsuarios = useCallback(async () => {
+    setCargandoLista(true);
+    setErrorLista(null);
+
+    try {
+      const usuariosObtenidos = await obtenerUsuarios();
+      setUsuarios(usuariosObtenidos);
+    } catch (error) {
+      setErrorLista(mensajeDeError(error));
+    } finally {
+      setCargandoLista(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void cargarUsuarios();
+  }, [cargarUsuarios]);
+
+  async function seleccionarUsuario(usuario: Usuario): Promise<void> {
+    setCargandoDetalle(true);
+    setErrorDetalle(null);
+    setMensaje(null);
+
+    try {
+      const detalle = await obtenerUsuarioPorId(usuario.idUsuario);
+      setUsuarioSeleccionado(detalle);
+    } catch (error) {
+      setUsuarioSeleccionado(null);
+      setErrorDetalle(mensajeDeError(error));
+    } finally {
+      setCargandoDetalle(false);
+    }
   }
 
-  function registrarUsuario(
-    nombreUsuario: string,
-    nickname: string,
-    contrasena: string,
-    tipo: 'jugador' | 'anfitrion'
-  ) {
-    const yaExiste = usuarios.some((u: Usuario) => u.nickname === nickname);
-    if (yaExiste) {
-      setMensaje('Ese nickname ya está en uso.');
-      return;
-    }
-
-    let idUsuario;
-    // Bucle do...while: ideal para ejecutar algo al menos una vez antes de chequear la condición
-    do {
-      // Genera un ID aleatorio entre 1 y 10000
-      idUsuario = Math.floor(Math.random() * 10000) + 1;
-      
-    // El bucle se repite MIENTRAS el ID ya exista en la lista de usuarios
-    } while (usuarios.some((u: Usuario) => u.idUsuario === idUsuario));
-    
-    setUsuarios((prev: Usuario[]) => {
-      const nuevaLista = [...prev]; // Hacemos una copia
-      // Uso de un método de manipulación de arrays (.push)
-      nuevaLista.push({ idUsuario, nombreUsuario, contrasena, imagen: '', nickname });
-      return nuevaLista;
-    });
-
-    if (tipo === 'jugador') {
-      setJugadores((prev: Jugador[]) => [...prev, { idUsuario, estado: true }]);
-    } else {
-      setAnfitriones((prev: Anfitrion[]) => [
-        ...prev,
-        { idUsuario, cantPartidasActuales: 0, karma: 0 },
-      ]);
-    }
-
-    setMensaje(`${tipo === 'jugador' ? 'Jugador' : 'Anfitrión'} registrado con éxito.`);
-    setVista('principal');
+  function abrirCreacion(): void {
+    setUsuarioEnEdicion(undefined);
+    setMensaje(null);
+    setErrorLista(null);
+    setVista('formulario');
   }
 
-  function loguearse(nickname: string, contrasena: string) {
-    const encontrado = usuarios.find(
-      (u: Usuario) => u.nickname === nickname && u.contrasena === contrasena
+  function abrirEdicion(usuario: Usuario): void {
+    setUsuarioEnEdicion(usuario);
+    setMensaje(null);
+    setErrorLista(null);
+    setVista('formulario');
+  }
+
+  function cerrarFormulario(): void {
+    setUsuarioEnEdicion(undefined);
+    setVista('listado');
+  }
+
+  async function guardarUsuario(data: UsuarioFormData): Promise<void> {
+    setErrorLista(null);
+    setMensaje(null);
+
+    try {
+      if (data.idUsuario !== undefined) {
+        const { idUsuario, contrasena, ...campos } = data;
+        const datosActualizacion: ActualizarUsuarioData = {
+          ...campos,
+          ...(contrasena ? { contrasena } : {}),
+        };
+        const actualizado = await actualizarUsuario(idUsuario, datosActualizacion);
+
+        setUsuarios((actuales) =>
+          actuales.map((usuario) =>
+            usuario.idUsuario === actualizado.idUsuario ? actualizado : usuario,
+          ),
+        );
+        setUsuarioSeleccionado(actualizado);
+        setMensaje('Usuario actualizado correctamente.');
+      } else {
+        const { contrasena, ...campos } = data;
+        if (!contrasena) {
+          setErrorLista('La contraseña es obligatoria para crear un usuario.');
+          return;
+        }
+
+        const creado = await crearUsuario({ ...campos, contrasena });
+        setUsuarios((actuales) => [...actuales, creado]);
+        setUsuarioSeleccionado(creado);
+        setMensaje('Usuario creado correctamente.');
+      }
+
+      cerrarFormulario();
+    } catch (error) {
+      setErrorLista(mensajeDeError(error));
+    }
+  }
+
+  async function borrarUsuario(idUsuario: number): Promise<void> {
+    const usuario = usuarios.find((item) => item.idUsuario === idUsuario);
+    const confirmado = window.confirm(
+      `¿Seguro que querés eliminar a ${usuario?.nickname ?? `usuario #${idUsuario}`}?`,
     );
-    if (encontrado) {
-      setUsuarioLogueado(encontrado);
-      setMensaje(`Bienvenido ${rolDe(encontrado.idUsuario)} ${encontrado.nickname}.`);
-    } else {
-      setMensaje('Usuario no encontrado.');
+    if (!confirmado) return;
+
+    setErrorLista(null);
+    setMensaje(null);
+
+    try {
+      await eliminarUsuario(idUsuario);
+      setUsuarios((actuales) =>
+        actuales.filter((item) => item.idUsuario !== idUsuario),
+      );
+      if (usuarioSeleccionado?.idUsuario === idUsuario) {
+        setUsuarioSeleccionado(null);
+      }
+      setMensaje('Usuario eliminado correctamente.');
+    } catch (error) {
+      setErrorLista(mensajeDeError(error));
     }
-    setVista('principal');
   }
- 
+
   return (
-    <div style={{ maxWidth: 420, margin: '2rem auto', fontFamily: 'sans-serif' }}>
-      <h2>Gestor de turnos — juegos de rol</h2>
- 
+    <main className="app-container">
+      <header className="app-header">
+        <div>
+          <p className="app-eyebrow">Gestor de turnos para juegos de rol</p>
+          <h1>Administración de usuarios</h1>
+        </div>
+
+        {vista === 'listado' && (
+          <button type="button" className="btn-nuevo" onClick={abrirCreacion}>
+            Nuevo usuario
+          </button>
+        )}
+      </header>
+
       {mensaje && (
-        <p style={{ background: '#eee', padding: '0.5rem', borderRadius: 4 }}>{mensaje}</p>
-      )}
- 
-      {usuarioLogueado && (
-        <p>
-          Sesión activa: <strong>{usuarioLogueado.nickname}</strong>
+        <p className="mensaje mensaje-exito" role="status">
+          {mensaje}
         </p>
       )}
- 
-      {vista === 'principal' && (
-        <PantallaPrincipal
-          onLoguearse={() => setVista('login')}
-          onRegistrarse={() => setVista('registro')}
-        />
+
+      {errorLista && (
+        <div className="mensaje mensaje-error" role="alert">
+          <span>{errorLista}</span>
+          {vista === 'listado' && (
+            <button type="button" onClick={() => void cargarUsuarios()}>
+              Reintentar
+            </button>
+          )}
+        </div>
       )}
- 
-      {vista === 'registro' && (
-        <PantallaRegistro
-          onRegistrar={registrarUsuario}
-          onVolver={() => setVista('principal')}
-        />
+
+      {vista === 'formulario' ? (
+        <section className="panel-formulario">
+          <UsuarioFormulario
+            usuario={usuarioEnEdicion}
+            onGuardar={guardarUsuario}
+            onCancelar={cerrarFormulario}
+          />
+        </section>
+      ) : (
+        <div className="usuarios-layout">
+          <UsuarioLista
+            usuarios={usuarios}
+            usuarioSeleccionadoId={usuarioSeleccionado?.idUsuario}
+            onSeleccionar={(usuario) => void seleccionarUsuario(usuario)}
+            onEditar={abrirEdicion}
+            onEliminar={(idUsuario) => void borrarUsuario(idUsuario)}
+            cargando={cargandoLista}
+          />
+
+          <aside className="panel-detalle">
+            <UsuarioDetalle
+              usuario={usuarioSeleccionado}
+              cargando={cargandoDetalle}
+              error={errorDetalle}
+              onCerrar={() => {
+                setUsuarioSeleccionado(null);
+                setErrorDetalle(null);
+              }}
+              onEditar={abrirEdicion}
+              onEliminar={(idUsuario) => void borrarUsuario(idUsuario)}
+            />
+          </aside>
+        </div>
       )}
- 
-      {vista === 'login' && (
-        <PantallaLogin onLoguearse={loguearse} onVolver={() => setVista('principal')} />
-      )}
- 
-      <hr />
-      <p>Usuarios registrados (en memoria, sin persistencia):</p>
-      <ul>
-        {usuarios.map((u: Usuario) => (
-          <li key={u.idUsuario}>
-            {u.nickname} — {rolDe(u.idUsuario)} 
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
- 
-function PantallaPrincipal({
-  onLoguearse,
-  onRegistrarse,
-}: {
-  onLoguearse: () => void;
-  onRegistrarse: () => void;
-}) {
-  return (
-    <div>
-      <button onClick={onLoguearse}>Loguearse</button>
-      <button onClick={onRegistrarse}>Registrarse</button>
-    </div>
-  );
-}
- 
-function PantallaLogin({
-  onLoguearse,
-  onVolver,
-}: {
-  onLoguearse: (nickname: string, contrasena: string) => void;
-  onVolver: () => void;
-}) {
-  const [nickname, setNickname] = useState('');
-  const [contrasena, setContrasena] = useState('');
- 
-  return (
-    <div>
-      <input
-        placeholder="Nickname"
-        value={nickname}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-      />
-      <input
-        placeholder="Contraseña"
-        type="password"
-        value={contrasena}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-      />
-      <button onClick={() => onLoguearse(nickname, contrasena)}>Ingresar</button>
-      <button onClick={onVolver}>Volver</button>
-    </div>
-  );
-}
- 
-function PantallaRegistro({
-  onRegistrar,
-  onVolver,
-}: {
-  onRegistrar: (
-    nombreUsuario: string,
-    nickname: string,
-    contrasena: string,
-    tipo: 'jugador' | 'anfitrion'
-  ) => void;
-  onVolver: () => void;
-}) {
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [tipo, setTipo] = useState<'jugador' | 'anfitrion'>('jugador');
- 
-  return (
-    <div>
-      <input
-        placeholder="Nombre y apellido"
-        value={nombreUsuario}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNombreUsuario(e.target.value)}
-      />
-      <input
-        placeholder="Nickname"
-        value={nickname}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-      />
-      <input
-        placeholder="Contraseña"
-        type="password"
-        value={contrasena}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-      />
-      <label>
-        <input
-          type="radio"
-          checked={tipo === 'jugador'}
-          onChange={() => setTipo('jugador')}
-        />
-        Jugador
-      </label>
-      <label>
-        <input
-          type="radio"
-          checked={tipo === 'anfitrion'}
-          onChange={() => setTipo('anfitrion')}
-        />
-        Anfitrión
-      </label>
-      <button onClick={() => onRegistrar(nombreUsuario, nickname, contrasena, tipo)}>
-        Registrar
-      </button>
-      <button onClick={onVolver}>Volver</button>
-    </div>
+    </main>
   );
 }
