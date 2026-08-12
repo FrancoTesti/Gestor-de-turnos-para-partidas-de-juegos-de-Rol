@@ -44,11 +44,21 @@ export default function MenuApp() {
       return;
     }
 
-    const idUsuario = proximoId++;
-    setUsuarios((prev: Usuario[]) => [
-      ...prev,
-      { idUsuario, nombreUsuario, contrasena, imagen: '', nickname },
-    ]);
+    let idUsuario;
+    // Bucle do...while: ideal para ejecutar algo al menos una vez antes de chequear la condición
+    do {
+      // Genera un ID aleatorio entre 1 y 10000
+      idUsuario = Math.floor(Math.random() * 10000) + 1;
+      
+    // El bucle se repite MIENTRAS el ID ya exista en la lista de usuarios
+    } while (usuarios.some((u: Usuario) => u.idUsuario === idUsuario));
+    
+    setUsuarios((prev: Usuario[]) => {
+      const nuevaLista = [...prev]; // Hacemos una copia
+      // Uso de un método de manipulación de arrays (.push)
+      nuevaLista.push({ idUsuario, nombreUsuario, contrasena, imagen: '', nickname });
+      return nuevaLista;
+    });
 
     if (tipo === 'jugador') {
       setJugadores((prev: Jugador[]) => [...prev, { idUsuario, estado: true }]);

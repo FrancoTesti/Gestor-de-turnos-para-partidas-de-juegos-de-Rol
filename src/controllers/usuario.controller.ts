@@ -10,12 +10,6 @@ type IdParams = {
   id: string;
 };
 
-function obtenerId(idParam: string): number | null {
-  if (!/^\d+$/.test(idParam)) return null;
-
-  const id = Number(idParam);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
-}
 
 function responderError(error: unknown, res: Response, mensajeInterno: string): void {
   if (error instanceof ErrorValidacion) {
@@ -118,4 +112,16 @@ export class UsuarioController {
       responderError(error, res, 'Error al eliminar el usuario');
     }
   }
+  // (aca termina la clase UsuarioController)
 }
+/* demostrando Hoisting(Llamar funciones antes de declararlas) 
+La función obtenerId se llama en la línea 46, 
+pero está declarada acá abajo y funciona igual gracias al hoisting.
+*/
+function obtenerId(idParam: string): number | null {
+  if (!/^\d+$/.test(idParam)) return null;
+  const id = Number(idParam);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+
