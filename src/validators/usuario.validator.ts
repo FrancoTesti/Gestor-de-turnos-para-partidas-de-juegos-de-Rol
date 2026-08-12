@@ -17,7 +17,8 @@ function obtenerObjeto(data: unknown): Record<string, unknown> {
   return data as Record<string, unknown>;
 }
 
-function validarCamposDesconocidos(data: Record<string, unknown>): void {
+// Expresión de función (Function Expression): asignamos una función anónima a una constante
+const validarCamposDesconocidos = function(data: Record<string, unknown>): void {
   const campoDesconocido = Object.keys(data).find(
     (campo) => !CAMPOS_PERMITIDOS.includes(campo as (typeof CAMPOS_PERMITIDOS)[number]),
   );
@@ -32,6 +33,7 @@ function validarTexto(
   campo: string,
   minimo: number,
   maximo: number,
+  // Parámetro con valor por defecto
   permiteVacio = false,
 ): string {
   if (typeof valor !== 'string') {
@@ -72,11 +74,12 @@ export function validarCreacionUsuario(data: unknown): CrearUsuarioDTO {
   const objeto = obtenerObjeto(data);
   validarCamposDesconocidos(objeto);
 
-  for (const campo of CAMPOS_PERMITIDOS) {
+  // Iteración moderna con forEach (Higher-order function) usando una Arrow Function (=>)
+  CAMPOS_PERMITIDOS.forEach((campo) => {
     if (!(campo in objeto)) {
       throw new ErrorValidacion(`El campo '${campo}' es obligatorio`);
     }
-  }
+  });
 
   return {
     nombreUsuario: validarCampo('nombreUsuario', objeto.nombreUsuario),
