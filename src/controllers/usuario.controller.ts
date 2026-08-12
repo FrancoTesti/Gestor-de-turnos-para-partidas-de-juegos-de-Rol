@@ -1,5 +1,9 @@
-import {type Request, type Response } from 'express';
+import { type Request, type Response } from 'express';
 import { UsuarioService } from '../services/usuario.service';
+
+type IdParams = {
+  id: string;
+};
 
 export class UsuarioController {
   private usuarioService: UsuarioService;
@@ -17,7 +21,7 @@ export class UsuarioController {
     }
   }
 
-  async obtenerPorId(req: Request, res: Response) {
+  async obtenerPorId(req: Request<IdParams>, res: Response) {
     try {
       const id = parseInt(req.params.id, 10);
       if (Number.isNaN(id)) {
@@ -45,7 +49,7 @@ export class UsuarioController {
     }
   }
 
-  async actualizarUsuario(req: Request, res: Response) {
+  async actualizarUsuario(req: Request<IdParams>, res: Response) {
     try {
       const id = parseInt(req.params.id, 10);
       if (Number.isNaN(id)) {
@@ -64,7 +68,7 @@ export class UsuarioController {
     }
   }
 
-  async eliminarUsuario(req: Request, res: Response) {
+  async eliminarUsuario(req: Request<IdParams>, res: Response) {
     try {
       const id = parseInt(req.params.id, 10);
       if (Number.isNaN(id)) {
