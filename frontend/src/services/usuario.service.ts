@@ -2,7 +2,9 @@ import type { Usuario } from '../interfaces.ts';
 
 const USUARIOS_URL = '/api/usuarios';
 
-export type CrearUsuarioData = Omit<Usuario, 'idUsuario'>;
+export type CrearUsuarioData = Omit<Usuario, 'idUsuario'> & {
+  contrasena: string;
+};
 export type ActualizarUsuarioData = Partial<CrearUsuarioData>;
 
 async function procesarRespuesta<T>(respuesta: Response): Promise<T> {

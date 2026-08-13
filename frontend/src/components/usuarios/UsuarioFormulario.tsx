@@ -3,7 +3,7 @@ import type { Usuario } from '../../interfaces';
 
 export type UsuarioFormData = Omit<
   Usuario,
-  'idUsuario' | 'contrasena'
+  'idUsuario'
 > & {
   idUsuario?: number;
   contrasena?: string;
