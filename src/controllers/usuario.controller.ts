@@ -64,8 +64,9 @@ export class UsuarioController {
 
   async crearUsuario(req: Request, res: Response): Promise<void> {
     try {
-      const data = validarCreacionUsuario(req.body);
-      const nuevoUsuario = await this.usuarioService.crearUsuario(data);
+      /* Con el middleware de Zod, req.body ya viene validado, tipado y limpio.
+      Ya no necesitamos llamar a la funcion manual de validación aca */
+      const nuevoUsuario = await this.usuarioService.crearUsuario(req.body);
       res.status(201).json(nuevoUsuario);
     } catch (error) {
       responderError(error, res, 'Error al crear el usuario');
@@ -80,8 +81,9 @@ export class UsuarioController {
     }
 
     try {
-      const data = validarActualizacionUsuario(req.body);
-      const usuarioActualizado = await this.usuarioService.actualizarUsuario(id, data);
+      // Gracias al middleware de Zod, req.body ya viene validado, tipado y limpio.
+      // Le pasamos el req.body directamente al servicio
+      const usuarioActualizado = await this.usuarioService.actualizarUsuario(id, req.body);
       if (!usuarioActualizado) {
         res.status(404).json({ message: 'Usuario no encontrado para actualizar' });
         return;

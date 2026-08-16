@@ -1,7 +1,13 @@
 import type { ActualizarUsuarioDTO, CrearUsuarioDTO } from '../types/usuario.dto';
 
+/**
+ * Lista de campos permitidos en la creación y actualización de usuarios.
+ */
 const CAMPOS_PERMITIDOS = ['nombreUsuario', 'contrasena', 'imagen', 'nickname'] as const;
 
+/* demostracion teórica de Prototipos ( por si nos preguntan en el coloquio):
+ Al usar 'class' y 'extends', JS configura la "prototype chain" por detrás.
+ Es la forma moderna de heredar en vez de usar Object.create(Error.prototype) */
 export class ErrorValidacion extends Error {
   constructor(message: string) {
     super(message);
@@ -17,7 +23,6 @@ function obtenerObjeto(data: unknown): Record<string, unknown> {
   return data as Record<string, unknown>;
 }
 
-// Expresión de función (Function Expression): asignamos una función anónima a una constante
 const validarCamposDesconocidos = function(data: Record<string, unknown>): void {
   const campoDesconocido = Object.keys(data).find(
     (campo) => !CAMPOS_PERMITIDOS.includes(campo as (typeof CAMPOS_PERMITIDOS)[number]),
@@ -33,7 +38,6 @@ function validarTexto(
   campo: string,
   minimo: number,
   maximo: number,
-  // Parámetro con valor por defecto
   permiteVacio = false,
 ): string {
   if (typeof valor !== 'string') {
@@ -74,7 +78,6 @@ export function validarCreacionUsuario(data: unknown): CrearUsuarioDTO {
   const objeto = obtenerObjeto(data);
   validarCamposDesconocidos(objeto);
 
-  // Iteración moderna con forEach (Higher-order function) usando una Arrow Function (=>)
   CAMPOS_PERMITIDOS.forEach((campo) => {
     if (!(campo in objeto)) {
       throw new ErrorValidacion(`El campo '${campo}' es obligatorio`);
@@ -98,10 +101,9 @@ export function validarActualizacionUsuario(data: unknown): ActualizarUsuarioDTO
   }
 
   const resultado: ActualizarUsuarioDTO = {};
-  for (const campo of CAMPOS_PERMITIDOS) {
-    if (campo in objeto) {
-      resultado[campo] = validarCampo(campo, objeto[campo]);
-    }
+  // con Object.entries recorremos clave y valor al mismo tiempo
+  for (const [campo, valor] of Object.entries(objeto)) {
+    resultado[campo as keyof ActualizarUsuarioDTO] = validarCampo(campo as any, valor);
   }
 
   return resultado;

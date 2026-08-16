@@ -37,8 +37,11 @@ export default function App() {
     setErrorLista(null);
 
     try {
-      const usuariosObtenidos = await obtenerUsuarios();
-      setUsuarios(usuariosObtenidos);
+      // ejecuto dos promesas en paralelo
+      const [usuariosObtenidos] = await Promise.all([
+        obtenerUsuarios(),
+        import('./services/usuario.service').then(m => m.simularRetardo(1000))
+      ]);      setUsuarios(usuariosObtenidos);
     } catch (error) {
       setErrorLista(mensajeDeError(error));
     } finally {
@@ -46,9 +49,19 @@ export default function App() {
     }
   }, []);
 
+// utilizoJSON.parse con try/catch leyendo del almacenamiento
   useEffect(() => {
-    void cargarUsuarios();
-  }, [cargarUsuarios]);
+    try {
+      const guardado = localStorage.getItem('vistaApp');
+      if (guardado) setVista(JSON.parse(guardado));
+    } catch (error) {
+      console.error('El string no era un JSON válido:', error);
+    }
+  }, []);
+  // Usamos JSON.stringify para guardar el dato como texto
+  useEffect(() => {
+    localStorage.setItem('vistaApp', JSON.stringify(vista));
+  }, [vista]);
 
   async function seleccionarUsuario(usuario: Usuario): Promise<void> {
     setCargandoDetalle(true);

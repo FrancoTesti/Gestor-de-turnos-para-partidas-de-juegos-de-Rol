@@ -16,7 +16,8 @@
     "express": "^5.2.1",
     "mysql2": "^3.22.6",
     "prompt-sync": "^4.2.0",
-    "reflect-metadata": "^0.2.2"
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.6.16",
