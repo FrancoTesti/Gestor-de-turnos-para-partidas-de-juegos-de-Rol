@@ -2,6 +2,11 @@ import type { Usuario } from '../interfaces.ts';
 
 const USUARIOS_URL = '/api/usuarios';
 
+// retardo artificial
+export function simularRetardo(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export type CrearUsuarioData = Omit<Usuario, 'idUsuario'> & {
   contrasena: string;
 };
@@ -49,12 +54,14 @@ export async function actualizarUsuario(
   return procesarRespuesta<Usuario>(respuesta);
 }
 
-export async function eliminarUsuario(idUsuario: number): Promise<void> {
-  const respuesta = await fetch(`${USUARIOS_URL}/${idUsuario}`, {
-    method: 'DELETE',
-  });
-
-  if (!respuesta.ok) {
-    await procesarRespuesta<never>(respuesta);
-  }
+export function eliminarUsuario(idUsuario: number): Promise<void> {
+  // uso  clásico de encadenamiento (sin async/await)
+  return fetch(`${USUARIOS_URL}/${idUsuario}`, { method: 'DELETE' })
+    .then(respuesta => {
+      if (!respuesta.ok) return procesarRespuesta<never>(respuesta);
+    })
+    .catch(error => {
+      console.error('Falló al eliminar:', error);
+      throw error; 
+    });
 }
