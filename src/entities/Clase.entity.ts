@@ -1,14 +1,15 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 
 @Entity({ tableName: 'clases' })
 export class Clase {
-  @PrimaryKey({ type: 'number' })
+  [OptionalProps]?: 'idClase';
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
   idClase!: number;
 
   @Property({ type: 'string', length: 50 })
   nombreClase!: string;
 
-  // Las descripciones de clase son largas (ver SQL/rpg.sql) -> TEXT, no VARCHAR
   @Property({ type: 'text' })
   descripcionClase!: string;
 }
