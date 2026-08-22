@@ -22,7 +22,7 @@ export class ObjetoService {
 
   async crearObjeto(data: CrearObjetoDTO): Promise<ObjetoPublicoDTO> {
     let tienda: Tienda | null = null;
-    if (data.idTienda) {
+    if (data.idTienda != null) {
       tienda = await this.em.findOne(Tienda, { idTienda: data.idTienda });
     }
 
