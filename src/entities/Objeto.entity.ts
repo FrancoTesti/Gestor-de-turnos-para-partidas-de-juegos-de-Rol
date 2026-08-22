@@ -1,10 +1,12 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, OptionalProps, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Inventario } from './Inventario.entity';
 import { Tienda } from './Tienda.entity';
 
 @Entity({ tableName: 'objetos' })
 export class Objeto {
-  @PrimaryKey({ type: 'number' })
+  [OptionalProps]?: 'idObjeto';
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
   idObjeto!: number;
 
   @Property({ type: 'number' })
@@ -19,15 +21,12 @@ export class Objeto {
   @Property({ type: 'number' })
   nivelObjeto!: number;
 
-  // "armadura" | "espada" | "escudo" | "consumible" | ...
   @Property({ type: 'string', length: 50 })
   tipoObjeto!: string;
 
-  // Un objeto esta EN LA TIENDA o EN UN INVENTARIO (o en ninguno) -> ambas CF opcionales
   @ManyToOne({ entity: () => Tienda, fieldName: 'idTienda', nullable: true })
   tienda?: Tienda | null;
 
-  // CF compuesta a Inventario(idPersonaje, numInventario), opcional
   @ManyToOne({
     entity: () => Inventario,
     fieldNames: ['idPersonaje', 'numInventario'],
