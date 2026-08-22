@@ -22,7 +22,7 @@ export class TiendaService {
 
   async crearTienda(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
     let clase: Clase | null = null;
-    if (data.idClase) {
+    if (data.idClase != null) {
       clase = await this.em.findOne(Clase, { idClase: data.idClase });
     }
 
