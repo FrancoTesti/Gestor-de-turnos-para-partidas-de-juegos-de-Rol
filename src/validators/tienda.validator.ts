@@ -22,7 +22,14 @@ export function validarCreacionTienda(body: unknown): CrearTiendaDTO {
     throw new ErrorValidacionTienda('El campo claseTienda es obligatorio');
   }
 
-  const idClase = payload.idClase !== undefined && payload.idClase !== null ? Number(payload.idClase) : null;
+  let idClase: number | null = null;
+  if (payload.idClase !== undefined && payload.idClase !== null) {
+    const parsed = Number(payload.idClase);
+    if (!Number.isSafeInteger(parsed) || parsed <= 0) {
+      throw new ErrorValidacionTienda('El campo idClase debe ser un entero mayor a 0 o null');
+    }
+    idClase = parsed;
+  }
 
   return {
     nombre: payload.nombre.trim(),
