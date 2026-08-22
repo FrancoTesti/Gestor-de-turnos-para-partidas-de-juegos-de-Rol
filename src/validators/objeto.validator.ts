@@ -36,8 +36,23 @@ export function validarCreacionObjeto(body: unknown): CrearObjetoDTO {
     throw new ErrorValidacionObjeto('El campo nivelObjeto debe ser un número mayor o igual a 1');
   }
 
-  const idTienda = payload.idTienda !== undefined && payload.idTienda !== null ? Number(payload.idTienda) : null;
-  const posicion = payload.posicion !== undefined ? Number(payload.posicion) : 0;
+  let idTienda: number | null = null;
+  if (payload.idTienda !== undefined && payload.idTienda !== null) {
+    const parsedId = Number(payload.idTienda);
+    if (!Number.isSafeInteger(parsedId) || parsedId <= 0) {
+      throw new ErrorValidacionObjeto('El campo idTienda debe ser un entero mayor a 0 o null');
+    }
+    idTienda = parsedId;
+  }
+
+  let posicion = 0;
+  if (payload.posicion !== undefined) {
+    const parsedPos = Number(payload.posicion);
+    if (!Number.isSafeInteger(parsedPos) || parsedPos < 0) {
+      throw new ErrorValidacionObjeto('El campo posicion debe ser un entero mayor o igual a 0');
+    }
+    posicion = parsedPos;
+  }
 
   return {
     nombre: payload.nombre.trim(),
