@@ -1,0 +1,95 @@
+.app-container {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 4rem;
+  text-align: left;
+}
+
+.app-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.app-header h1 {
+  margin: 0.25rem 0 0;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.app-eyebrow {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.btn-nuevo,
+.mensaje button {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.btn-nuevo {
+  color: white;
+  background: var(--accent);
+}
+
+.mensaje {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border-radius: 0.65rem;
+}
+
+.mensaje-exito {
+  color: #166534;
+  background: #dcfce7;
+}
+
+.mensaje-error {
+  color: #991b1b;
+  background: #fee2e2;
+}
+
+.usuarios-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.panel-detalle,
+.panel-formulario {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.panel-detalle {
+  position: sticky;
+  top: 1rem;
+}
+
+@media (max-width: 800px) {
+  .app-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .usuarios-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-detalle {
+    position: static;
+  }
+}
