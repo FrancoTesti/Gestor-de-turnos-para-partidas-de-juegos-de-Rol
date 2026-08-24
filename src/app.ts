@@ -9,6 +9,9 @@ import { crearUsuarioRouter } from './routes/usuario.routes';
 import { crearClaseRouter } from './routes/clase.routes';
 import { crearObjetoRouter } from './routes/objeto.routes';
 import { crearTiendaRouter } from './routes/tienda.routes';
+import { crearPersonajeRouter } from './routes/personaje.routes';
+import { crearJugadorRouter } from './routes/jugador.routes';
+import { crearPartidaRouter } from './routes/partida.routes';
 
 async function main() {
   const orm = await MikroORM.init(config);
@@ -44,6 +47,9 @@ async function main() {
         '/api/clases',
         '/api/objetos',
         '/api/tiendas',
+        '/api/personajes',
+        '/api/jugadores',
+        '/api/partidas',
       ],
     });
   });
@@ -53,6 +59,9 @@ async function main() {
   app.use('/api/clases', crearClaseRouter(orm.em));
   app.use('/api/objetos', crearObjetoRouter(orm.em));
   app.use('/api/tiendas', crearTiendaRouter(orm.em));
+  app.use('/api/personajes', crearPersonajeRouter(orm.em));
+  app.use('/api/jugadores', crearJugadorRouter(orm.em));
+  app.use('/api/partidas', crearPartidaRouter(orm.em));
 
   // Cualquier URL que no matchee ninguna ruta -> 404 en JSON
   app.use((req, res) => {

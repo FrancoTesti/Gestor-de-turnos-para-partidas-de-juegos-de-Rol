@@ -1,225 +1,371 @@
-import * as React from 'react';
-import { useState } from 'react';
-import type { Usuario, Jugador, Anfitrion } from './interfaces.ts';
+import { useState, useEffect } from 'react';
+import type { Clase, Personaje } from './interfaces';
+import { MOCK_CLASES, MOCK_PERSONAJES } from './mockData';
 
-// allow JSX in environments without @types/react
-declare global {
-  namespace JSX {
-    interface IntrinsicElements {
-      [elemName: string]: any;
-    }
-  }
-}
- 
-// Vista actual del "menú" (reemplaza el while + switch de la consola)
-type Vista = 'principal' | 'registro' | 'login';
- 
-let proximoId = 1; // simula el autoincrement de idUsuario (CP) hasta que haya backend
- 
+// Modulo de Clases
+import ClaseLista from './components/clases/ClaseLista';
+import ClaseFormulario from './components/clases/ClaseFormulario';
+import ClaseDetalle from './components/clases/ClaseDetalle';
+import {
+  obtenerClases,
+  crearClase,
+  actualizarClase,
+  eliminarClase,
+  type CrearClaseData,
+} from './services/clase.service';
+
+// Modulo de Personajes
+import PersonajeLista from './components/personajes/PersonajeLista';
+import PersonajeFormulario from './components/personajes/PersonajeFormulario';
+import PersonajeDetalle from './components/personajes/PersonajeDetalle';
+import {
+  obtenerPersonajes,
+  crearPersonaje,
+  actualizarPersonaje,
+  eliminarPersonaje,
+  type CrearPersonajeData,
+} from './services/personaje.service';
+
+type ModuloNavegacion = 'clases' | 'personajes' | 'inicio';
+
 export default function MenuApp() {
-  // Modelo relacional: tres listas separadas, relacionadas por idUsuario.
-  const [usuarios, setUsuarios] = useState<Usuario[]>([]);
-  const [jugadores, setJugadores] = useState<Jugador[]>([]);
-  const [anfitriones, setAnfitriones] = useState<Anfitrion[]>([]);
-  const [vista, setVista] = useState<Vista>('principal');
-  const [usuarioLogueado, setUsuarioLogueado] = useState<Usuario | null>(null);
-  const [mensaje, setMensaje] = useState<string>('');
+  const [modulo, setModulo] = useState<ModuloNavegacion>('clases');
 
-  // El rol se deduce mirando en que tabla esta el usuario.
-  function rolDe(idUsuario: number): 'jugador' | 'anfitrión' | 'usuario' {
-    if (jugadores.some((j: Jugador) => j.idUsuario === idUsuario)) return 'jugador';
-    if (anfitriones.some((a: Anfitrion) => a.idUsuario === idUsuario)) return 'anfitrión';
-    return 'usuario';
-  }
+  // Estado del módulo de Clases
+  const [clases, setClases] = useState<Clase[]>([]);
+  const [cargandoClases, setCargandoClases] = useState(false);
+  const [modoClase, setModoClase] = useState<'listado' | 'crear' | 'editar' | 'detalle'>('listado');
+  const [claseSeleccionada, setClaseSeleccionada] = useState<Clase | null>(null);
 
-  function registrarUsuario(
-    nombreUsuario: string,
-    nickname: string,
-    contrasena: string,
-    tipo: 'jugador' | 'anfitrion'
-  ) {
-    const yaExiste = usuarios.some((u: Usuario) => u.nickname === nickname);
-    if (yaExiste) {
-      setMensaje('Ese nickname ya está en uso.');
-      return;
+  // Estado del módulo de Personajes
+  const [personajes, setPersonajes] = useState<Personaje[]>([]);
+  const [cargandoPersonajes, setCargandoPersonajes] = useState(false);
+  const [modoPersonaje, setModoPersonaje] = useState<'listado' | 'crear' | 'editar' | 'detalle'>('listado');
+  const [personajeSeleccionado, setPersonajeSeleccionado] = useState<Personaje | null>(null);
+
+  const [mensajeGlobal, setMensajeGlobal] = useState<string | null>(null);
+
+  // Cargar Clases al iniciar
+  const fetchClases = async () => {
+    setCargandoClases(true);
+    try {
+      const data = await obtenerClases();
+      setClases(data);
+    } catch {
+      // Fallback a Mock Data si no hay backend activo
+      setClases(MOCK_CLASES);
+    } finally {
+      setCargandoClases(false);
     }
+  };
 
-    const idUsuario = proximoId++;
-    setUsuarios((prev: Usuario[]) => [
-      ...prev,
-      { idUsuario, nombreUsuario, contrasena, imagen: '', nickname },
-    ]);
+  // Cargar Personajes al iniciar
+  const fetchPersonajes = async () => {
+    setCargandoPersonajes(true);
+    try {
+      const data = await obtenerPersonajes();
+      setPersonajes(data);
+    } catch {
+      // Fallback a Mock Data si no hay backend activo
+      setPersonajes(MOCK_PERSONAJES);
+    } finally {
+      setCargandoPersonajes(false);
+    }
+  };
 
-    if (tipo === 'jugador') {
-      setJugadores((prev: Jugador[]) => [...prev, { idUsuario, estado: true }]);
+  useEffect(() => {
+    fetchClases();
+    fetchPersonajes();
+  }, []);
+
+  // Handler Guardar Clase
+  async function handleGuardarClase(data: CrearClaseData) {
+    if (modoClase === 'editar' && claseSeleccionada) {
+      try {
+        await actualizarClase(claseSeleccionada.idClase, data);
+        setMensajeGlobal(`Clase '${data.nombreClase}' actualizada con éxito.`);
+      } catch {
+        setClases((prev) =>
+          prev.map((c) =>
+            c.idClase === claseSeleccionada.idClase ? { ...c, ...data } : c
+          )
+        );
+      }
     } else {
-      setAnfitriones((prev: Anfitrion[]) => [
-        ...prev,
-        { idUsuario, cantPartidasActuales: 0, karma: 0 },
-      ]);
+      try {
+        await crearClase(data);
+        setMensajeGlobal(`Clase '${data.nombreClase}' creada con éxito.`);
+      } catch {
+        const nuevoId = clases.length > 0 ? Math.max(...clases.map((c) => c.idClase)) + 1 : 1;
+        setClases((prev) => [...prev, { idClase: nuevoId, ...data }]);
+      }
     }
-
-    setMensaje(`${tipo === 'jugador' ? 'Jugador' : 'Anfitrión'} registrado con éxito.`);
-    setVista('principal');
+    await fetchClases();
+    setModoClase('listado');
+    setClaseSeleccionada(null);
   }
 
-  function loguearse(nickname: string, contrasena: string) {
-    const encontrado = usuarios.find(
-      (u: Usuario) => u.nickname === nickname && u.contrasena === contrasena
-    );
-    if (encontrado) {
-      setUsuarioLogueado(encontrado);
-      setMensaje(`Bienvenido ${rolDe(encontrado.idUsuario)} ${encontrado.nickname}.`);
+  // Handler Eliminar Clase
+  async function handleEliminarClase(idClase: number) {
+    try {
+      await eliminarClase(idClase);
+      setMensajeGlobal('Clase eliminada correctamente.');
+    } catch {
+      setClases((prev) => prev.filter((c) => c.idClase !== idClase));
+    }
+    await fetchClases();
+    if (claseSeleccionada?.idClase === idClase) {
+      setClaseSeleccionada(null);
+      setModoClase('listado');
+    }
+  }
+
+  // Handler Guardar Personaje
+  async function handleGuardarPersonaje(data: CrearPersonajeData) {
+    if (modoPersonaje === 'editar' && personajeSeleccionado) {
+      try {
+        await actualizarPersonaje(personajeSeleccionado.idPersonaje, data);
+        setMensajeGlobal(`Personaje '${data.nombreFicticio}' actualizado con éxito.`);
+      } catch {
+        setPersonajes((prev) =>
+          prev.map((p) =>
+            p.idPersonaje === personajeSeleccionado.idPersonaje
+              ? {
+                  ...p,
+                  nombreFicticio: data.nombreFicticio,
+                  raza: data.raza,
+                  idClase: data.idClase,
+                  idUsuarioJugador: data.idUsuarioJugador,
+                  idPartida: data.idPartida,
+                  nivel: data.nivel ?? p.nivel,
+                  xp: data.xp ?? p.xp,
+                  dinero: data.dinero ?? p.dinero,
+                }
+              : p
+          )
+        );
+      }
     } else {
-      setMensaje('Usuario no encontrado.');
+      try {
+        await crearPersonaje(data);
+        setMensajeGlobal(`Personaje '${data.nombreFicticio}' creado exitosamente.`);
+      } catch {
+        const nuevoId = personajes.length > 0 ? Math.max(...personajes.map((p) => p.idPersonaje)) + 1 : 1;
+        setPersonajes((prev) => [
+          ...prev,
+          {
+            idPersonaje: nuevoId,
+            nombreFicticio: data.nombreFicticio,
+            raza: data.raza,
+            idClase: data.idClase,
+            idUsuarioJugador: data.idUsuarioJugador,
+            idPartida: data.idPartida,
+            nivel: data.nivel ?? 1,
+            xp: data.xp ?? 0,
+            dinero: data.dinero ?? 100,
+          },
+        ]);
+      }
     }
-    setVista('principal');
+    await fetchPersonajes();
+    setModoPersonaje('listado');
+    setPersonajeSeleccionado(null);
   }
- 
+
+  // Handler Eliminar Personaje
+  async function handleEliminarPersonaje(idPersonaje: number) {
+    try {
+      await eliminarPersonaje(idPersonaje);
+      setMensajeGlobal('Personaje eliminado correctamente.');
+    } catch {
+      setPersonajes((prev) => prev.filter((p) => p.idPersonaje !== idPersonaje));
+    }
+    await fetchPersonajes();
+    if (personajeSeleccionado?.idPersonaje === idPersonaje) {
+      setPersonajeSeleccionado(null);
+      setModoPersonaje('listado');
+    }
+  }
+
   return (
-    <div style={{ maxWidth: 420, margin: '2rem auto', fontFamily: 'sans-serif' }}>
-      <h2>Gestor de turnos — juegos de rol</h2>
- 
-      {mensaje && (
-        <p style={{ background: '#eee', padding: '0.5rem', borderRadius: 4 }}>{mensaje}</p>
-      )}
- 
-      {usuarioLogueado && (
-        <p>
-          Sesión activa: <strong>{usuarioLogueado.nickname}</strong>
+    <div style={{ maxWidth: 1000, margin: '1.5rem auto', padding: '0 1rem', fontFamily: 'system-ui, sans-serif' }}>
+      <header style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+        <h1 style={{ color: '#2b6cb0', marginBottom: '0.5rem' }}>
+          Gestor de Turnos — Juegos de Rol
+        </h1>
+        <p style={{ color: '#718096', margin: 0 }}>
+          Módulo desarrollado por <strong>Alejandro Ciesco</strong> (Clase y Personaje)
         </p>
+      </header>
+
+      {/* Navbar de Modulos */}
+      <nav
+        style={{
+          display: 'flex',
+          gap: '0.5rem',
+          justifyContent: 'center',
+          marginBottom: '1.5rem',
+          borderBottom: '2px solid #e2e8f0',
+          paddingBottom: '0.75rem',
+        }}
+      >
+        <button
+          type="button"
+          onClick={() => setModulo('clases')}
+          style={{
+            padding: '0.6rem 1.2rem',
+            borderRadius: '6px',
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            backgroundColor: modulo === 'clases' ? '#3182ce' : '#edf2f7',
+            color: modulo === 'clases' ? 'white' : '#4a5568',
+          }}
+        >
+          🛡️ CRUD de Clases
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setModulo('personajes')}
+          style={{
+            padding: '0.6rem 1.2rem',
+            borderRadius: '6px',
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            backgroundColor: modulo === 'personajes' ? '#805ad5' : '#edf2f7',
+            color: modulo === 'personajes' ? 'white' : '#4a5568',
+          }}
+        >
+          🧙‍♂️ Crear Personaje & Listado
+        </button>
+      </nav>
+
+      {/* Alerta de Mensaje Global */}
+      {mensajeGlobal && (
+        <div
+          style={{
+            background: '#ebf8ff',
+            border: '1px solid #bee3f8',
+            color: '#2b6cb0',
+            padding: '0.75rem 1rem',
+            borderRadius: '6px',
+            marginBottom: '1.5rem',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <span>{mensajeGlobal}</span>
+          <button
+            type="button"
+            onClick={() => setMensajeGlobal(null)}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            ✕
+          </button>
+        </div>
       )}
- 
-      {vista === 'principal' && (
-        <PantallaPrincipal
-          onLoguearse={() => setVista('login')}
-          onRegistrarse={() => setVista('registro')}
-        />
+
+      {/* MÓDULO DE CLASES */}
+      {modulo === 'clases' && (
+        <div>
+          {modoClase === 'listado' && (
+            <ClaseLista
+              clases={clases}
+              cargando={cargandoClases}
+              claseSeleccionadaId={claseSeleccionada?.idClase}
+              onSeleccionar={(clase) => {
+                setClaseSeleccionada(clase);
+                setModoClase('detalle');
+              }}
+              onNuevo={() => {
+                setClaseSeleccionada(null);
+                setModoClase('crear');
+              }}
+              onEditar={(clase) => {
+                setClaseSeleccionada(clase);
+                setModoClase('editar');
+              }}
+              onEliminar={handleEliminarClase}
+            />
+          )}
+
+          {(modoClase === 'crear' || modoClase === 'editar') && (
+            <ClaseFormulario
+              claseInicial={modoClase === 'editar' ? claseSeleccionada : null}
+              onGuardar={handleGuardarClase}
+              onCancelar={() => {
+                setModoClase('listado');
+                setClaseSeleccionada(null);
+              }}
+            />
+          )}
+
+          {modoClase === 'detalle' && (
+            <ClaseDetalle
+              clase={claseSeleccionada}
+              onVolver={() => setModoClase('listado')}
+              onEditar={(clase) => {
+                setClaseSeleccionada(clase);
+                setModoClase('editar');
+              }}
+            />
+          )}
+        </div>
       )}
- 
-      {vista === 'registro' && (
-        <PantallaRegistro
-          onRegistrar={registrarUsuario}
-          onVolver={() => setVista('principal')}
-        />
+
+      {/* MÓDULO DE PERSONAJES */}
+      {modulo === 'personajes' && (
+        <div>
+          {modoPersonaje === 'listado' && (
+            <PersonajeLista
+              personajes={personajes}
+              clases={clases}
+              cargando={cargandoPersonajes}
+              personajeSeleccionadoId={personajeSeleccionado?.idPersonaje}
+              onSeleccionar={(personaje) => {
+                setPersonajeSeleccionado(personaje);
+                setModoPersonaje('detalle');
+              }}
+              onNuevo={() => {
+                setPersonajeSeleccionado(null);
+                setModoPersonaje('crear');
+              }}
+              onEditar={(personaje) => {
+                setPersonajeSeleccionado(personaje);
+                setModoPersonaje('editar');
+              }}
+              onEliminar={handleEliminarPersonaje}
+            />
+          )}
+
+          {(modoPersonaje === 'crear' || modoPersonaje === 'editar') && (
+            <PersonajeFormulario
+              personajeInicial={modoPersonaje === 'editar' ? personajeSeleccionado : null}
+              clasesDisponibles={clases}
+              onGuardar={handleGuardarPersonaje}
+              onCancelar={() => {
+                setModoPersonaje('listado');
+                setPersonajeSeleccionado(null);
+              }}
+            />
+          )}
+
+          {modoPersonaje === 'detalle' && (
+            <PersonajeDetalle
+              personaje={personajeSeleccionado}
+              clases={clases}
+              onVolver={() => setModoPersonaje('listado')}
+              onEditar={(personaje) => {
+                setPersonajeSeleccionado(personaje);
+                setModoPersonaje('editar');
+              }}
+            />
+          )}
+        </div>
       )}
- 
-      {vista === 'login' && (
-        <PantallaLogin onLoguearse={loguearse} onVolver={() => setVista('principal')} />
-      )}
- 
-      <hr />
-      <p>Usuarios registrados (en memoria, sin persistencia):</p>
-      <ul>
-        {usuarios.map((u: Usuario) => (
-          <li key={u.idUsuario}>
-            {u.nickname} — {rolDe(u.idUsuario)} 
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
-}
- 
-function PantallaPrincipal({
-  onLoguearse,
-  onRegistrarse,
-}: {
-  onLoguearse: () => void;
-  onRegistrarse: () => void;
-}) {
-  return (
-    <div>
-      <button onClick={onLoguearse}>Loguearse</button>
-      <button onClick={onRegistrarse}>Registrarse</button>
-    </div>
-  );
-}
- 
-function PantallaLogin({
-  onLoguearse,
-  onVolver,
-}: {
-  onLoguearse: (nickname: string, contrasena: string) => void;
-  onVolver: () => void;
-}) {
-  const [nickname, setNickname] = useState('');
-  const [contrasena, setContrasena] = useState('');
- 
-  return (
-    <div>
-      <input
-        placeholder="Nickname"
-        value={nickname}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-      />
-      <input
-        placeholder="Contraseña"
-        type="password"
-        value={contrasena}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-      />
-      <button onClick={() => onLoguearse(nickname, contrasena)}>Ingresar</button>
-      <button onClick={onVolver}>Volver</button>
-    </div>
-  );
-}
- 
-function PantallaRegistro({
-  onRegistrar,
-  onVolver,
-}: {
-  onRegistrar: (
-    nombreUsuario: string,
-    nickname: string,
-    contrasena: string,
-    tipo: 'jugador' | 'anfitrion'
-  ) => void;
-  onVolver: () => void;
-}) {
-  const [nombreUsuario, setNombreUsuario] = useState('');
-  const [nickname, setNickname] = useState('');
-  const [contrasena, setContrasena] = useState('');
-  const [tipo, setTipo] = useState<'jugador' | 'anfitrion'>('jugador');
- 
-  return (
-    <div>
-      <input
-        placeholder="Nombre y apellido"
-        value={nombreUsuario}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNombreUsuario(e.target.value)}
-      />
-      <input
-        placeholder="Nickname"
-        value={nickname}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-      />
-      <input
-        placeholder="Contraseña"
-        type="password"
-        value={contrasena}
-        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-      />
-      <label>
-        <input
-          type="radio"
-          checked={tipo === 'jugador'}
-          onChange={() => setTipo('jugador')}
-        />
-        Jugador
-      </label>
-      <label>
-        <input
-          type="radio"
-          checked={tipo === 'anfitrion'}
-          onChange={() => setTipo('anfitrion')}
-        />
-        Anfitrión
-      </label>
-      <button onClick={() => onRegistrar(nombreUsuario, nickname, contrasena, tipo)}>
-        Registrar
-      </button>
-      <button onClick={onVolver}>Volver</button>
     </div>
   );
 }
