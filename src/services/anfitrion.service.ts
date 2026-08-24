@@ -35,7 +35,7 @@ export class AnfitrionService {
 
   // busca un anfitrion por el idUsuario
   async obtenerPorId(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
-    const anfitrion = await this.em.findOne(Anfitrion, { usuario: idUsuario }, { populate: ['usuario'] });
+    const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
     return anfitrion ? this.aAnfitrionPublico(anfitrion) : null;
   }
 
@@ -48,7 +48,7 @@ export class AnfitrionService {
     }
 
     // regla 2: no puede registrarse dos veces como Anfitrion
-    const anfitrionExistente = await this.em.findOne(Anfitrion, { usuario: data.idUsuario });
+    const anfitrionExistente = await this.em.findOne(Anfitrion, data.idUsuario as any);
     if (anfitrionExistente) {
       throw new AnfitrionYaExisteError(data.idUsuario);
     }
@@ -65,7 +65,7 @@ export class AnfitrionService {
 
   // actualiza karma o cantPartidasActuales
   async actualizarAnfitrion(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
-    const anfitrion = await this.em.findOne(Anfitrion, { usuario: idUsuario }, { populate: ['usuario'] });
+    const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
     if (!anfitrion) return null;
 
     this.em.assign(anfitrion, data);
@@ -73,9 +73,9 @@ export class AnfitrionService {
     return this.aAnfitrionPublico(anfitrion);
   }
 
-  // quita el rol de Anfitrion (no borra el Usuario!!!!!!!!!!!)
+  // quita el rol de Anfitrion (no borra el Usuario!!!!!!!!!!!!)
   async eliminarAnfitrion(idUsuario: number): Promise<boolean> {
-    const anfitrion = await this.em.findOne(Anfitrion, { usuario: idUsuario });
+    const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any);
     if (!anfitrion) return false;
 
     await this.em.removeAndFlush(anfitrion);

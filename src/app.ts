@@ -49,6 +49,9 @@ async function main() {
         '/api/clases',
         '/api/objetos',
         '/api/tiendas',
+        '/api/jugadores',
+        '/api/anfitriones',
+        '/api/partidas',
       ],
     });
   });

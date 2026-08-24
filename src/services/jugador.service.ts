@@ -37,7 +37,7 @@ export class JugadorService {
 
   // busca un jugador por el idUsuario (que es su clave primaria)
   async obtenerPorId(idUsuario: number): Promise<JugadorPublicoDTO | null> {
-    const jugador = await this.em.findOne(Jugador, { usuario: idUsuario }, { populate: ['usuario'] });
+    const jugador = await this.em.findOne(Jugador, idUsuario as any, { populate: ['usuario'] });
     return jugador ? this.aJugadorPublico(jugador) : null;
   }
 
@@ -50,7 +50,7 @@ export class JugadorService {
     }
 
     // regla 2: no puede registrarse dos veces como Jugador
-    const jugadorExistente = await this.em.findOne(Jugador, { usuario: data.idUsuario });
+    const jugadorExistente = await this.em.findOne(Jugador, data.idUsuario as any);
     if (jugadorExistente) {
       throw new JugadorYaExisteError(data.idUsuario);
     }
@@ -67,7 +67,7 @@ export class JugadorService {
 
   // actualiza el estado de un Jugador existente
   async actualizarJugador(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
-    const jugador = await this.em.findOne(Jugador, { usuario: idUsuario }, { populate: ['usuario'] });
+    const jugador = await this.em.findOne(Jugador, idUsuario as any, { populate: ['usuario'] });
     if (!jugador) return null;
 
     // assign actualiza solo los campos que vienen en data (Partial)
@@ -78,7 +78,7 @@ export class JugadorService {
 
   // quita el rol de Jugador a un Usuario (no borra el Usuario, solo la fila de jugadores)
   async eliminarJugador(idUsuario: number): Promise<boolean> {
-    const jugador = await this.em.findOne(Jugador, { usuario: idUsuario });
+    const jugador = await this.em.findOne(Jugador, idUsuario as any);
     if (!jugador) return false;
 
     await this.em.removeAndFlush(jugador);

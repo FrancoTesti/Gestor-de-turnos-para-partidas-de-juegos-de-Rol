@@ -3,7 +3,7 @@ import { Anfitrion } from './Anfitrion.entity';
 
 @Entity({ tableName: 'partidas' })
 export class Partida {
-  @PrimaryKey({ type: 'number' })
+  @PrimaryKey({ type: 'number', autoincrement: true })
   idPartida!: number;
 
   @Property({ type: 'string', length: 100 })

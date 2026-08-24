@@ -52,7 +52,7 @@ export class PartidaService {
     // regla 1: el Anfitrion debe existir antes de crear la partida
     const anfitrion = await this.em.findOne(
       Anfitrion,
-      { usuario: data.idUsuarioAnfitrion },
+      data.idUsuarioAnfitrion as any,
       { populate: ['usuario'] },
     );
     if (!anfitrion) {
@@ -68,7 +68,7 @@ export class PartidaService {
       limiteJugadores: data.limiteJugadores,
       contrasena: data.esPrivada ? (data.contrasena ?? '') : '', // '' = pública
       anfitrion,
-    });
+    } as any); // 'as any' porque TypeScript no infiere que idPartida es autoincrement
 
     await this.em.flush();
     return this.aPartidaPublica(partida);
