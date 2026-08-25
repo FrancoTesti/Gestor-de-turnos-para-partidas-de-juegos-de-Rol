@@ -17,9 +17,9 @@ export function validar(schema: ZodTypeAny) {
 
     if (!resultado.success) {
       return res.status(400).json({
-        error: 'Datos inválidos',
-        detalle: resultado.error.issues.map((i) => ({
-          campo: i.path.join('.'),
+        message: 'Datos de entrada inválidos',
+        errors: resultado.error.issues.map((i) => ({
+          campo: i.path.join('.') || 'body',
           mensaje: i.message,
         })),
       });

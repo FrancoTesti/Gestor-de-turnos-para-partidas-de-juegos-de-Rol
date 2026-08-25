@@ -14,10 +14,10 @@ export function crearJugadorRouter(em: EntityManager): Router {
 
   // uso arrow functions para evitar el bug de perdida de "this" de Express
   router.get('/', (req, res) => controller.obtenerTodos(req, res));
-  router.get('/:id', (req, res) => controller.obtenerPorId(req as any, res));
+  router.get('/:id', (req, res) => controller.obtenerPorId(req, res));
   router.post('/', (req, res) => controller.crearJugador(req, res));
-  router.put('/:id', (req, res) => controller.actualizarJugador(req as any, res));
-  router.delete('/:id', (req, res) => controller.eliminarJugador(req as any, res));
+  router.put('/:id', (req, res) => controller.actualizarJugador(req, res));
+  router.delete('/:id', (req, res) => controller.eliminarJugador(req, res));
 
   return router;
 }

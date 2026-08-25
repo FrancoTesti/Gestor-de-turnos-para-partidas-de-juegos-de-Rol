@@ -10,6 +10,7 @@ import { EntityManager } from '@mikro-orm/core';
 controla todas las operaciones con la base de datos ( crear, leer,actualizar, borrar). Lo inyectamos en el constructor para poder usarlo */
 
 import { Usuario } from '../entities/Usuario.entity';
+import type { CrearUsuarioDTO } from '../types/usuario.dto';
 /* capa repository: Separa la base de datos del resto de la aplicacion
 Solo este archivo sabe que estamos usando MikroORM (Arquitectura Limpia) */
 export class UsuarioRepository {
@@ -30,7 +31,7 @@ export class UsuarioRepository {
     return this.em.findOne(Usuario, { nickname });
   }
   // arma el objeto de usuario en memoria (todavía no lo guarda en la BD)
-  crear(datos: any): Usuario {
+  crear(datos: CrearUsuarioDTO): Usuario {
     return this.em.create(Usuario, datos);
   }
   // actualiza los datos de un usuario existente en memoria

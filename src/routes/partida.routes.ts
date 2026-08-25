@@ -15,11 +15,11 @@ export function crearPartidaRouter(em: EntityManager): Router {
 
   // /activas SIEMPRE antes que /:id — si no, Express trata "activas" como un ID
   router.get('/activas', (req, res) => controller.obtenerActivas(req, res));
-  router.get('/:id', (req, res) => controller.obtenerPorId(req as any, res));
+  router.get('/:id', (req, res) => controller.obtenerPorId(req, res));
 
   router.post('/', (req, res) => controller.crearPartida(req, res));
-  router.put('/:id', (req, res) => controller.actualizarPartida(req as any, res));
-  router.delete('/:id', (req, res) => controller.eliminarPartida(req as any, res));
+  router.put('/:id', (req, res) => controller.actualizarPartida(req, res));
+  router.delete('/:id', (req, res) => controller.eliminarPartida(req, res));
 
   return router;
 }
