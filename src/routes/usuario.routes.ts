@@ -18,12 +18,12 @@ export function crearUsuarioRouter(em: EntityManager): Router {
   // vinculamos cada endpoint HTTP con el metodo del controlador correspondiente.
   // Usar arrow functions (req, res) => ... soluciona el "bug de pérdida de this" de Express.
   router.get('/', (req, res) => usuarioController.obtenerTodos(req, res));
-  router.get('/:id', (req, res) => usuarioController.obtenerPorId(req as any, res));
+  router.get('/:id', (req, res) => usuarioController.obtenerPorId(req, res));
   
   // Usamos el middleware "validar" ANTES de llegar al controlador
   router.post('/', validar(crearUsuarioSchema), (req, res) => usuarioController.crearUsuario(req, res));
-  router.put('/:id', validar(actualizarUsuarioSchema), (req, res) => usuarioController.actualizarUsuario(req as any, res));
+  router.put('/:id', validar(actualizarUsuarioSchema), (req, res) => usuarioController.actualizarUsuario(req, res));
   
-  router.delete('/:id', (req, res) => usuarioController.eliminarUsuario(req as any, res));
+  router.delete('/:id', (req, res) => usuarioController.eliminarUsuario(req, res));
   return router;
 } 

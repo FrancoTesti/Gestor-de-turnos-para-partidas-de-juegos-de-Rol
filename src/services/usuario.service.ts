@@ -1,4 +1,4 @@
-import { EntityManager } from '@mikro-orm/core';
+import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { Usuario } from '../entities/Usuario.entity';
 import { UsuarioRepository } from '../repositories/usuario.repository';
 import type { ActualizarUsuarioDTO, CrearUsuarioDTO, UsuarioPublicoDTO } from '../types/usuario.dto';
@@ -44,7 +44,14 @@ export class UsuarioService {
   async crearUsuario(data: CrearUsuarioDTO): Promise<UsuarioPublicoDTO> {
     await this.verificarNicknameDisponible(data.nickname); 
     const usuario = this.repo.crear(data);
-    await this.repo.guardarCambios();
+    try {
+      await this.repo.guardarCambios();
+    } catch (error) {
+      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === 'ER_DUP_ENTRY') {
+        throw new NicknameEnUsoError();
+      }
+      throw error;
+    }
     return this.aUsuarioPublico(usuario);
   }
   // Aplica reglas, actualiza los datos y guarda
@@ -55,7 +62,14 @@ export class UsuarioService {
       await this.verificarNicknameDisponible(data.nickname, id);
     }
     this.repo.asignar(usuario, data);
-    await this.repo.guardarCambios();
+    try {
+      await this.repo.guardarCambios();
+    } catch (error) {
+      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === 'ER_DUP_ENTRY') {
+        throw new NicknameEnUsoError();
+      }
+      throw error;
+    }
     return this.aUsuarioPublico(usuario);
   }
   // Busca el usuario y, si existe, manda a borrarlo
