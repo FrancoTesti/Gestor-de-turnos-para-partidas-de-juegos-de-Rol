@@ -27,7 +27,7 @@ const formularioVacio: FormularioObjeto = {
   descripcion: '',
   tipoObjeto: '',
   valor: '0',
-  nivelObjeto: '0',
+  nivelObjeto: '1',
   idTienda: '',
   posicion: '0',
 };
