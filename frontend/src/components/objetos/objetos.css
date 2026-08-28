@@ -1,0 +1,146 @@
+.seccion-header,
+.objeto-filtros,
+.objeto-acciones,
+.objeto-campos-numericos {
+  display: flex;
+  gap: 1rem;
+}
+
+.seccion-header {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.seccion-header h1,
+.objeto-card h3,
+.objeto-detalle h2 {
+  margin: 0.25rem 0;
+}
+
+.objeto-filtros {
+  margin-bottom: 1.25rem;
+}
+
+.objeto-filtros input,
+.objeto-filtros select {
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  color: inherit;
+  background: var(--bg);
+  font: inherit;
+}
+
+.objeto-filtros input {
+  flex: 1;
+}
+
+.objetos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.objeto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.objeto-card {
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.objeto-card.seleccionado {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent);
+}
+
+.objeto-card-contenido {
+  width: 100%;
+  border: 0;
+  padding: 1rem;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.objeto-tipo {
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.objeto-acciones {
+  padding: 0 1rem 1rem;
+}
+
+.objeto-acciones button {
+  flex: 1;
+  border: 0;
+  border-radius: 0.4rem;
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.objeto-acciones .peligro,
+.detalle-error {
+  color: #991b1b;
+}
+
+.objeto-detalle dl {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.objeto-detalle dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.objeto-detalle dt {
+  font-weight: 700;
+}
+
+.objeto-detalle dd {
+  margin: 0;
+}
+
+.objeto-formulario {
+  display: grid;
+  gap: 1rem;
+}
+
+.objeto-campos-numericos > * {
+  flex: 1;
+}
+
+.estado-lista {
+  padding: 2rem;
+  border: 1px dashed var(--border);
+  border-radius: 0.75rem;
+  text-align: center;
+}
+
+@media (max-width: 800px) {
+  .seccion-header,
+  .objeto-filtros,
+  .objeto-campos-numericos {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .objetos-layout {
+    grid-template-columns: 1fr;
+  }
+}

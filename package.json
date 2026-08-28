@@ -5,7 +5,7 @@
     "dev": "nodemon --exec ts-node src/app.ts",
     "start": "node dist/app.js",
     "build": "tsc",
-    "test": "vitest run",
+    "test": "vitest run src",
     "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
     "schema:dump": "ts-node src/valida-entities.ts"
   },

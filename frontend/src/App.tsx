@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import './App.css';
+import ObjetosPage from './components/objetos/ObjetosPage';
 import UsuarioDetalle from './components/usuarios/UsuarioDetalle';
 import UsuarioFormulario, {
   type UsuarioFormData,
@@ -22,6 +23,7 @@ function mensajeDeError(error: unknown): string {
 }
 
 export default function App() {
+  const [modulo, setModulo] = useState<'usuarios' | 'objetos'>('usuarios');
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [usuarioSeleccionado, setUsuarioSeleccionado] = useState<Usuario | null>(null);
   const [usuarioEnEdicion, setUsuarioEnEdicion] = useState<Usuario | undefined>();
@@ -161,8 +163,24 @@ export default function App() {
     }
   }
 
+  if (modulo === 'objetos') {
+    return (
+      <main className="app-container">
+        <nav className="modulo-nav" aria-label="Módulos de administración">
+          <button type="button" onClick={() => setModulo('usuarios')}>Usuarios</button>
+          <button type="button" className="activo" aria-current="page">Objetos</button>
+        </nav>
+        <ObjetosPage />
+      </main>
+    );
+  }
+
   return (
     <main className="app-container">
+      <nav className="modulo-nav" aria-label="Módulos de administración">
+        <button type="button" className="activo" aria-current="page">Usuarios</button>
+        <button type="button" onClick={() => setModulo('objetos')}>Objetos</button>
+      </nav>
       <header className="app-header">
         <div>
           <p className="app-eyebrow">Gestor de turnos para juegos de rol</p>

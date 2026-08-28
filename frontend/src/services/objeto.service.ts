@@ -1,8 +1,17 @@
-import type { Objeto } from '../interfaces.ts';
-
 const OBJETOS_URL = '/api/objetos';
 
-export type CrearObjetoData = Omit<Objeto, 'idObjeto' | 'idPersonaje' | 'numInventario'>;
+export interface ObjetoPublico {
+  idObjeto: number;
+  valor: number;
+  descripcion: string;
+  nombre: string;
+  nivelObjeto: number;
+  tipoObjeto: string;
+  idTienda: number | null;
+  posicion: number;
+}
+
+export type CrearObjetoData = Omit<ObjetoPublico, 'idObjeto'>;
 export type ActualizarObjetoData = Partial<CrearObjetoData>;
 
 async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
@@ -13,27 +22,32 @@ async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
   return respuesta.json() as Promise<T>;
 }
 
-export async function obtenerObjetos(): Promise<Objeto[]> {
+export async function obtenerObjetos(): Promise<ObjetoPublico[]> {
   const respuesta = await fetch(OBJETOS_URL);
-  return procesarRespuesta<Objeto[]>(respuesta);
+  return procesarRespuesta<ObjetoPublico[]>(respuesta);
 }
 
-export async function crearObjeto(data: CrearObjetoData): Promise<Objeto> {
+export async function obtenerObjetoPorId(idObjeto: number): Promise<ObjetoPublico> {
+  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}`);
+  return procesarRespuesta<ObjetoPublico>(respuesta);
+}
+
+export async function crearObjeto(data: CrearObjetoData): Promise<ObjetoPublico> {
   const respuesta = await fetch(OBJETOS_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return procesarRespuesta<Objeto>(respuesta);
+  return procesarRespuesta<ObjetoPublico>(respuesta);
 }
 
-export async function actualizarObjeto(idObjeto: number, data: ActualizarObjetoData): Promise<Objeto> {
+export async function actualizarObjeto(idObjeto: number, data: ActualizarObjetoData): Promise<ObjetoPublico> {
   const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return procesarRespuesta<Objeto>(respuesta);
+  return procesarRespuesta<ObjetoPublico>(respuesta);
 }
 
 export async function eliminarObjeto(idObjeto: number): Promise<void> {
