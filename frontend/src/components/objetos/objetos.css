@@ -121,6 +121,65 @@
   gap: 1rem;
 }
 
+.objeto-formulario .form-group {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.objeto-formulario .form-group > span {
+  font-weight: 700;
+}
+
+.objeto-formulario input,
+.objeto-formulario select,
+.objeto-formulario textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  color: inherit;
+  background: var(--bg);
+  font: inherit;
+}
+
+.objeto-formulario .error-text {
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
+
+.objeto-formulario .form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.objeto-formulario .btn-primary,
+.objeto-formulario .btn-secondary {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.objeto-formulario .btn-primary {
+  color: white;
+  background: var(--accent);
+}
+
+.objeto-formulario .btn-secondary {
+  color: inherit;
+  background: #e2e8f0;
+}
+
+.objeto-formulario .btn-primary:disabled,
+.objeto-formulario .btn-secondary:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
 .objeto-campos-numericos > * {
   flex: 1;
 }
@@ -131,7 +190,6 @@
   border-radius: 0.75rem;
   text-align: center;
 }
-
 @media (max-width: 800px) {
   .seccion-header,
   .objeto-filtros,
