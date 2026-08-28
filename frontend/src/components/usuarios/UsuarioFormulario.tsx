@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import type { Usuario } from '../../interfaces';
+import './usuarios.css';
 
 export type UsuarioFormData = Omit<
   Usuario,
@@ -60,24 +61,33 @@ export default function UsuarioFormulario({
 
   const validar = (): boolean => {
     const nuevosErrores: Errores = {};
+    const nombreUsuario = form.nombreUsuario.trim();
+    const nickname = form.nickname.trim();
+    const contrasena = form.contrasena?.trim() ?? '';
 
-    if (!form.nombreUsuario?.trim()) {
+    if (!nombreUsuario) {
       nuevosErrores.nombreUsuario = "El nombre de usuario es obligatorio.";
-    } else if (form.nombreUsuario.length > 50) {
+    } else if (nombreUsuario.length < 2) {
+      nuevosErrores.nombreUsuario = "Debe tener al menos 2 caracteres.";
+    } else if (nombreUsuario.length > 50) {
       nuevosErrores.nombreUsuario =
         "El nombre de usuario no puede superar los 50 caracteres.";
     }
 
-    if (!esEdicion && !form.contrasena?.trim()) {
+    if (!esEdicion && !contrasena) {
       nuevosErrores.contrasena = "La contraseña es obligatoria.";
-    } else if (form.contrasena && form.contrasena.length > 100) {
+    } else if (contrasena && contrasena.length < 6) {
+      nuevosErrores.contrasena = "La contraseña debe tener al menos 6 caracteres.";
+    } else if (contrasena.length > 100) {
       nuevosErrores.contrasena =
         "La contraseña no puede superar los 100 caracteres.";
     }
 
-    if (!form.nickname?.trim()) {
+    if (!nickname) {
       nuevosErrores.nickname = "El nickname es obligatorio.";
-    } else if (form.nickname.length > 50) {
+    } else if (nickname.length < 3) {
+      nuevosErrores.nickname = "El nickname debe tener al menos 3 caracteres.";
+    } else if (nickname.length > 50) {
       nuevosErrores.nickname =
         "El nickname no puede superar los 50 caracteres.";
     }
@@ -97,7 +107,13 @@ export default function UsuarioFormulario({
 
     setGuardando(true);
     try {
-      const datosAEnviar: UsuarioFormData = { ...form };
+      const datosAEnviar: UsuarioFormData = {
+        ...form,
+        nombreUsuario: form.nombreUsuario.trim(),
+        nickname: form.nickname.trim(),
+        imagen: form.imagen.trim(),
+        contrasena: form.contrasena?.trim(),
+      };
       // En edición, si no se ingresó una nueva contraseña, no la enviamos
       if (esEdicion && !form.contrasena?.trim()) {
         delete datosAEnviar.contrasena;
