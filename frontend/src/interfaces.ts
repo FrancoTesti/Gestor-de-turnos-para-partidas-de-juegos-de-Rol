@@ -4,6 +4,7 @@ export interface Usuario {
   contrasena: string;
   imagen: string;           // link a la imagen
   nickname: string;
+  [key: string]: any;
 }
 
 export interface Jugador {

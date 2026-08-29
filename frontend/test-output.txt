@@ -1,0 +1,376 @@
+
+> frontend@0.0.0 test
+> vitest run
+
+
+ RUN  v4.1.11 c:/Users/salom/OneDrive/Desktop/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/frontend
+
+ ❯ src/components/ui/__tests__/Alert.test.tsx (4 tests | 4 failed) 73ms
+     × debe renderizar mensaje de éxito 44ms
+     × debe renderizar mensaje de error 4ms
+     × debe llamar a onClose después de 3 segundos 3ms
+     × debe tener el tipo correcto en la clase CSS 3ms
+ ❯ src/components/ui/__tests__/Modal.test.tsx (4 tests | 1 failed) 240ms
+     × debe llamar onConfirm cuando click en botón confirmar 26ms
+ ❯ src/pages/__tests__/UsersPage.test.tsx (6 tests | 6 failed) 234ms
+     × debe renderizar la tabla de usuarios 129ms
+     × debe mostrar botón + Nuevo Usuario solo si es Anfitrión 20ms
+     × debe mostrar la tabla con usuarios registrados 32ms
+     × debe permitir crear un nuevo usuario (si es anfitrión) 13ms
+     × debe mostrar stats de usuarios, jugadores y anfitriones 17ms
+     × debe mostrar badges con roles correctos 17ms
+ ❯ src/pages/__tests__/LoginPage.test.tsx (4 tests | 4 failed) 820ms
+     × debe renderizar el formulario de login 422ms
+     × debe mostrar error si usuario no existe 53ms
+     × debe permitir acceder con credenciales válidas 27ms
+     × debe tener link para ir a registro 310ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 15 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/pages/__tests__/LoginPage.test.tsx > LoginPage > debe renderizar el formulario de login
+TestingLibraryElementError: Unable to find an element with the text: /inicia sesión/i. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mstyle[39m=[32m"max-width: 420px; margin: 2rem auto; font-family: sans-serif;"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0mIniciar Sesión[0m
+      [36m</h2>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: flex; flex-direction: column; gap: 1rem;"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Nickname"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Contraseña"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mtype[39m=[32m"password"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; color: black;"[39m
+        [36m>[39m
+          [0mIngresar[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; background: rgb(47, 47, 47);"[39m
+        [36m>[39m
+          [0mIr a Registro[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/__tests__/LoginPage.test.tsx:18:19
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/19]⎯
+
+ FAIL  src/pages/__tests__/LoginPage.test.tsx > LoginPage > debe mostrar error si usuario no existe
+TestingLibraryElementError: Unable to find an element with the placeholder text of: /usuario/i
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mstyle[39m=[32m"max-width: 420px; margin: 2rem auto; font-family: sans-serif;"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0mIniciar Sesión[0m
+      [36m</h2>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: flex; flex-direction: column; gap: 1rem;"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Nickname"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Contraseña"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mtype[39m=[32m"password"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; color: black;"[39m
+        [36m>[39m
+          [0mIngresar[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; background: rgb(47, 47, 47);"[39m
+        [36m>[39m
+          [0mIr a Registro[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/__tests__/LoginPage.test.tsx:26:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/19]⎯
+
+ FAIL  src/pages/__tests__/LoginPage.test.tsx > LoginPage > debe permitir acceder con credenciales válidas
+TestingLibraryElementError: Unable to find an element with the placeholder text of: /usuario/i
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mstyle[39m=[32m"max-width: 420px; margin: 2rem auto; font-family: sans-serif;"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0mIniciar Sesión[0m
+      [36m</h2>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: flex; flex-direction: column; gap: 1rem;"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Nickname"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Contraseña"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mtype[39m=[32m"password"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; color: black;"[39m
+        [36m>[39m
+          [0mIngresar[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; background: rgb(47, 47, 47);"[39m
+        [36m>[39m
+          [0mIr a Registro[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/__tests__/LoginPage.test.tsx:43:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/19]⎯
+
+ FAIL  src/pages/__tests__/LoginPage.test.tsx > LoginPage > debe tener link para ir a registro
+TestingLibraryElementError: Unable to find an accessible element with the role "link" and name `/crear una cuenta/i`
+
+Here are the accessible roles:
+
+  heading:
+
+  Name "Iniciar Sesión":
+  [36m<h2 />[39m
+
+  --------------------------------------------------
+  textbox:
+
+  Name "":
+  [36m<input[39m
+    [33mplaceholder[39m=[32m"Nickname"[39m
+    [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+    [33mvalue[39m=[32m""[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+  button:
+
+  Name "Ingresar":
+  [36m<button[39m
+    [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; color: black;"[39m
+  [36m/>[39m
+
+  Name "Ir a Registro":
+  [36m<button[39m
+    [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; background: rgb(47, 47, 47);"[39m
+  [36m/>[39m
+
+  --------------------------------------------------
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mstyle[39m=[32m"max-width: 420px; margin: 2rem auto; font-family: sans-serif;"[39m
+    [36m>[39m
+      [36m<h2>[39m
+        [0mIniciar Sesión[0m
+      [36m</h2>[39m
+      [36m<div[39m
+        [33mstyle[39m=[32m"display: flex; flex-direction: column; gap: 1rem;"[39m
+      [36m>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Nickname"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<input[39m
+          [33mplaceholder[39m=[32m"Contraseña"[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem;"[39m
+          [33mtype[39m=[32m"password"[39m
+          [33mvalue[39m=[32m""[39m
+        [36m/>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; color: black;"[39m
+        [36m>[39m
+          [0mIngresar[0m
+        [36m</button>[39m
+        [36m<button[39m
+          [33mstyle[39m=[32m"padding: 0.5rem; font-size: 1rem; background: rgb(47, 47, 47);"[39m
+        [36m>[39m
+          [0mIr a Registro[0m
+        [36m</button>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/pages/__tests__/LoginPage.test.tsx:60:33
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/19]⎯
+
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe renderizar la tabla de usuarios
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe mostrar botón + Nuevo Usuario solo si es Anfitrión
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe mostrar la tabla con usuarios registrados
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe permitir crear un nuevo usuario (si es anfitrión)
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe mostrar stats de usuarios, jugadores y anfitriones
+ FAIL  src/pages/__tests__/UsersPage.test.tsx > UsersPage > debe mostrar badges con roles correctos
+TypeError: Cannot read properties of null (reading 'idUsuario')
+ ❯ UsersPage src/pages/UsersPage.tsx:158:32
+ ❯ Object.react_stack_bottom_frame node_modules/react-dom/cjs/react-dom-client.development.js:25904:20
+ ❯ renderWithHooks node_modules/react-dom/cjs/react-dom-client.development.js:7662:22
+ ❯ updateFunctionComponent node_modules/react-dom/cjs/react-dom-client.development.js:10166:19
+ ❯ beginWork node_modules/react-dom/cjs/react-dom-client.development.js:11778:18
+ ❯ runWithFiberInDEV node_modules/react-dom/cjs/react-dom-client.development.js:874:13
+ ❯ performUnitOfWork node_modules/react-dom/cjs/react-dom-client.development.js:17641:22
+ ❯ workLoopSync node_modules/react-dom/cjs/react-dom-client.development.js:17469:41
+ ❯ renderRootSync node_modules/react-dom/cjs/react-dom-client.development.js:17450:11
+ ❯ performWorkOnRoot node_modules/react-dom/cjs/react-dom-client.development.js:16583:35
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/19]⎯
+
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe renderizar mensaje de éxito
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe renderizar mensaje de error
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe llamar a onClose después de 3 segundos
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe tener el tipo correcto en la clase CSS
+TypeError: Cannot read properties of undefined (reading 'useFakeTimers')
+ ❯ src/components/ui/__tests__/Alert.test.tsx:6:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/19]⎯
+
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe renderizar mensaje de éxito
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe renderizar mensaje de error
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe llamar a onClose después de 3 segundos
+ FAIL  src/components/ui/__tests__/Alert.test.tsx > Alert Component > debe tener el tipo correcto en la clase CSS
+TypeError: Cannot read properties of undefined (reading 'runOnlyPendingTimers')
+ ❯ src/components/ui/__tests__/Alert.test.tsx:10:8
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/19]⎯
+
+ FAIL  src/components/ui/__tests__/Modal.test.tsx > Modal Component > debe llamar onConfirm cuando click en botón confirmar
+TestingLibraryElementError: Found multiple elements with the text: Confirmar
+
+Here are the matching elements:
+
+Ignored nodes: comments, script, style
+[36m<h2>[39m
+  [0mConfirmar[0m
+[36m</h2>[39m
+
+Ignored nodes: comments, script, style
+[36m<button[39m
+  [33maria-label[39m=[32m"Confirmar"[39m
+  [33mclass[39m=[32m"btn btn-primary"[39m
+[36m>[39m
+  [0mConfirmar[0m
+[36m</button>[39m
+
+(If this is intentional, then use the `*AllBy*` variant of the query (like `queryAllByText`, `getAllByText`, or `findAllByText`)).
+
+Ignored nodes: comments, script, style
+[36m<body>[39m
+  [36m<div>[39m
+    [36m<div[39m
+      [33mclass[39m=[32m"modal-overlay"[39m
+      [33mrole[39m=[32m"presentation"[39m
+    [36m>[39m
+      [36m<div[39m
+        [33mclass[39m=[32m"modal-content"[39m
+      [36m>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-header"[39m
+        [36m>[39m
+          [36m<h2>[39m
+            [0mConfirmar[0m
+          [36m</h2>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Cerrar"[39m
+            [33mclass[39m=[32m"modal-close"[39m
+          [36m>[39m
+            [0m✕[0m
+          [36m</button>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-body"[39m
+        [36m>[39m
+          [36m<p>[39m
+            [0m¿Continuar?[0m
+          [36m</p>[39m
+        [36m</div>[39m
+        [36m<div[39m
+          [33mclass[39m=[32m"modal-footer"[39m
+        [36m>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Cancelar"[39m
+            [33mclass[39m=[32m"btn btn-secondary"[39m
+          [36m>[39m
+            [0mCancelar[0m
+          [36m</button>[39m
+          [36m<button[39m
+            [33maria-label[39m=[32m"Confirmar"[39m
+            [33mclass[39m=[32m"btn btn-primary"[39m
+          [36m>[39m
+            [0mConfirmar[0m
+          [36m</button>[39m
+        [36m</div>[39m
+      [36m</div>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+[36m</body>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ getElementError node_modules/@testing-library/dom/dist/query-helpers.js:20:35
+ ❯ getMultipleElementsFoundError node_modules/@testing-library/dom/dist/query-helpers.js:23:10
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:55:13
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/ui/__tests__/Modal.test.tsx:54:28
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/19]⎯
+
+
+ Test Files  4 failed | 1 passed (5)
+      Tests  15 failed | 6 passed (21)
+   Start at  20:46:18
+   Duration  11.24s (transform 2.35s, setup 6.89s, import 9.06s, tests 1.66s, environment 27.62s)
+
