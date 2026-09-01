@@ -1,11 +1,13 @@
-import { Entity, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
 import { Clase } from './Clase.entity';
 import { Jugador } from './Jugador.entity';
 import { Partida } from './Partida.entity';
 
 @Entity({ tableName: 'personajes' })
 export class Personaje {
-  @PrimaryKey({ type: 'number' })
+  [OptionalProps]?: 'idPersonaje';
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
   idPersonaje!: number;
 
   @Property({ type: 'string', length: 100 })

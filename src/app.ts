@@ -12,6 +12,7 @@ import { crearTiendaRouter } from './routes/tienda.routes';
 import { crearJugadorRouter } from './routes/jugador.routes';
 import { crearAnfitrionRouter } from './routes/anfitrion.routes';
 import { crearPartidaRouter } from './routes/partida.routes';
+import { crearPersonajeRouter } from './routes/personaje.routes';
 
 async function main() {
   const orm = await MikroORM.init(config);
@@ -45,13 +46,8 @@ async function main() {
       message: 'API del Gestor de Turnos para Juegos de Rol funcionando correctamente',
       timestamp: new Date().toISOString(),
       endpoints: [
-        '/api/usuarios',
-        '/api/clases',
-        '/api/objetos',
-        '/api/tiendas',
-        '/api/jugadores',
-        '/api/anfitriones',
-        '/api/partidas',
+        '/api/usuarios', '/api/clases', '/api/objetos', '/api/tiendas',
+        '/api/jugadores', '/api/anfitriones', '/api/partidas', '/api/personajes',
       ],
     });
   });
@@ -64,8 +60,9 @@ async function main() {
   app.use('/api/jugadores', crearJugadorRouter(orm.em));
   app.use('/api/anfitriones', crearAnfitrionRouter(orm.em));
   app.use('/api/partidas', crearPartidaRouter(orm.em));
+  app.use('/api/personajes', crearPersonajeRouter(orm.em));
 
-  // Cualquier URL que no matchee ninguna ruta -> 404 en JSON
+  // 404
   app.use((req, res) => {
     res.status(404).json({ message: `No existe la ruta ${req.method} ${req.path}` });
   });
@@ -73,15 +70,10 @@ async function main() {
   const port = Number(process.env.PORT ?? 3000);
   app.listen(port, () => {
     console.log(`API escuchando en http://localhost:${port}`);
-    console.log(`Salud: http://localhost:${port}/api/health`);
-    console.log(`Usuarios: GET http://localhost:${port}/api/usuarios`);
-    console.log(`Clases: GET http://localhost:${port}/api/clases`);
-    console.log(`Objetos: GET http://localhost:${port}/api/objetos`);
-    console.log(`Tiendas: GET http://localhost:${port}/api/tiendas`);
     console.log(`Jugadores: GET http://localhost:${port}/api/jugadores`);
     console.log(`Anfitriones: GET http://localhost:${port}/api/anfitriones`);
     console.log(`Partidas: GET http://localhost:${port}/api/partidas`);
-    console.log(`Partidas activas: GET http://localhost:${port}/api/partidas/activas`);
+    console.log(`Personajes: GET http://localhost:${port}/api/personajes`);
   });
 }
 
