@@ -1,7 +1,6 @@
 export interface Usuario {
   idUsuario: number;        // CP
   nombreUsuario: string;
-  contrasena: string;
   imagen: string;           // link a la imagen
   nickname: string;
   [key: string]: any;

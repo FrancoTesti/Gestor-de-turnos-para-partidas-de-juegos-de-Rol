@@ -1,8 +1,10 @@
-import { Entity, PrimaryKey, Property } from '@mikro-orm/core';
+import { Entity, PrimaryKey, Property, OptionalProps } from '@mikro-orm/core';
 
 @Entity({ tableName: 'usuarios' })
 export class Usuario {
-  @PrimaryKey({ type: 'number' })
+  [OptionalProps]?: 'idUsuario';
+
+  @PrimaryKey({ type: 'number', autoincrement: true })
   idUsuario!: number;
 
   @Property({ type: 'string', length: 50 })
