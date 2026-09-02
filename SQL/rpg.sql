@@ -154,6 +154,9 @@ INSERT INTO `partidas` (`idPartida`, `nombre`, `estado`, `limiteJugadores`, `con
 INSERT INTO `personajes` (`idPersonaje`, `nombreFicticio`, `raza`, `xp`, `nivel`, `dinero`, `idClase`, `idUsuarioJugador`, `idPartida`) VALUES 
 (1, 'Arthur', 'Humano', 0, 1, 100, 1, 1, 1);
 
+INSERT INTO `inventarios` (`idPersonaje`, `numInventario`, `cantidadEspacio`) VALUES
+(1, 1, 10);
+
 INSERT INTO `tiendas` (`idTienda`, `claseTienda`, `nombre`, `idClase`) VALUES 
 (1, 'Armeria', 'El Yunque', 1);
 

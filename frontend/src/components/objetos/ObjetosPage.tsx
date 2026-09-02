@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Tienda } from '../../interfaces';
+import type { Personaje, Tienda } from '../../interfaces';
 import {
   actualizarObjeto,
+  comprarObjeto,
   crearObjeto,
   eliminarObjeto,
   obtenerObjetoPorId,
   obtenerObjetos,
   type CrearObjetoData,
+  type ComprarObjetoData,
   type ObjetoPublico,
 } from '../../services/objeto.service';
+import { obtenerPersonajes } from '../../services/personaje.service';
 import { obtenerTiendas } from '../../services/tienda.service';
+import CompraObjetoFormulario from './CompraObjetoFormulario';
 import ObjetoDetalle from './ObjetoDetalle';
 import ObjetoFormulario from './ObjetoFormulario';
 import ObjetoLista from './ObjetoLista';
@@ -24,6 +28,7 @@ function mensajeDeError(error: unknown): string {
 export default function ObjetosPage() {
   const [objetos, setObjetos] = useState<ObjetoPublico[]>([]);
   const [tiendas, setTiendas] = useState<Tienda[]>([]);
+  const [personajes, setPersonajes] = useState<Personaje[]>([]);
   const [seleccionado, setSeleccionado] = useState<ObjetoPublico | null>(null);
   const [enEdicion, setEnEdicion] = useState<ObjetoPublico | undefined>();
   const [vista, setVista] = useState<Vista>('listado');
@@ -34,14 +39,20 @@ export default function ObjetosPage() {
   const [error, setError] = useState<string | null>(null);
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
+  const [compraAbierta, setCompraAbierta] = useState(false);
 
   const cargarDatos = useCallback(async () => {
     setCargando(true);
     setError(null);
     try {
-      const [objetosObtenidos, tiendasObtenidas] = await Promise.all([obtenerObjetos(), obtenerTiendas()]);
+      const [objetosObtenidos, tiendasObtenidas, personajesObtenidos] = await Promise.all([
+        obtenerObjetos(),
+        obtenerTiendas(),
+        obtenerPersonajes(),
+      ]);
       setObjetos(objetosObtenidos);
       setTiendas(tiendasObtenidas);
+      setPersonajes(personajesObtenidos);
     } catch (e) {
       setError(mensajeDeError(e));
     } finally {
@@ -67,6 +78,7 @@ export default function ObjetosPage() {
   }, [busqueda, objetos, tipo]);
 
   async function seleccionar(objeto: ObjetoPublico): Promise<void> {
+    setCompraAbierta(false);
     setCargandoDetalle(true);
     setErrorDetalle(null);
     try {
@@ -115,6 +127,28 @@ export default function ObjetosPage() {
     }
   }
 
+  async function comprar(data: ComprarObjetoData): Promise<void> {
+    if (!seleccionado) return;
+    setError(null);
+    setMensaje(null);
+    try {
+      const resultado = await comprarObjeto(seleccionado.idObjeto, data);
+      setObjetos((actuales) =>
+        actuales.map((objeto) => objeto.idObjeto === resultado.objeto.idObjeto ? resultado.objeto : objeto),
+      );
+      setSeleccionado(resultado.objeto);
+      setPersonajes((actuales) =>
+        actuales.map((personaje) => personaje.idPersonaje === resultado.idPersonaje
+          ? { ...personaje, dinero: resultado.dineroRestante }
+          : personaje),
+      );
+      setCompraAbierta(false);
+      setMensaje(`Compra realizada. Dinero restante: ${resultado.dineroRestante}.`);
+    } catch (e) {
+      setError(mensajeDeError(e));
+    }
+  }
+
   return (
     <section>
       <header className="seccion-header">
@@ -144,7 +178,21 @@ export default function ObjetosPage() {
           <div className="objetos-layout">
             <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={(objeto) => { setEnEdicion(objeto); setVista('formulario'); }} onEliminar={(objeto) => void borrar(objeto)} />
             <aside className="panel-detalle">
-              <ObjetoDetalle objeto={seleccionado} cargando={cargandoDetalle} error={errorDetalle} nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre} />
+              <ObjetoDetalle
+                objeto={seleccionado}
+                cargando={cargandoDetalle}
+                error={errorDetalle}
+                nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
+                onComprar={seleccionado !== null && seleccionado.idTienda !== null ? () => setCompraAbierta(true) : undefined}
+              />
+              {seleccionado && compraAbierta && (
+                <CompraObjetoFormulario
+                  objeto={seleccionado}
+                  personajes={personajes}
+                  onComprar={comprar}
+                  onCancelar={() => setCompraAbierta(false)}
+                />
+              )}
             </aside>
           </div>
         </>

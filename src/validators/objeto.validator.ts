@@ -1,4 +1,4 @@
-import type { ActualizarObjetoDTO, CrearObjetoDTO } from '../types/objeto.dto';
+import type { ActualizarObjetoDTO, ComprarObjetoDTO, CrearObjetoDTO } from '../types/objeto.dto';
 
 export class ErrorValidacionObjeto extends Error {
   constructor(mensaje: string) {
@@ -119,4 +119,34 @@ export function validarActualizacionObjeto(body: unknown): ActualizarObjetoDTO {
   }
 
   return resultado;
+}
+
+export function validarCompraObjeto(body: unknown): ComprarObjetoDTO {
+  if (typeof body !== 'object' || body === null || Array.isArray(body)) {
+    throw new ErrorValidacionObjeto('El cuerpo de la solicitud debe ser un objeto');
+  }
+
+  const payload = body as Record<string, unknown>;
+  const camposPermitidos = new Set(['idPersonaje', 'numInventario', 'posicion']);
+  const campoDesconocido = Object.keys(payload).find((campo) => !camposPermitidos.has(campo));
+  if (campoDesconocido) {
+    throw new ErrorValidacionObjeto(`El campo ${campoDesconocido} no está permitido`);
+  }
+
+  const idPersonaje = Number(payload.idPersonaje);
+  if (!Number.isSafeInteger(idPersonaje) || idPersonaje <= 0) {
+    throw new ErrorValidacionObjeto('El campo idPersonaje debe ser un entero mayor a 0');
+  }
+
+  const numInventario = Number(payload.numInventario);
+  if (!Number.isSafeInteger(numInventario) || numInventario <= 0) {
+    throw new ErrorValidacionObjeto('El campo numInventario debe ser un entero mayor a 0');
+  }
+
+  const posicion = Number(payload.posicion);
+  if (!Number.isSafeInteger(posicion) || posicion < 0) {
+    throw new ErrorValidacionObjeto('El campo posicion debe ser un entero mayor o igual a 0');
+  }
+
+  return { idPersonaje, numInventario, posicion };
 }

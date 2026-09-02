@@ -7,7 +7,7 @@ export default function LoginPage() {
   const [nickname, setNickname] = React.useState('');
   const [contrasena, setContrasena] = React.useState('');
   const [errorLogin, setErrorLogin] = useState('');
-  const { usuarioLogueado, loguearse, mensaje, usuarios } = useUser();
+  const { usuarioLogueado, loguearse, usuarios } = useUser();
   const navigate = useNavigate();
 
   // Si ya está logueado, redirige a dashboard

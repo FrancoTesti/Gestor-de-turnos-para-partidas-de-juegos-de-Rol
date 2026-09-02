@@ -43,7 +43,8 @@ describe('LoginPage', () => {
     fireEvent.change(inputPassword, { target: { value: '123456' } });
     fireEvent.click(btnLogin);
 
-    expect(mockLoguearse).toHaveBeenCalledWith('usuario_inexistente', '123456');
+    expect(screen.getByText('Usuario o contraseña incorrecta')).toBeInTheDocument();
+    expect(mockLoguearse).not.toHaveBeenCalled();
   });
 
   it('debe permitir acceder con credenciales válidas', () => {
