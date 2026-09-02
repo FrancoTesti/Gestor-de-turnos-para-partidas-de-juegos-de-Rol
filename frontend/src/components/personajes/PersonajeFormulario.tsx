@@ -1,6 +1,7 @@
 import { useState, useEffect, type FormEvent } from 'react';
-import type { Personaje, Clase, Partida } from '../../interfaces';
+import type { Personaje, Clase } from '../../interfaces';
 import type { CrearPersonajeData } from '../../services/personaje.service';
+import type { PartidaPublica } from '../../services/partida.service';
 import type { JugadorExtendido } from '../../services/jugador.service';
 import { obtenerJugadores } from '../../services/jugador.service';
 import { obtenerPartidas } from '../../services/partida.service';
@@ -11,7 +12,7 @@ export interface PersonajeFormularioProps {
   personajeInicial?: Personaje | null;
   clasesDisponibles?: Clase[];
   jugadoresDisponibles?: JugadorExtendido[];
-  partidasDisponibles?: Partida[];
+  partidasDisponibles?: PartidaPublica[];
   onGuardar: (data: CrearPersonajeData) => Promise<void>;
   onCancelar: () => void;
 }
@@ -37,7 +38,7 @@ export default function PersonajeFormulario({
 
   const [clasesList, setClasesList] = useState<Clase[]>(clasesDisponibles);
   const [jugadoresList, setJugadoresList] = useState<JugadorExtendido[]>(jugadoresDisponibles);
-  const [partidasList, setPartidasList] = useState<Partida[]>(partidasDisponibles);
+  const [partidasList, setPartidasList] = useState<PartidaPublica[]>(partidasDisponibles);
 
   const [cargandoRef, setCargandoRef] = useState(false);
   const [error, setError] = useState<string | null>(null);

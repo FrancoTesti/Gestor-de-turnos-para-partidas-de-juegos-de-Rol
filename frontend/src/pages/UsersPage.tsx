@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { Alert, Modal, Table, Form, Loading } from '../components/ui';
 import type { FormField } from '../components/ui/Form';
-import type { Usuario, Jugador, Anfitrion } from '../interfaces';
+import type { Usuario } from '../interfaces';
 import './UsersPage.css';
 
 type ViewMode = 'list' | 'form' | 'detail';
@@ -86,11 +86,6 @@ export default function UsersPage() {
     }, 300);
   };
 
-  const handleViewDetail = (user: Usuario) => {
-    setSelectedUser(user);
-    setViewMode('detail');
-  };
-
   const formFields: FormField[] = [
     {
       name: 'nombreUsuario',
@@ -139,7 +134,7 @@ export default function UsersPage() {
     {
       key: 'idUsuario' as const,
       label: 'Rol',
-      render: (value: unknown, item: Usuario) => (
+      render: (_value: unknown, item: Usuario) => (
         <span className={`badge badge-${rolDe(item.idUsuario)}`}>{rolDe(item.idUsuario)}</span>
       ),
     },

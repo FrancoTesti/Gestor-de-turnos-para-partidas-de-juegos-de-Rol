@@ -6,9 +6,10 @@ interface ObjetoDetalleProps {
   nombreTienda?: string;
   cargando?: boolean;
   error?: string | null;
+  onComprar?: () => void;
 }
 
-export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error }: ObjetoDetalleProps) {
+export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error, onComprar }: ObjetoDetalleProps) {
   if (cargando) return <p>Cargando detalle...</p>;
   if (error) return <p className="detalle-error" role="alert">{error}</p>;
   if (!objeto) return <p>Seleccioná un objeto para ver sus datos.</p>;
@@ -22,8 +23,11 @@ export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error }:
         <div><dt>Nivel</dt><dd>{objeto.nivelObjeto}</dd></div>
         <div><dt>Valor</dt><dd>{objeto.valor}</dd></div>
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>
-        <div><dt>Tienda</dt><dd>{nombreTienda ?? 'Sin tienda'}</dd></div>
+        <div><dt>Ubicación</dt><dd>{nombreTienda ?? (objeto.idPersonaje ? `Inventario ${objeto.numInventario} del personaje #${objeto.idPersonaje}` : 'Sin asignar')}</dd></div>
       </dl>
+      {objeto.idTienda !== null && onComprar && (
+        <button className="btn-comprar" type="button" onClick={onComprar}>Comprar objeto</button>
+      )}
     </div>
   );
 }

@@ -4,6 +4,12 @@ import type { Jugador } from '../interfaces';
 
 const JUGADORES_URL = '/api/jugadores';
 
+export interface JugadorExtendido extends Jugador {
+  nombreUsuario: string;
+  nickname: string;
+  imagen: string;
+}
+
 // funcion reutilizable: procesa la respuesta del fetch y lanza error si algo salió mal
 async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
   if (!respuesta.ok) {
@@ -20,38 +26,38 @@ export type CrearJugadorData = {
 };
 
 // GET /api/jugadores — trae todos los jugadores
-export async function obtenerJugadores(): Promise<Jugador[]> {
+export async function obtenerJugadores(): Promise<JugadorExtendido[]> {
   const respuesta = await fetch(JUGADORES_URL);
-  return procesarRespuesta<Jugador[]>(respuesta);
+  return procesarRespuesta<JugadorExtendido[]>(respuesta);
 }
 
 // GET /api/jugadores/:id — trae un jugador por su idUsuario
-export async function obtenerJugadorPorId(idUsuario: number): Promise<Jugador> {
+export async function obtenerJugadorPorId(idUsuario: number): Promise<JugadorExtendido> {
   const respuesta = await fetch(`${JUGADORES_URL}/${idUsuario}`);
-  return procesarRespuesta<Jugador>(respuesta);
+  return procesarRespuesta<JugadorExtendido>(respuesta);
 }
 
 // POST /api/jugadores — registra a un usuario como jugador
-export async function crearJugador(data: CrearJugadorData): Promise<Jugador> {
+export async function crearJugador(data: CrearJugadorData): Promise<JugadorExtendido> {
   const respuesta = await fetch(JUGADORES_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return procesarRespuesta<Jugador>(respuesta);
+  return procesarRespuesta<JugadorExtendido>(respuesta);
 }
 
 // PUT /api/jugadores/:id — actualiza el estado de un jugador
 export async function actualizarJugador(
   idUsuario: number,
   data: Partial<CrearJugadorData>,
-): Promise<Jugador> {
+): Promise<JugadorExtendido> {
   const respuesta = await fetch(`${JUGADORES_URL}/${idUsuario}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(data),
   });
-  return procesarRespuesta<Jugador>(respuesta);
+  return procesarRespuesta<JugadorExtendido>(respuesta);
 }
 
 // DELETE /api/jugadores/:id — quita el rol de jugador

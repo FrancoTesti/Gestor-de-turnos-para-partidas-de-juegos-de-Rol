@@ -9,6 +9,7 @@ export function crearObjetoRouter(em: EntityManager): Router {
   const controller = new ObjetoController(service);
 
   router.get('/', (req, res) => controller.obtenerTodos(req, res));
+  router.post('/:id/comprar', (req, res) => controller.comprarObjeto(req, res));
   router.get('/:id', (req, res) => controller.obtenerPorId(req, res));
   router.post('/', (req, res) => controller.crearObjeto(req, res));
   router.put('/:id', (req, res) => controller.actualizarObjeto(req, res));

@@ -41,7 +41,7 @@ describe('UsersPage', () => {
 
   it('debe mostrar botón + Nuevo Usuario solo si es Anfitrión', () => {
     // El usuario logueado default es "admin" que es anfitrión
-    const { rerender } = render(<UsersPageWrapper />);
+    render(<UsersPageWrapper />);
 
     // Debe estar visible para admin (anfitrión)
     const btnNuevoUsuario = screen.getByText('+ Nuevo Usuario');

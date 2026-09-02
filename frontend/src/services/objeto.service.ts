@@ -8,11 +8,26 @@ export interface ObjetoPublico {
   nivelObjeto: number;
   tipoObjeto: string;
   idTienda: number | null;
+  idPersonaje: number | null;
+  numInventario: number | null;
   posicion: number;
 }
 
-export type CrearObjetoData = Omit<ObjetoPublico, 'idObjeto'>;
+export type CrearObjetoData = Omit<ObjetoPublico, 'idObjeto' | 'idPersonaje' | 'numInventario'>;
 export type ActualizarObjetoData = Partial<CrearObjetoData>;
+
+export interface ComprarObjetoData {
+  idPersonaje: number;
+  numInventario: number;
+  posicion: number;
+}
+
+export interface ResultadoCompraObjeto {
+  objeto: ObjetoPublico;
+  idPersonaje: number;
+  numInventario: number;
+  dineroRestante: number;
+}
 
 async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
   if (!respuesta.ok) {
@@ -57,4 +72,16 @@ export async function eliminarObjeto(idObjeto: number): Promise<void> {
   if (!respuesta.ok) {
     await procesarRespuesta<never>(respuesta);
   }
+}
+
+export async function comprarObjeto(
+  idObjeto: number,
+  data: ComprarObjetoData,
+): Promise<ResultadoCompraObjeto> {
+  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}/comprar`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return procesarRespuesta<ResultadoCompraObjeto>(respuesta);
 }

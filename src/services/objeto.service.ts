@@ -1,7 +1,64 @@
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { Inventario } from '../entities/Inventario.entity';
 import { Objeto } from '../entities/Objeto.entity';
+import { Personaje } from '../entities/Personaje.entity';
 import { Tienda } from '../entities/Tienda.entity';
-import type { ActualizarObjetoDTO, CrearObjetoDTO, ObjetoPublicoDTO } from '../types/objeto.dto';
+import type {
+  ActualizarObjetoDTO,
+  ComprarObjetoDTO,
+  CrearObjetoDTO,
+  ObjetoPublicoDTO,
+  ResultadoCompraObjetoDTO,
+} from '../types/objeto.dto';
+
+export class ObjetoNoEncontradoError extends Error {
+  constructor() {
+    super('Objeto no encontrado');
+    this.name = 'ObjetoNoEncontradoError';
+  }
+}
+
+export class ObjetoNoDisponibleError extends Error {
+  constructor() {
+    super('El objeto no está disponible para comprar');
+    this.name = 'ObjetoNoDisponibleError';
+  }
+}
+
+export class PersonajeNoEncontradoError extends Error {
+  constructor() {
+    super('Personaje no encontrado');
+    this.name = 'PersonajeNoEncontradoError';
+  }
+}
+
+export class InventarioNoEncontradoError extends Error {
+  constructor() {
+    super('El inventario indicado no pertenece al personaje');
+    this.name = 'InventarioNoEncontradoError';
+  }
+}
+
+export class DineroInsuficienteError extends Error {
+  constructor() {
+    super('El personaje no tiene dinero suficiente');
+    this.name = 'DineroInsuficienteError';
+  }
+}
+
+export class InventarioLlenoError extends Error {
+  constructor() {
+    super('El inventario no tiene espacio disponible');
+    this.name = 'InventarioLlenoError';
+  }
+}
+
+export class PosicionOcupadaError extends Error {
+  constructor() {
+    super('La posición elegida ya está ocupada');
+    this.name = 'PosicionOcupadaError';
+  }
+}
 
 export class ObjetoService {
   private em: EntityManager;
@@ -11,12 +68,12 @@ export class ObjetoService {
   }
 
   async obtenerTodos(): Promise<ObjetoPublicoDTO[]> {
-    const objetos = await this.em.find(Objeto, {}, { populate: ['tienda'] });
+    const objetos = await this.em.find(Objeto, {}, { populate: ['tienda', 'inventario.personaje'] });
     return objetos.map((o) => this.aObjetoPublico(o));
   }
 
   async obtenerPorId(id: number): Promise<ObjetoPublicoDTO | null> {
-    const objeto = await this.em.findOne(Objeto, { idObjeto: id }, { populate: ['tienda'] });
+    const objeto = await this.em.findOne(Objeto, { idObjeto: id }, { populate: ['tienda', 'inventario.personaje'] });
     return objeto ? this.aObjetoPublico(objeto) : null;
   }
 
@@ -67,6 +124,57 @@ export class ObjetoService {
     return true;
   }
 
+  async comprarObjeto(idObjeto: number, data: ComprarObjetoDTO): Promise<ResultadoCompraObjetoDTO> {
+    return this.em.transactional(async (em) => {
+      const objeto = await em.findOne(
+        Objeto,
+        { idObjeto },
+        { populate: ['tienda', 'inventario.personaje'], lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+      if (!objeto) throw new ObjetoNoEncontradoError();
+      if (!objeto.tienda || objeto.inventario) throw new ObjetoNoDisponibleError();
+
+      const personaje = await em.findOne(
+        Personaje,
+        { idPersonaje: data.idPersonaje },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+      if (!personaje) throw new PersonajeNoEncontradoError();
+
+      const inventario = await em.findOne(
+        Inventario,
+        { personaje, numInventario: data.numInventario },
+        { populate: ['personaje'], lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+      if (!inventario) throw new InventarioNoEncontradoError();
+      if (personaje.dinero < objeto.valor) throw new DineroInsuficienteError();
+
+      const objetosGuardados = await em.count(Objeto, { inventario });
+      if (objetosGuardados >= inventario.cantidadEspacio) throw new InventarioLlenoError();
+
+      const objetoEnPosicion = await em.findOne(
+        Objeto,
+        { inventario, posicion: data.posicion },
+        { lockMode: LockMode.PESSIMISTIC_WRITE },
+      );
+      if (objetoEnPosicion) throw new PosicionOcupadaError();
+
+      personaje.dinero -= objeto.valor;
+      objeto.tienda = null;
+      objeto.inventario = inventario;
+      objeto.posicion = data.posicion;
+
+      await em.flush();
+
+      return {
+        objeto: this.aObjetoPublico(objeto),
+        idPersonaje: personaje.idPersonaje,
+        numInventario: inventario.numInventario,
+        dineroRestante: personaje.dinero,
+      };
+    });
+  }
+
   private aObjetoPublico(o: Objeto): ObjetoPublicoDTO {
     return {
       idObjeto: o.idObjeto,
@@ -76,6 +184,8 @@ export class ObjetoService {
       valor: o.valor,
       nivelObjeto: o.nivelObjeto,
       idTienda: o.tienda ? o.tienda.idTienda : null,
+      idPersonaje: o.inventario ? o.inventario.personaje.idPersonaje : null,
+      numInventario: o.inventario ? o.inventario.numInventario : null,
       posicion: o.posicion,
     };
   }

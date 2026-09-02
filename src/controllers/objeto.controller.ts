@@ -1,8 +1,18 @@
 import { type Request, type Response } from 'express';
-import { ObjetoService } from '../services/objeto.service';
+import {
+  DineroInsuficienteError,
+  InventarioLlenoError,
+  InventarioNoEncontradoError,
+  ObjetoNoDisponibleError,
+  ObjetoNoEncontradoError,
+  ObjetoService,
+  PersonajeNoEncontradoError,
+  PosicionOcupadaError,
+} from '../services/objeto.service';
 import {
   ErrorValidacionObjeto,
   validarActualizacionObjeto,
+  validarCompraObjeto,
   validarCreacionObjeto,
 } from '../validators/objeto.validator';
 
@@ -110,6 +120,44 @@ export class ObjetoController {
     } catch (error) {
       console.error('Error al eliminar el objeto:', error);
       res.status(500).json({ message: 'Error al eliminar el objeto' });
+    }
+  }
+
+  async comprarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+    const id = obtenerId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ message: 'ID inválido' });
+      return;
+    }
+
+    try {
+      const data = validarCompraObjeto(req.body);
+      const resultado = await this.objetoService.comprarObjeto(id, data);
+      res.json(resultado);
+    } catch (error) {
+      if (error instanceof ErrorValidacionObjeto) {
+        res.status(400).json({ message: error.message });
+        return;
+      }
+      if (
+        error instanceof ObjetoNoEncontradoError ||
+        error instanceof PersonajeNoEncontradoError ||
+        error instanceof InventarioNoEncontradoError
+      ) {
+        res.status(404).json({ message: error.message });
+        return;
+      }
+      if (
+        error instanceof ObjetoNoDisponibleError ||
+        error instanceof DineroInsuficienteError ||
+        error instanceof InventarioLlenoError ||
+        error instanceof PosicionOcupadaError
+      ) {
+        res.status(409).json({ message: error.message });
+        return;
+      }
+      console.error('Error al comprar el objeto:', error);
+      res.status(500).json({ message: 'Error al comprar el objeto' });
     }
   }
 }

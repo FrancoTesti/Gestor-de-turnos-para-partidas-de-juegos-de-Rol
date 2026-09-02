@@ -116,6 +116,73 @@
   margin: 0;
 }
 
+.btn-comprar {
+  width: 100%;
+  border: 0;
+  border-radius: 0.5rem;
+  margin-top: 1rem;
+  padding: 0.7rem 1rem;
+  color: white;
+  background: #15803d;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+}
+
+.btn-comprar:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+
+.compra-formulario {
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.compra-formulario h3,
+.compra-precio {
+  margin: 0;
+}
+
+.compra-formulario label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 700;
+}
+
+.compra-formulario input,
+.compra-formulario select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  padding: 0.65rem;
+  color: inherit;
+  background: var(--bg);
+  font: inherit;
+}
+
+.compra-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.compra-acciones .btn-comprar {
+  margin-top: 0;
+}
+
+.compra-acciones button:not(.btn-comprar) {
+  border: 0;
+  border-radius: 0.5rem;
+  padding: 0.7rem;
+  cursor: pointer;
+  font: inherit;
+}
+
 .objeto-formulario {
   display: grid;
   gap: 1rem;
