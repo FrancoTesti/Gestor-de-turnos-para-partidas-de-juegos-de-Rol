@@ -1,6 +1,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Clase } from '../entities/Clase.entity';
 import { Tienda } from '../entities/Tienda.entity';
+import { ErrorValidacionTienda } from '../validators/tienda.validator';
 import type { ActualizarTiendaDTO, CrearTiendaDTO, TiendaPublicaDTO } from '../types/tienda.dto';
 
 export class TiendaService {
@@ -24,6 +25,7 @@ export class TiendaService {
     let clase: Clase | null = null;
     if (data.idClase != null) {
       clase = await this.em.findOne(Clase, { idClase: data.idClase });
+      if (!clase) throw new ErrorValidacionTienda('La clase indicada no existe');
     }
 
     const tienda = this.em.create(Tienda, {
@@ -42,6 +44,7 @@ export class TiendaService {
 
     if (data.idClase !== undefined) {
       tienda.clase = data.idClase ? await this.em.findOne(Clase, { idClase: data.idClase }) : null;
+      if (data.idClase && !tienda.clase) throw new ErrorValidacionTienda('La clase indicada no existe');
     }
 
     if (data.nombre !== undefined) tienda.nombre = data.nombre;

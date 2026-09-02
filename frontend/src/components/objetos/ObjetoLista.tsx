@@ -6,8 +6,8 @@ interface ObjetoListaProps {
   seleccionadoId?: number;
   cargando?: boolean;
   onSeleccionar: (objeto: ObjetoPublico) => void;
-  onEditar: (objeto: ObjetoPublico) => void;
-  onEliminar: (objeto: ObjetoPublico) => void;
+  onEditar?: (objeto: ObjetoPublico) => void;
+  onEliminar?: (objeto: ObjetoPublico) => void;
 }
 
 export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSeleccionar, onEditar, onEliminar }: ObjetoListaProps) {
@@ -24,8 +24,8 @@ export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSelec
             <p>Nivel {objeto.nivelObjeto} · Valor {objeto.valor}</p>
           </button>
           <div className="objeto-acciones">
-            <button type="button" onClick={() => onEditar(objeto)}>Editar</button>
-            <button type="button" className="peligro" onClick={() => onEliminar(objeto)}>Eliminar</button>
+            {onEditar && objeto.idPersonaje === null && <button type="button" onClick={() => onEditar(objeto)}>Editar</button>}
+            {onEliminar && objeto.idPersonaje === null && <button type="button" className="peligro" onClick={() => onEliminar(objeto)}>Eliminar</button>}
           </div>
         </article>
       ))}

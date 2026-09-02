@@ -1,6 +1,7 @@
 // partida.controller.ts — Recibe las peticiones HTTP, llama al service
 // y responde con el código y datos correctos. No tiene lógica de negocio.
 import { type Request, type Response } from 'express';
+import { persistenceError } from './persistence-error';
 import {
   AnfitrionNoEncontradoError,
   PartidaService,
@@ -14,6 +15,7 @@ import {
 type IdParams = { id: string };
 
 function responderError(error: unknown, res: Response, mensajeInterno: string): void {
+  if (persistenceError(error, res)) return;
   if (error instanceof ErrorValidacionPartida) {
     res.status(400).json({ message: error.message });
     return;

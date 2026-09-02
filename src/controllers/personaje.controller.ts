@@ -1,4 +1,5 @@
 import { type Request, type Response } from 'express';
+import { persistenceError } from './persistence-error';
 import { PersonajeService, ErrorReferenciaNoEncontrada } from '../services/personaje.service';
 import {
   ErrorValidacionPersonaje,
@@ -119,6 +120,8 @@ export class PersonajeController {
       }
       res.status(204).send();
     } catch (error) {
+      if (error instanceof ErrorValidacionPersonaje) { res.status(409).json({ message: error.message }); return; }
+      if (persistenceError(error, res)) return;
       console.error('Error al eliminar el personaje:', error);
       res.status(500).json({ message: 'Error al eliminar el personaje' });
     }

@@ -1,11 +1,13 @@
 import { type Request, type Response } from 'express';
 import { NicknameEnUsoError, UsuarioService } from '../services/usuario.service';
+import { ForeignKeyConstraintViolationException } from '@mikro-orm/core';
 
 type IdParams = {
   id: string;
 };
 
 function responderError(error: unknown, res: Response, mensajeInterno: string): void {
+  if (error instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'La cuenta tiene personajes o partidas relacionados. Resolvé esas relaciones antes de eliminarla.' }); return; }
   if (error instanceof NicknameEnUsoError) {
     res.status(409).json({ message: error.message });
     return;

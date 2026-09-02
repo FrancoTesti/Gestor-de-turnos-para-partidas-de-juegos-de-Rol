@@ -6,6 +6,8 @@ import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import UsersPage from './pages/UsersPage';
+import ModulePage from './pages/ModulePage';
+import ProfilesPage from './pages/ProfilesPage';
 import './App.css';
 
 export default function App() {
@@ -20,6 +22,14 @@ export default function App() {
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/objects" element={<ObjetosPage />} />
+            <Route path="/classes" element={<ModulePage key="clases" resource="clases" />} />
+            <Route path="/stores" element={<ModulePage key="tiendas" resource="tiendas" />} />
+            <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
+            <Route path="/characters" element={<ModulePage key="personajes" resource="personajes" />} />
+            <Route path="/sessions" element={<ModulePage key="sesiones" resource="sesiones" />} />
+            <Route path="/missions" element={<ModulePage key="misiones" resource="misiones" />} />
+            <Route path="/inventory" element={<ModulePage key="inventarios" resource="inventarios" />} />
+            <Route path="/profiles" element={<ProfilesPage />} />
           </Route>
 
           <Route path="/" element={<Navigate to="/login" replace />} />

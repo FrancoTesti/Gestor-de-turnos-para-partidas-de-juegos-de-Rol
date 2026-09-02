@@ -9,16 +9,20 @@ export default function RegisterPage() {
   const [tipo, setTipo] = React.useState<'jugador' | 'anfitrion'>('jugador');
   const { registrarUsuario, mensaje } = useUser();
   const navigate = useNavigate();
+  const [error, setError] = React.useState('');
+  const [busy, setBusy] = React.useState(false);
 
-  const handleRegister = () => {
-    registrarUsuario(nombreUsuario, nickname, contrasena, tipo);
-    // Después de registrar, vuelve al login
-    setTimeout(() => navigate('/login'), 500);
+  const handleRegister = async () => {
+    setBusy(true); setError('');
+    try { await registrarUsuario(nombreUsuario, nickname, contrasena, tipo); navigate('/login'); }
+    catch (e) { setError(e instanceof Error ? e.message : 'No se pudo registrar'); }
+    finally { setBusy(false); }
   };
 
   return (
     <div style={{ maxWidth: 420, margin: '2rem auto', fontFamily: 'sans-serif' }}>
       <h2>Registrarse</h2>
+      {error && <p role="alert">{error}</p>}
 
       {mensaje && (
         <p style={{ background: '#eee', padding: '0.5rem', borderRadius: 4 }}>
@@ -67,7 +71,7 @@ export default function RegisterPage() {
           </label>
         </fieldset>
 
-        <button onClick={handleRegister} style={{ padding: '0.5rem', fontSize: '1rem' }}>
+        <button disabled={busy} onClick={handleRegister} style={{ padding: '0.5rem', fontSize: '1rem' }}>
           Registrar
         </button>
         <button

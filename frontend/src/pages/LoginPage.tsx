@@ -7,7 +7,8 @@ export default function LoginPage() {
   const [nickname, setNickname] = React.useState('');
   const [contrasena, setContrasena] = React.useState('');
   const [errorLogin, setErrorLogin] = useState('');
-  const { usuarioLogueado, loguearse, usuarios } = useUser();
+  const { usuarioLogueado, loguearse } = useUser();
+  const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
   // Si ya está logueado, redirige a dashboard
@@ -25,23 +26,16 @@ export default function LoginPage() {
     }
   }, [errorLogin]);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!nickname || !contrasena) {
       setErrorLogin('Completa todos los campos');
       return;
     }
     
-    const usuarioEncontrado = usuarios.find(
-      (u) => u.nickname === nickname && u.contrasena === contrasena
-    );
-
-    if (!usuarioEncontrado) {
-      setErrorLogin('Usuario o contraseña incorrecta');
-      return;
-    }
-
-    loguearse(nickname, contrasena);
-    setTimeout(() => navigate('/dashboard'), 500);
+    setBusy(true); setErrorLogin('');
+    try { await loguearse(nickname, contrasena); navigate('/dashboard'); }
+    catch (e) { setErrorLogin(e instanceof Error ? e.message : 'No se pudo iniciar sesión'); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -70,7 +64,7 @@ export default function LoginPage() {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
           style={{ padding: '0.5rem', fontSize: '1rem' }}
         />
-        <button onClick={handleLogin} style={{ padding: '0.5rem', fontSize: '1rem', color: 'black' }}>
+        <button disabled={busy} onClick={handleLogin} style={{ padding: '0.5rem', fontSize: '1rem', color: 'black' }}>
           Ingresar
         </button>
         <button

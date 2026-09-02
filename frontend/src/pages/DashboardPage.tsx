@@ -1,13 +1,10 @@
-import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 
 export default function DashboardPage() {
   const { usuarioLogueado, usuarios, jugadores, anfitriones, rolDe } = useUser();
-  const navigate = useNavigate();
 
   // Si no está logueado, redirige a login
   if (!usuarioLogueado) {
-    navigate('/login');
     return null;
   }
 

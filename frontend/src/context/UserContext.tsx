@@ -1,113 +1,61 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { Usuario, Jugador, Anfitrion } from '../interfaces';
-
+import { api, ApiError } from '../services/api';
+interface Session { usuario: Usuario; roles: { idUsuario: number; jugador: boolean; anfitrion: boolean } }
 interface UserContextType {
-  usuarios: Usuario[];
-  jugadores: Jugador[];
-  anfitriones: Anfitrion[];
-  usuarioLogueado: Usuario | null;
-  mensaje: string;
-  registrarUsuario: (nombreUsuario: string, nickname: string, contrasena: string, tipo: 'jugador' | 'anfitrion') => void;
-  loguearse: (nickname: string, contrasena: string) => void;
-  logout: () => void;
-  limpiarMensaje: () => void;
-  rolDe: (idUsuario: number) => 'jugador' | 'anfitrion' | 'usuario';
+  usuarios: Usuario[]; jugadores: Jugador[]; anfitriones: Anfitrion[];
+  usuarioLogueado: Usuario | null; mensaje: string; cargandoSesion: boolean;
+  registrarUsuario: (nombre: string, nickname: string, password: string, tipo: 'jugador' | 'anfitrion') => Promise<void>;
+  loguearse: (nickname: string, password: string) => Promise<void>;
+  logout: () => Promise<void>; limpiarMensaje: () => void; recargar: () => Promise<void>;
+  rolDe: (id: number) => 'jugador' | 'anfitrion' | 'usuario';
 }
-
 const UserContext = createContext<UserContextType | undefined>(undefined);
-
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export function UserProvider({ children }: { children: ReactNode }) {
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [jugadores, setJugadores] = useState<Jugador[]>([]);
   const [anfitriones, setAnfitriones] = useState<Anfitrion[]>([]);
-  const [usuarioLogueado, setUsuarioLogueado] = useState<Usuario | null>(null);
-  const [mensaje, setMensaje] = useState<string>('');
-  const [proximoId, setProximoId] = useState(1);
-
-  const rolDe = (idUsuario: number): 'jugador' | 'anfitrion' | 'usuario' => {
-    // Primero preguntamos por el rol más importante / con más permisos
-    if (anfitriones.some((a: Anfitrion) => a.idUsuario === idUsuario)) return 'anfitrion';
-    if (jugadores.some((j: Jugador) => j.idUsuario === idUsuario)) return 'jugador';
+  const [session, setSession] = useState<Session | null>(null);
+  const [cargandoSesion, setCargandoSesion] = useState(true);
+  const [mensaje, setMensaje] = useState('');
+  const recargar = useCallback(async () => {
+    const [u, j, a] = await Promise.all([api<Usuario[]>('/usuarios'), api<Jugador[]>('/jugadores'), api<Anfitrion[]>('/anfitriones')]);
+    setUsuarios(u); setJugadores(j); setAnfitriones(a);
+    setSession(prev => prev ? { ...prev, usuario: u.find(x => x.idUsuario === prev.usuario.idUsuario) ?? prev.usuario } : null);
+  }, []);
+  useEffect(() => {
+    let active = true;
+    api<Session>('/auth/me').then(async s => {
+      if (active) { setSession(s); await recargar(); }
+    }).catch(error => {
+      if (active && !(error instanceof ApiError && error.status === 401)) setMensaje('No se pudo conectar con el servidor. Reintentá al iniciar sesión.');
+    }).finally(() => { if (active) setCargandoSesion(false); });
+    return () => { active = false; };
+  }, [recargar]);
+  const limpiarMensaje = useCallback(() => setMensaje(''), []);
+  const registrarUsuario = async (nombreUsuario: string, nickname: string, contrasena: string, tipo: 'jugador' | 'anfitrion') => {
+    await api('/auth/register', 'POST', { nombreUsuario, nickname, contrasena, tipo });
+    if (session) await recargar();
+    setMensaje('Cuenta creada. Ya podés iniciar sesión.');
+  };
+  const loguearse = async (nickname: string, contrasena: string) => {
+    const s = await api<Session>('/auth/login', 'POST', { nickname, contrasena });
+    setSession(s); await recargar(); setMensaje(`Bienvenido, ${s.usuario.nickname}.`);
+  };
+  const logout = async () => {
+    await api('/auth/logout', 'POST');
+    setSession(null); setUsuarios([]); setJugadores([]); setAnfitriones([]); setMensaje('Sesión cerrada.');
+  };
+  const rolDe = (id: number) => {
+    if (anfitriones.some(a => a.idUsuario === id)) return 'anfitrion';
+    if (jugadores.some(j => j.idUsuario === id)) return 'jugador';
     return 'usuario';
   };
-
-  const registrarUsuario = (
-    nombreUsuario: string,
-    nickname: string,
-    contrasena: string,
-    tipo: 'jugador' | 'anfitrion'
-  ) => {
-    const yaExiste = usuarios.some((u: Usuario) => u.nickname === nickname);
-    if (yaExiste) {
-      setMensaje('Ese nickname ya está en uso.');
-      return;
-    }
-
-    const idUsuario = proximoId;
-    setProximoId(proximoId + 1);
-
-    setUsuarios((prev: Usuario[]) => [
-      ...prev,
-      { idUsuario, nombreUsuario, contrasena, imagen: '', nickname },
-    ]);
-
-    if (tipo === 'jugador') {
-      setJugadores((prev: Jugador[]) => [...prev, { idUsuario, estado: true }]);
-    } else {
-      setAnfitriones((prev: Anfitrion[]) => [
-        ...prev,
-        { idUsuario, cantPartidasActuales: 0, karma: 0 },
-      ]);
-    }
-
-    setMensaje(`${tipo === 'jugador' ? 'Jugador' : 'Anfitrión'} registrado con éxito.`);
-  };
-
-  const loguearse = (nickname: string, contrasena: string) => {
-    const encontrado = usuarios.find(
-      (u: Usuario) => u.nickname === nickname && u.contrasena === contrasena
-    );
-    if (encontrado) {
-      setUsuarioLogueado(encontrado);
-      setMensaje(`Bienvenido ${rolDe(encontrado.idUsuario)} ${encontrado.nickname}.`);
-    } else {
-      setMensaje('Usuario no encontrado.');
-    }
-  };
-
-  const logout = () => {
-    setUsuarioLogueado(null);
-    setMensaje('Sesión cerrada.');
-  };
-
-  const limpiarMensaje = () => {
-    setMensaje('');
-  };
-
-  return (
-    <UserContext.Provider
-      value={{
-        usuarios,
-        jugadores,
-        anfitriones,
-        usuarioLogueado,
-        mensaje,
-        registrarUsuario,
-        loguearse,
-        logout,
-        limpiarMensaje,
-        rolDe,
-      }}
-    >
-      {children}
-    </UserContext.Provider>
-  );
-};
-
-export const useUser = () => {
-  const context = useContext(UserContext);
-  if (context === undefined) {
-    throw new Error('useUser debe ser usado dentro de UserProvider');
-  }
-  return context;
-};
+  return <UserContext.Provider value={{ usuarios, jugadores, anfitriones, usuarioLogueado: session?.usuario ?? null, mensaje, cargandoSesion, registrarUsuario, loguearse, logout, limpiarMensaje, rolDe, recargar }}>{children}</UserContext.Provider>;
+}
+// eslint-disable-next-line react-refresh/only-export-components
+export function useUser() {
+  const value = useContext(UserContext);
+  if (!value) throw new Error('useUser debe ser usado dentro de UserProvider');
+  return value;
+}

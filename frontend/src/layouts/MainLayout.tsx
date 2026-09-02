@@ -1,48 +1,31 @@
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
 import './MainLayout.css';
-import { useEffect, useState } from 'react';
 
 export default function MainLayout() {
-  const { usuarioLogueado, logout, mensaje, limpiarMensaje } = useUser();
+  const { usuarioLogueado, logout, mensaje, limpiarMensaje, cargandoSesion } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
-  const [showAlert, setShowAlert] = useState(false);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try { await logout(); navigate('/login'); }
+    catch { window.alert('No se pudo cerrar la sesión. Reintentá.'); }
   };
 
-  // Auto-limpiar mensaje después de 3 segundos
-  useEffect(() => {
-    if (mensaje) {
-      setShowAlert(true);
-      const timer = setTimeout(() => {
-        setShowAlert(false);
-        limpiarMensaje();
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [mensaje, limpiarMensaje]);
-
   // Solo mostrar layout si está logueado
-  if (!usuarioLogueado) {
-    navigate('/login');
-    return null;
-  }
+  if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
+  if (!usuarioLogueado) return <Navigate to="/login" replace />;
 
   return (
     <div className="main-layout">
       {/* Alert global */}
-      {showAlert && mensaje && (
+      {mensaje && (
         <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 999 }}>
           <Alert
             type="success"
             message={mensaje}
             onClose={() => {
-              setShowAlert(false);
               limpiarMensaje();
             }}
           />
@@ -66,6 +49,7 @@ export default function MainLayout() {
       <div className="layout-container">
         <aside className="sidebar">
           <ul className="nav-menu">
+            {[['/classes', 'Clases'], ['/stores', 'Tiendas'], ['/sessions', 'Sesiones'], ['/missions', 'Misiones'], ['/inventory', 'Inventarios'], ['/profiles', 'Perfiles']].map(([path, label]) => <li key={path}><Link to={path}>{label}</Link></li>)}
             <li
               onClick={() => navigate('/dashboard')}
               className={location.pathname === '/dashboard' ? 'active' : ''}

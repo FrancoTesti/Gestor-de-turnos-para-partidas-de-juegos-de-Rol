@@ -29,8 +29,8 @@ function validarTexto(valor: unknown, campo: string, minLength = 1, maxLength = 
 }
 
 function validarNumeroPositivo(valor: unknown, campo: string, min = 1): number {
-  const num = Number(valor);
-  if (!Number.isFinite(num) || num < min) {
+  const num = valor;
+  if (typeof num !== 'number' || !Number.isSafeInteger(num) || num < min || num > 2147483647) {
     throw new ErrorValidacionPersonaje(`El campo '${campo}' debe ser un número entero mayor o igual a ${min}`);
   }
   return num;
@@ -63,6 +63,10 @@ export function validarCreacionPersonaje(body: unknown): CrearPersonajeDTO {
     idPartida: validarNumeroPositivo(data.idPartida, 'idPartida', 1),
   };
 
+  if (data.contrasenaPartida !== undefined) {
+    if (typeof data.contrasenaPartida !== 'string' || data.contrasenaPartida.length > 100) throw new ErrorValidacionPersonaje('Contraseña de partida inválida');
+    dto.contrasenaPartida = data.contrasenaPartida;
+  }
   if (data.xp !== undefined && data.xp !== null) {
     dto.xp = validarNumeroPositivo(data.xp, 'xp', 0);
   }

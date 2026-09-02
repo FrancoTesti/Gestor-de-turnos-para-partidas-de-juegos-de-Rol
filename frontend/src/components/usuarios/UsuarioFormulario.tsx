@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import type { Usuario } from '../../interfaces';
 import './usuarios.css';
 
@@ -25,31 +25,21 @@ const initialForm: UsuarioFormData = {
   nickname: "",
 };
 
-export default function UsuarioFormulario({
+export default function UsuarioFormulario(props: UsuarioFormularioProps) {
+  return <UsuarioFormularioBody key={JSON.stringify(props.usuario ?? null)} {...props} />;
+}
+
+function UsuarioFormularioBody({
   usuario,
   onGuardar,
   onCancelar,
 }: UsuarioFormularioProps) {
   const esEdicion = Boolean(usuario);
 
-  const [form, setForm] = useState<UsuarioFormData>(initialForm);
+  const [form, setForm] = useState<UsuarioFormData>(() => usuario ? { ...usuario, contrasena: '' } : initialForm);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => {
-    if (usuario) {
-      setForm({
-        idUsuario: usuario.idUsuario,
-        nombreUsuario: usuario.nombreUsuario || "",
-        contrasena: "",
-        imagen: usuario.imagen || "",
-        nickname: usuario.nickname || "",
-      });
-    } else {
-      setForm(initialForm);
-    }
-    setErrores({});
-  }, [usuario]);
+  const [errorServidor, setErrorServidor] = useState('');
 
   const handleChange = (campo: keyof UsuarioFormData, valor: string) => {
     setForm((prev) => ({ ...prev, [campo]: valor }));
@@ -63,7 +53,7 @@ export default function UsuarioFormulario({
     const nuevosErrores: Errores = {};
     const nombreUsuario = form.nombreUsuario.trim();
     const nickname = form.nickname.trim();
-    const contrasena = form.contrasena?.trim() ?? '';
+    const contrasena = form.contrasena ?? '';
 
     if (!nombreUsuario) {
       nuevosErrores.nombreUsuario = "El nombre de usuario es obligatorio.";
@@ -106,21 +96,22 @@ export default function UsuarioFormulario({
     if (!validar()) return;
 
     setGuardando(true);
+    setErrorServidor('');
     try {
       const datosAEnviar: UsuarioFormData = {
         ...form,
         nombreUsuario: form.nombreUsuario.trim(),
         nickname: form.nickname.trim(),
         imagen: form.imagen.trim(),
-        contrasena: form.contrasena?.trim(),
+        contrasena: form.contrasena,
       };
       // En edición, si no se ingresó una nueva contraseña, no la enviamos
-      if (esEdicion && !form.contrasena?.trim()) {
+      if (esEdicion && !form.contrasena) {
         delete datosAEnviar.contrasena;
       }
       await onGuardar(datosAEnviar);
     } catch (error) {
-      console.error("Error al guardar el usuario:", error);
+      setErrorServidor(error instanceof Error ? error.message : 'No se pudo guardar el usuario');
     } finally {
       setGuardando(false);
     }
@@ -129,6 +120,7 @@ export default function UsuarioFormulario({
   return (
     <form className="usuario-formulario" onSubmit={handleSubmit} noValidate>
       <h2>{esEdicion ? "Editar Usuario" : "Nuevo Usuario"}</h2>
+      {errorServidor && <p role="alert">{errorServidor}</p>}
 
       <div className="form-group">
         <label htmlFor="nombreUsuario">

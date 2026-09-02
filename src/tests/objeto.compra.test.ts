@@ -100,41 +100,15 @@ describe('ObjetoService.comprarObjeto', () => {
     expect(tx.flush).not.toHaveBeenCalled();
   });
 
-  it('revierte dinero y ubicación si falla la escritura dentro de la transacción', async () => {
-    const tx = {
-      findOne: vi.fn()
-        .mockResolvedValueOnce(objeto)
-        .mockResolvedValueOnce(personaje)
-        .mockResolvedValueOnce(inventario)
-        .mockResolvedValueOnce(null),
-      count: vi.fn().mockResolvedValue(0),
-      flush: vi.fn().mockRejectedValue(new Error('Fallo de base de datos')),
-    };
-    const em = {
-      transactional: vi.fn(async (callback: (transaction: EntityManager) => Promise<unknown>) => {
-        const dineroAnterior = personaje.dinero;
-        const tiendaAnterior = objeto.tienda;
-        const inventarioAnterior = objeto.inventario;
-        const posicionAnterior = objeto.posicion;
-        try {
-          return await callback(tx as unknown as EntityManager);
-        } catch (error) {
-          personaje.dinero = dineroAnterior;
-          objeto.tienda = tiendaAnterior;
-          objeto.inventario = inventarioAnterior;
-          objeto.posicion = posicionAnterior;
-          throw error;
-        }
-      }),
-    } as unknown as EntityManager;
-    const service = new ObjetoService(em);
-
+  it('propaga un error de escritura (el rollback real se prueba contra MySQL)', async () => {
+    const { service } = crearServicio({ errorFlush: new Error('Fallo de base de datos') });
     await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
       .rejects.toThrow('Fallo de base de datos');
+  });
 
-    expect(personaje.dinero).toBe(100);
-    expect(objeto.tienda).toBe(tienda);
-    expect(objeto.inventario).toBeNull();
-    expect(objeto.posicion).toBe(0);
+  it('rechaza posiciones fuera de capacidad sin escribir', async () => {
+    const { service, tx } = crearServicio();
+    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 2 })).rejects.toThrow('capacidad');
+    expect(tx.flush).not.toHaveBeenCalled();
   });
 });

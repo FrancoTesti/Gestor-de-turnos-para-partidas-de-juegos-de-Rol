@@ -1,0 +1,11 @@
+.module-page { max-width: 100%; }
+.module-page label { display: block; margin: .7rem 0; }
+.module-page input:not([type=checkbox]), .module-page select { display: block; padding: .5rem; width: min(100%, 30rem); box-sizing: border-box; }
+.module-page button { margin: .25rem; padding: .5rem .8rem; }
+.module-page form, .module-page article { border: 1px solid #777; padding: 1rem; margin: 1rem 0; border-radius: .4rem; }
+.module-page [role=alert] { color: #ad2020; background: #fff0f0; padding: 1rem; }
+.module-table { overflow-x: auto; margin-top: 1rem; }
+.module-table table { border-collapse: collapse; width: 100%; }
+.module-table td, .module-table th { text-align: left; padding: .6rem; border-bottom: 1px solid #999; }
+.module-page dl > div { display: flex; gap: 1rem; flex-wrap: wrap; }
+.module-page dt { font-weight: 600; min-width: 10rem; }
