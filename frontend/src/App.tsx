@@ -8,6 +8,8 @@ import RegisterPage from './pages/RegisterPage';
 import UsersPage from './pages/UsersPage';
 import ModulePage from './pages/ModulePage';
 import ProfilesPage from './pages/ProfilesPage';
+import PartidasPage from './pages/PartidasPage'; // partidas + sesiones: Franco Testi
+
 import './App.css';
 
 export default function App() {
@@ -25,6 +27,8 @@ export default function App() {
             <Route path="/classes" element={<ModulePage key="clases" resource="clases" />} />
             <Route path="/stores" element={<ModulePage key="tiendas" resource="tiendas" />} />
             <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
+            <Route path="/partidas" element={<PartidasPage />} /> {/* vista completa: Franco Testi */}
+
             <Route path="/characters" element={<ModulePage key="personajes" resource="personajes" />} />
             <Route path="/sessions" element={<ModulePage key="sesiones" resource="sesiones" />} />
             <Route path="/missions" element={<ModulePage key="misiones" resource="misiones" />} />
