@@ -7,7 +7,8 @@ Ejecutar los comandos de [instalación](instalacion.md). Las pruebas MySQL son i
 Cobertura de integración:
 
 - Registro con hash y perfil atómico; nickname duplicado.
-- Login, recuperación de sesión, rechazo de contraseña incorrecta, permisos y cambio de contraseña.
+- Login con cookie `HttpOnly`/`SameSite=Strict`, recuperación de sesión, logout, rechazo de contraseña incorrecta, permisos y cambio de contraseña.
+- Perfiles propios: creación, cambio de estado, eliminación y rechazo con mensaje claro cuando existen datos relacionados.
 - Borrado de cuenta sin dependencias y su perfil.
 - CRUD de catálogos y referencias inexistentes.
 - Partida pública/privada, contraseña, límite y propietario.
@@ -20,7 +21,7 @@ Cobertura de integración:
 - Sesiones y misiones: CRUD, asistencia, reparto y doble finalización concurrente de misión.
 - Cierre de sesión de juego, historial y karma una sola vez.
 
-Las pruebas de frontend verifican llamadas a la API al crear, editar y eliminar usuarios; errores del servidor, protección de acciones ajenas, login y formulario de compra. No se cuentan pruebas con dobles de base de datos como demostración de rollback.
+Las pruebas de frontend verifican llamadas a la API al crear, editar y eliminar usuarios; errores del servidor, protección de acciones ajenas, login, gestión de perfiles y formulario de compra. No se cuentan pruebas con dobles de base de datos como demostración de rollback.
 
 ## Recorrido manual para el equipo
 

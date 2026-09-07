@@ -35,7 +35,8 @@ let ids: { host: number; player: number; other: number; game: number; character:
 async function request(path: string, method = 'GET', body?: unknown, cookie = hostCookie) {
   const res = await fetch(`${base}/api${path}`, { method, headers: { ...(cookie ? { Cookie: cookie } : {}), ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
   const text = await res.text();
-  return { status: res.status, body: text ? JSON.parse(text) : undefined, cookie: res.headers.get('set-cookie')?.split(';')[0] ?? '' };
+  const setCookie = res.headers.get('set-cookie') ?? '';
+  return { status: res.status, body: text ? JSON.parse(text) : undefined, cookie: setCookie.split(';')[0] ?? '', setCookie };
 }
 before(async () => {
   assert.ok(process.env.TEST_DB_PORT, 'Indicá TEST_DB_PORT para habilitar explícitamente las pruebas MySQL');
@@ -98,13 +99,40 @@ test('registro persistente, hash, perfil atómico y nickname duplicado', async (
   assert.equal((await request('/auth/register', 'POST', data, '')).status, 409);
   assert.equal(await em.count(Usuario, { nickname: 'nuevo' }), 1);
 });
+test('login recupera la sesión desde una cookie segura y logout la invalida', async () => {
+  const login = await request('/auth/login', 'POST', { nickname: 'player', contrasena: 'secreto123' }, '');
+  assert.equal(login.status, 200);
+  assert.match(login.setCookie, /rpg_session=/);
+  assert.match(login.setCookie, /HttpOnly/i);
+  assert.match(login.setCookie, /SameSite=Strict/i);
+  assert.equal((await request('/auth/me', 'GET', undefined, login.cookie)).body.usuario.idUsuario, ids.player);
+  assert.equal((await request('/auth/logout', 'POST', undefined, login.cookie)).status, 204);
+  assert.equal((await request('/auth/me', 'GET', undefined, login.cookie)).status, 401);
+});
 test('API exige sesión, protege cuentas ajenas y rechaza credenciales incorrectas', async () => {
   assert.equal((await request('/usuarios', 'GET', undefined, '')).status, 401);
   assert.equal((await request(`/usuarios/${ids.other}`, 'PUT', { nickname: 'tomado' }, playerCookie)).status, 403);
   assert.equal((await request('/auth/login', 'POST', { nickname: 'player', contrasena: 'incorrecta' }, '')).status, 401);
   assert.equal((await request('/auth/me', 'GET', undefined, playerCookie)).body.usuario.idUsuario, ids.player);
+  const update = await request(`/usuarios/${ids.player}`, 'PUT', { nombreUsuario: 'Jugador editado', nickname: 'player-editado' }, playerCookie);
+  assert.equal(update.status, 200); assert.equal(update.body.nickname, 'player-editado'); assert.equal(update.body.contrasena, undefined);
+  const list = await request('/usuarios', 'GET', undefined, playerCookie);
+  assert.equal(list.status, 200); assert.ok(list.body.every((user: Record<string, unknown>) => !('contrasena' in user)));
   assert.equal((await request(`/usuarios/${ids.player}`, 'PUT', { contrasena: 'nueva123' }, playerCookie)).status, 200);
   assert.equal((await request('/auth/me', 'GET', undefined, playerCookie)).status, 401);
+});
+test('perfiles propios se crean y editan, y las dependencias impiden eliminarlos', async () => {
+  assert.equal((await request('/anfitriones', 'POST', { idUsuario: ids.other }, playerCookie)).status, 403);
+  const host = await request('/anfitriones', 'POST', { idUsuario: ids.player }, playerCookie);
+  assert.equal(host.status, 201); assert.equal(host.body.idUsuario, ids.player); assert.equal(host.body.karma, 0);
+  assert.equal((await request(`/jugadores/${ids.player}`, 'PUT', { estado: false }, playerCookie)).body.estado, false);
+
+  const blocked = await request(`/jugadores/${ids.player}`, 'DELETE', undefined, playerCookie);
+  assert.equal(blocked.status, 409);
+  assert.match(blocked.body.message, /datos relacionados/i);
+
+  assert.equal((await request(`/anfitriones/${ids.player}`, 'DELETE', undefined, playerCookie)).status, 204);
+  assert.equal((await request(`/anfitriones/${ids.player}`, 'GET', undefined, playerCookie)).status, 404);
 });
 test('una cuenta sin partidas ni personajes puede borrarse junto con su perfil', async () => {
   await request('/auth/register', 'POST', { nombreUsuario: 'Nuevo', nickname: 'nuevo', contrasena: 'password123', tipo: 'jugador' }, '');
