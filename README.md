@@ -27,9 +27,11 @@ Ver [reglas y endpoints](docs/funcionalidad.md) y [pruebas](docs/pruebas_manuale
 ## Verificación
 
 ```sh
+npm install
 npm run build
 npm test
 cd frontend
+npm install
 npm run build
 npm run lint
 npm test
