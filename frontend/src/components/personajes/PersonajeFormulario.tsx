@@ -40,20 +40,20 @@ export default function PersonajeFormulario({
   const [jugadoresList, setJugadoresList] = useState<JugadorExtendido[]>(jugadoresDisponibles);
   const [partidasList, setPartidasList] = useState<PartidaPublica[]>(partidasDisponibles);
 
-  const [cargandoRef, setCargandoRef] = useState(false);
+  const [cargandoRef, setCargandoRef] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
   const esEdicion = Boolean(personajeInicial);
+  const [initialRefs] = useState(() => ({ clasesDisponibles, jugadoresDisponibles, partidasDisponibles, personajeInicial }));
 
   useEffect(() => {
     async function cargarDatosReferencia() {
-      setCargandoRef(true);
       try {
         const [clasesRes, jugadoresRes, partidasRes] = await Promise.all([
-          clasesDisponibles.length > 0 ? Promise.resolve(clasesDisponibles) : obtenerClases(),
-          jugadoresDisponibles.length > 0 ? Promise.resolve(jugadoresDisponibles) : obtenerJugadores(),
-          partidasDisponibles.length > 0 ? Promise.resolve(partidasDisponibles) : obtenerPartidas(),
+          initialRefs.clasesDisponibles.length > 0 ? Promise.resolve(initialRefs.clasesDisponibles) : obtenerClases(),
+          initialRefs.jugadoresDisponibles.length > 0 ? Promise.resolve(initialRefs.jugadoresDisponibles) : obtenerJugadores(),
+          initialRefs.partidasDisponibles.length > 0 ? Promise.resolve(initialRefs.partidasDisponibles) : obtenerPartidas(),
         ]);
 
         setClasesList(clasesRes);
@@ -61,10 +61,10 @@ export default function PersonajeFormulario({
         setPartidasList(partidasRes);
 
         // Preseleccionar primer elemento si no hay ninguno seleccionado y estamos creando
-        if (!personajeInicial) {
-          if (clasesRes.length > 0 && idClase === '') setIdClase(clasesRes[0].idClase);
-          if (jugadoresRes.length > 0 && idUsuarioJugador === '') setIdUsuarioJugador(jugadoresRes[0].idUsuario);
-          if (partidasRes.length > 0 && idPartida === '') setIdPartida(partidasRes[0].idPartida);
+        if (!initialRefs.personajeInicial) {
+          if (clasesRes.length > 0) setIdClase(clasesRes[0].idClase);
+          if (jugadoresRes.length > 0) setIdUsuarioJugador(jugadoresRes[0].idUsuario);
+          if (partidasRes.length > 0) setIdPartida(partidasRes[0].idPartida);
         }
       } catch (err) {
         console.error('Error al cargar datos de referencia:', err);
@@ -74,7 +74,7 @@ export default function PersonajeFormulario({
     }
 
     cargarDatosReferencia();
-  }, []);
+  }, [initialRefs]);
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();

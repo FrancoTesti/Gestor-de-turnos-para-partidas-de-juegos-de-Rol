@@ -4,6 +4,7 @@
   y datos correctos. No tiene logica de negocio.
  */
 import { type Request, type Response } from 'express';
+import { persistenceError } from './persistence-error';
 import {
   JugadorService,
   JugadorYaExisteError,
@@ -21,6 +22,7 @@ type IdParams = { id: string };
 /* convierte los errores conocidos a códigos HTTP correctos.
  Si no lo reconoce, devuelve 500 (error interno del servidor). */
 function responderError(error: unknown, res: Response, mensajeInterno: string): void {
+  if (persistenceError(error, res)) return;
   if (error instanceof ErrorValidacionJugador) {
     res.status(400).json({ message: error.message }); // datos inválidos
     return;

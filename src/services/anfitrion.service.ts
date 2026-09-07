@@ -2,6 +2,7 @@
 import { EntityManager } from '@mikro-orm/core';
 import { Anfitrion } from '../entities/Anfitrion.entity';
 import { Usuario } from '../entities/Usuario.entity';
+import { Partida } from '../entities/Partida.entity';
 import type { ActualizarAnfitrionDTO, AnfitrionPublicoDTO, CrearAnfitrionDTO } from '../types/anfitrion.dto';
 
 // error  personalizado: el Usuario no existe en la BD
@@ -30,7 +31,7 @@ export class AnfitrionService {
   // trae todos los anfitriones con los datos de su Usuario
   async obtenerTodos(): Promise<AnfitrionPublicoDTO[]> {
     const anfitriones = await this.em.find(Anfitrion, {}, { populate: ['usuario'] });
-    return anfitriones.map((a) => this.aAnfitrionPublico(a));
+    return Promise.all(anfitriones.map((a) => this.aAnfitrionPublico(a)));
   }
 
   // busca un anfitrion por el idUsuario
@@ -83,10 +84,10 @@ export class AnfitrionService {
   }
 
   // convierte la entidad al DTO público
-  private aAnfitrionPublico(a: Anfitrion): AnfitrionPublicoDTO {
+  private async aAnfitrionPublico(a: Anfitrion): Promise<AnfitrionPublicoDTO> {
     return {
       idUsuario: a.usuario.idUsuario,
-      cantPartidasActuales: a.cantPartidasActuales,
+      cantPartidasActuales: await this.em.count(Partida, { anfitrion: a, estado: true }),
       karma: a.karma,
       nombreUsuario: a.usuario.nombreUsuario,
       nickname: a.usuario.nickname,

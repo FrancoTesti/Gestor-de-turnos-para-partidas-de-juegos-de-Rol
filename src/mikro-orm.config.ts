@@ -38,5 +38,5 @@ export default defineConfig({
   // limiteJugadores...) en vez del snake_case por defecto de MikroORM.
   // Asi la base queda igual al criterio unificado del grupo y a interfaces.ts.
   namingStrategy: EntityCaseNamingStrategy,
-  debug: true, // te muestra el SQL que ejecuta -> útil para aprender/debuggear
+  debug: process.env.DB_DEBUG === 'true', // Desactivado por defecto: las consultas pueden contener datos privados.
 });

@@ -1,6 +1,6 @@
 /* formulario reutilizable para crear y editar partidas.
 El mismo componente sirve para las dos operaciones (igual que UsuarioFormulario). */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { PartidaPublica, CrearPartidaData, EstadoPartida } from '../../services/partida.service';
 import './partidas.css';
 
@@ -34,34 +34,20 @@ const initialForm: PartidaFormData = {
   idUsuarioAnfitrion: 0,
 };
 
-export default function PartidaFormulario({
+export default function PartidaFormulario(props: PartidaFormularioProps) {
+  return <PartidaFormularioBody key={JSON.stringify(props.partida ?? null)} {...props} />;
+}
+
+function PartidaFormularioBody({
   partida,
   onGuardar,
   onCancelar,
 }: PartidaFormularioProps) {
   const esEdicion = Boolean(partida);
 
-  const [form, setForm] = useState<PartidaFormData>(initialForm);
+  const [form, setForm] = useState<PartidaFormData>(() => partida ? { ...partida, contrasena: '' } : initialForm);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
-
-  // cuando cambia la prop "partida", cargamos sus datos en el formulario
-  useEffect(() => {
-    if (partida) {
-      setForm({
-        idPartida: partida.idPartida,
-        nombre: partida.nombre,
-        estado: partida.estado,
-        limiteJugadores: partida.limiteJugadores,
-        esPrivada: partida.esPrivada,
-        contrasena: '',       // nunca pre-llenamos la contraseña por seguridad
-        idUsuarioAnfitrion: partida.idUsuarioAnfitrion,
-      });
-    } else {
-      setForm(initialForm);
-    }
-    setErrores({});
-  }, [partida]);
 
   // actualizamos un campo del form y limpia su error
   function handleChange(campo: keyof PartidaFormData, valor: string | boolean | number) {

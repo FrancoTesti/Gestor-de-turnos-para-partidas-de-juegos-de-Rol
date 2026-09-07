@@ -7,6 +7,7 @@ export interface CrearPersonajeDTO {
   xp?: number;
   nivel?: number;
   dinero?: number;
+  contrasenaPartida?: string;
 }
 
 export interface ActualizarPersonajeDTO {

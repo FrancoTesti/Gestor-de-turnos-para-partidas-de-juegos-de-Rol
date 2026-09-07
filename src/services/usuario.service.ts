@@ -1,6 +1,7 @@
 import { UniqueConstraintViolationException } from '@mikro-orm/core';
 import { Usuario } from '../entities/Usuario.entity';
 import { UsuarioRepository } from '../repositories/usuario.repository';
+import { hashPassword } from '../security/password';
 import type { ActualizarUsuarioDTO, CrearUsuarioDTO, UsuarioPublicoDTO } from '../types/usuario.dto';
 
 /* -clase  personalizada para manejar errores de negocio (Herencia)
@@ -43,7 +44,7 @@ export class UsuarioService {
   // Aplica la regla del nickname, manda a crearlo y lo guarda
   async crearUsuario(data: CrearUsuarioDTO): Promise<UsuarioPublicoDTO> {
     await this.verificarNicknameDisponible(data.nickname); 
-    const usuario = this.repo.crear(data);
+    const usuario = this.repo.crear({ ...data, contrasena: await hashPassword(data.contrasena) });
     try {
       await this.repo.guardarCambios();
     } catch (error) {
@@ -61,7 +62,7 @@ export class UsuarioService {
     if (data.nickname !== undefined) {
       await this.verificarNicknameDisponible(data.nickname, id);
     }
-    this.repo.asignar(usuario, data);
+    this.repo.asignar(usuario, { ...data, ...(data.contrasena !== undefined ? { contrasena: await hashPassword(data.contrasena) } : {}) });
     try {
       await this.repo.guardarCambios();
     } catch (error) {

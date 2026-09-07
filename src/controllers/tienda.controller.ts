@@ -1,4 +1,5 @@
 import { type Request, type Response } from 'express';
+import { persistenceError } from './persistence-error';
 import { TiendaService } from '../services/tienda.service';
 import {
   ErrorValidacionTienda,
@@ -108,6 +109,7 @@ export class TiendaController {
       }
       res.status(204).send();
     } catch (error) {
+      if (persistenceError(error, res)) return;
       console.error('Error al eliminar la tienda:', error);
       res.status(500).json({ message: 'Error al eliminar la tienda' });
     }

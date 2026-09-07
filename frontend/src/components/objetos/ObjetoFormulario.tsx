@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type { Tienda } from '../../interfaces';
 import type { CrearObjetoData, ObjetoPublico } from '../../services/objeto.service';
 import './objetos.css';
@@ -32,32 +32,23 @@ const formularioVacio: FormularioObjeto = {
   posicion: '0',
 };
 
-export default function ObjetoFormulario({
+export default function ObjetoFormulario(props: ObjetoFormularioProps) {
+  return <ObjetoFormularioBody key={JSON.stringify(props.objeto ?? null)} {...props} />;
+}
+
+function ObjetoFormularioBody({
   objeto,
   tiendas,
   onGuardar,
   onCancelar,
 }: ObjetoFormularioProps) {
-  const [form, setForm] = useState<FormularioObjeto>(formularioVacio);
+  const [form, setForm] = useState<FormularioObjeto>(() => objeto ? {
+    nombre: objeto.nombre, descripcion: objeto.descripcion, tipoObjeto: objeto.tipoObjeto,
+    valor: String(objeto.valor), nivelObjeto: String(objeto.nivelObjeto),
+    idTienda: objeto.idTienda === null ? '' : String(objeto.idTienda), posicion: String(objeto.posicion),
+  } : formularioVacio);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
-
-  useEffect(() => {
-    setForm(
-      objeto
-        ? {
-            nombre: objeto.nombre,
-            descripcion: objeto.descripcion,
-            tipoObjeto: objeto.tipoObjeto,
-            valor: String(objeto.valor),
-            nivelObjeto: String(objeto.nivelObjeto),
-            idTienda: objeto.idTienda === null ? '' : String(objeto.idTienda),
-            posicion: String(objeto.posicion),
-          }
-        : formularioVacio,
-    );
-    setErrores({});
-  }, [objeto]);
 
   function cambiar(campo: keyof FormularioObjeto, valor: string): void {
     setForm((actual) => ({ ...actual, [campo]: valor }));
@@ -75,8 +66,8 @@ export default function ObjetoFormulario({
     if (!form.descripcion.trim()) nuevos.descripcion = 'La descripción es obligatoria.';
     if (!form.tipoObjeto.trim()) nuevos.tipoObjeto = 'El tipo es obligatorio.';
     else if (form.tipoObjeto.trim().length > 50) nuevos.tipoObjeto = 'No puede superar 50 caracteres.';
-    if (!Number.isFinite(valor) || valor < 0) nuevos.valor = 'Ingresá un valor mayor o igual a cero.';
-    if (!Number.isInteger(nivel) || nivel < 0) nuevos.nivelObjeto = 'Ingresá un nivel entero mayor o igual a cero.';
+    if (!Number.isSafeInteger(valor) || valor < 0) nuevos.valor = 'Ingresá un valor entero mayor o igual a cero.';
+    if (!Number.isSafeInteger(nivel) || nivel < 1) nuevos.nivelObjeto = 'Ingresá un nivel entero mayor o igual a uno.';
     if (!Number.isInteger(posicion) || posicion < 0) nuevos.posicion = 'Ingresá una posición entera mayor o igual a cero.';
 
     setErrores(nuevos);

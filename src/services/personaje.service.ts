@@ -1,8 +1,13 @@
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, LockMode } from '@mikro-orm/core';
 import { Personaje } from '../entities/Personaje.entity';
 import { Clase } from '../entities/Clase.entity';
 import { Jugador } from '../entities/Jugador.entity';
 import { Partida } from '../entities/Partida.entity';
+import { Inventario } from '../entities/Inventario.entity';
+import { Objeto } from '../entities/Objeto.entity';
+import { PersonajeSesion } from '../entities/PersonajeSesion.entity';
+import { ErrorValidacionPersonaje } from '../validators/personaje.validator';
+import { verifyPassword } from '../security/password';
 import type { ActualizarPersonajeDTO, CrearPersonajeDTO, PersonajePublicoDTO } from '../types/personaje.dto';
 
 export class ErrorReferenciaNoEncontrada extends Error {
@@ -45,6 +50,10 @@ export class PersonajeService {
   }
 
   async crearPersonaje(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
+    return this.em.transactional(async tx => new PersonajeService(tx).crearEnTransaccion(data));
+  }
+
+  private async crearEnTransaccion(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
     const clase = await this.em.findOne(Clase, { idClase: data.idClase });
     if (!clase) {
       throw new ErrorReferenciaNoEncontrada(`No existe la Clase con ID ${data.idClase}`);
@@ -55,10 +64,15 @@ export class PersonajeService {
       throw new ErrorReferenciaNoEncontrada(`No existe el Jugador con ID de Usuario ${data.idUsuarioJugador}`);
     }
 
-    const partida = await this.em.findOne(Partida, { idPartida: data.idPartida });
+    const partida = await this.em.findOne(Partida, { idPartida: data.idPartida }, { lockMode: LockMode.PESSIMISTIC_WRITE });
     if (!partida) {
       throw new ErrorReferenciaNoEncontrada(`No existe la Partida con ID ${data.idPartida}`);
     }
+    if (!partida.estado) throw new ErrorValidacionPersonaje('La partida está finalizada');
+    if (!jugador.estado) throw new ErrorValidacionPersonaje('El jugador está inactivo');
+    if (partida.contrasena && !await verifyPassword(data.contrasenaPartida ?? '', partida.contrasena)) throw new ErrorValidacionPersonaje('Contraseña de partida incorrecta');
+    if (await this.em.count(Personaje, { partida }) >= partida.limiteJugadores) throw new ErrorValidacionPersonaje('La partida no tiene cupos disponibles');
+    if (await this.em.count(Personaje, { partida, jugador }) > 0) throw new ErrorValidacionPersonaje('Ya tenés un personaje en esta partida');
 
     const nuevoPersonaje = this.em.create(Personaje, {
       nombreFicticio: data.nombreFicticio,
@@ -73,6 +87,8 @@ export class PersonajeService {
 
     await this.em.flush();
 
+    this.em.create(Inventario, { personaje: nuevoPersonaje, numInventario: 1, cantidadEspacio: 10 });
+    await this.em.flush();
     await this.em.populate(nuevoPersonaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);
     return this.aPersonajePublico(nuevoPersonaje);
   }
@@ -123,8 +139,17 @@ export class PersonajeService {
   }
 
   async eliminarPersonaje(id: number): Promise<boolean> {
+    return this.em.transactional(async tx => new PersonajeService(tx).eliminarEnTransaccion(id));
+  }
+
+  private async eliminarEnTransaccion(id: number): Promise<boolean> {
     const personaje = await this.em.findOne(Personaje, { idPersonaje: id });
     if (!personaje) return false;
+
+    if (await this.em.count(PersonajeSesion, { personaje }) > 0) throw new ErrorValidacionPersonaje('No se puede borrar un personaje con historial de sesiones');
+    if (await this.em.count(Objeto, { inventario: { personaje } }) > 0) throw new ErrorValidacionPersonaje('Vendé los objetos antes de borrar el personaje');
+    const inventarios = await this.em.find(Inventario, { personaje });
+    this.em.remove(inventarios);
 
     await this.em.removeAndFlush(personaje);
     return true;

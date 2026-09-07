@@ -3,6 +3,7 @@ import { Inventario } from '../entities/Inventario.entity';
 import { Objeto } from '../entities/Objeto.entity';
 import { Personaje } from '../entities/Personaje.entity';
 import { Tienda } from '../entities/Tienda.entity';
+import { ErrorValidacionObjeto, validarCompraObjeto } from '../validators/objeto.validator';
 import type {
   ActualizarObjetoDTO,
   ComprarObjetoDTO,
@@ -81,6 +82,7 @@ export class ObjetoService {
     let tienda: Tienda | null = null;
     if (data.idTienda != null) {
       tienda = await this.em.findOne(Tienda, { idTienda: data.idTienda });
+      if (!tienda) throw new ErrorValidacionObjeto('La tienda indicada no existe');
     }
 
     const objeto = this.em.create(Objeto, {
@@ -101,8 +103,11 @@ export class ObjetoService {
     const objeto = await this.em.findOne(Objeto, { idObjeto: id });
     if (!objeto) return null;
 
+    if (objeto.inventario) throw new ErrorValidacionObjeto('No se puede editar un objeto dentro de un inventario');
+
     if (data.idTienda !== undefined) {
       objeto.tienda = data.idTienda ? await this.em.findOne(Tienda, { idTienda: data.idTienda }) : null;
+      if (data.idTienda && !objeto.tienda) throw new ErrorValidacionObjeto('La tienda indicada no existe');
     }
 
     if (data.nombre !== undefined) objeto.nombre = data.nombre;
@@ -124,7 +129,14 @@ export class ObjetoService {
     return true;
   }
 
+  async obtenerSugeridos(idClase: number): Promise<ObjetoPublicoDTO[]> {
+    // La relación Inventario tiene clave compuesta; evitar comparar la tupla con NULL en MySQL.
+    const objetos = await this.em.find(Objeto, { tienda: { clase: { idClase } } }, { populate: ['tienda', 'inventario.personaje'] });
+    return objetos.filter(o => !o.inventario).map(o => this.aObjetoPublico(o));
+  }
+
   async comprarObjeto(idObjeto: number, data: ComprarObjetoDTO): Promise<ResultadoCompraObjetoDTO> {
+    data = validarCompraObjeto(data);
     return this.em.transactional(async (em) => {
       const objeto = await em.findOne(
         Objeto,
@@ -147,6 +159,7 @@ export class ObjetoService {
         { populate: ['personaje'], lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!inventario) throw new InventarioNoEncontradoError();
+      if (data.posicion >= inventario.cantidadEspacio) throw new ErrorValidacionObjeto('La posición debe ser menor que la capacidad del inventario');
       if (personaje.dinero < objeto.valor) throw new DineroInsuficienteError();
 
       const objetosGuardados = await em.count(Objeto, { inventario });

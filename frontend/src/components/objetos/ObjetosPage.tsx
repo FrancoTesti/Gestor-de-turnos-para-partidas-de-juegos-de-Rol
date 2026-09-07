@@ -1,5 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import type { Personaje, Tienda } from '../../interfaces';
+import { useEffect, useMemo, useState } from 'react';
+import type { Personaje, Tienda, Inventario } from '../../interfaces';
+import { useUser } from '../../context/UserContext';
+import { api } from '../../services/api';
 import {
   actualizarObjeto,
   comprarObjeto,
@@ -26,6 +28,11 @@ function mensajeDeError(error: unknown): string {
 }
 
 export default function ObjetosPage() {
+  const { usuarioLogueado, rolDe } = useUser();
+  const userId = usuarioLogueado!.idUsuario;
+  const host = rolDe(userId) === 'anfitrion';
+  const [inventarios, setInventarios] = useState<Inventario[]>([]);
+  const [sugerirPara, setSugerirPara] = useState('');
   const [objetos, setObjetos] = useState<ObjetoPublico[]>([]);
   const [tiendas, setTiendas] = useState<Tienda[]>([]);
   const [personajes, setPersonajes] = useState<Personaje[]>([]);
@@ -40,29 +47,27 @@ export default function ObjetosPage() {
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [compraAbierta, setCompraAbierta] = useState(false);
+  const [revision, setRevision] = useState(0);
 
-  const cargarDatos = useCallback(async () => {
-    setCargando(true);
-    setError(null);
-    try {
-      const [objetosObtenidos, tiendasObtenidas, personajesObtenidos] = await Promise.all([
+  useEffect(() => {
+    let active = true;
+    Promise.all([
         obtenerObjetos(),
         obtenerTiendas(),
         obtenerPersonajes(),
-      ]);
+        api<Inventario[]>('/inventarios'),
+      ]).then(([objetosObtenidos, tiendasObtenidas, personajesObtenidos, inventariosObtenidos]) => {
+      if (!active) return;
       setObjetos(objetosObtenidos);
+      setError(null);
       setTiendas(tiendasObtenidas);
-      setPersonajes(personajesObtenidos);
-    } catch (e) {
-      setError(mensajeDeError(e));
-    } finally {
-      setCargando(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    void cargarDatos();
-  }, [cargarDatos]);
+      setPersonajes(personajesObtenidos.filter(p => p.idUsuarioJugador === userId));
+      setInventarios(inventariosObtenidos);
+    }).catch(e => { if (active) setError(mensajeDeError(e)); })
+      .finally(() => { if (active) setCargando(false); });
+    return () => { active = false; };
+  }, [userId, revision]);
+  const cargarDatos = () => { setCargando(true); setError(null); setRevision(n => n + 1); };
 
   const tipos = useMemo(
     () => [...new Set(objetos.map((objeto) => objeto.tipoObjeto))].sort(),
@@ -73,9 +78,11 @@ export default function ObjetosPage() {
     const texto = busqueda.trim().toLocaleLowerCase();
     return objetos.filter((objeto) => {
       const coincideTexto = !texto || objeto.nombre.toLocaleLowerCase().includes(texto) || objeto.descripcion.toLocaleLowerCase().includes(texto);
-      return coincideTexto && (!tipo || objeto.tipoObjeto === tipo);
+      const clase = personajes.find(p => p.idPersonaje === Number(sugerirPara))?.idClase;
+      const sugerido = !sugerirPara || (objeto.idTienda !== null && objeto.idPersonaje === null && tiendas.some(t => t.idTienda === objeto.idTienda && t.idClase === clase));
+      return coincideTexto && (!tipo || objeto.tipoObjeto === tipo) && sugerido;
     });
-  }, [busqueda, objetos, tipo]);
+  }, [busqueda, objetos, tipo, sugerirPara, personajes, tiendas]);
 
   async function seleccionar(objeto: ObjetoPublico): Promise<void> {
     setCompraAbierta(false);
@@ -156,7 +163,7 @@ export default function ObjetosPage() {
           <p className="app-eyebrow">Inventario y tiendas</p>
           <h1>Administración de objetos</h1>
         </div>
-        {vista === 'listado' && <button className="btn-nuevo" type="button" onClick={() => { setEnEdicion(undefined); setVista('formulario'); }}>Nuevo objeto</button>}
+        {vista === 'listado' && host && <button className="btn-nuevo" type="button" onClick={() => { setEnEdicion(undefined); setVista('formulario'); }}>Nuevo objeto</button>}
       </header>
 
       {mensaje && <p className="mensaje mensaje-exito" role="status">{mensaje}</p>}
@@ -169,6 +176,7 @@ export default function ObjetosPage() {
       ) : (
         <>
           <div className="objeto-filtros" aria-label="Filtros de objetos">
+            <label>Sugeridos por clase de mi personaje<select value={sugerirPara} onChange={e => setSugerirPara(e.target.value)}><option value="">Todos los objetos</option>{personajes.map(p => <option key={p.idPersonaje} value={p.idPersonaje}>{p.nombreFicticio}</option>)}</select></label>
             <input type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} placeholder="Buscar por nombre o descripción" />
             <select value={tipo} onChange={(e) => setTipo(e.target.value)}>
               <option value="">Todos los tipos</option>
@@ -176,7 +184,7 @@ export default function ObjetosPage() {
             </select>
           </div>
           <div className="objetos-layout">
-            <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={(objeto) => { setEnEdicion(objeto); setVista('formulario'); }} onEliminar={(objeto) => void borrar(objeto)} />
+            <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={host ? (objeto) => { setEnEdicion(objeto); setVista('formulario'); } : undefined} onEliminar={host ? (objeto) => void borrar(objeto) : undefined} />
             <aside className="panel-detalle">
               <ObjetoDetalle
                 objeto={seleccionado}
@@ -189,6 +197,7 @@ export default function ObjetosPage() {
                 <CompraObjetoFormulario
                   objeto={seleccionado}
                   personajes={personajes}
+                  inventarios={inventarios}
                   onComprar={comprar}
                   onCancelar={() => setCompraAbierta(false)}
                 />

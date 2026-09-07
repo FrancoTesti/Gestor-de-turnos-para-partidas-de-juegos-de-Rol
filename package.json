@@ -6,6 +6,8 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "test": "vitest run src/tests",
+    "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
+    "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
     "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
     "schema:dump": "ts-node src/valida-entities.ts"
   },

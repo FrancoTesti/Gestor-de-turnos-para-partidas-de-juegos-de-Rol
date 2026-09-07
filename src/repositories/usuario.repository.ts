@@ -10,6 +10,8 @@ import { EntityManager } from '@mikro-orm/core';
 controla todas las operaciones con la base de datos ( crear, leer,actualizar, borrar). Lo inyectamos en el constructor para poder usarlo */
 
 import { Usuario } from '../entities/Usuario.entity';
+import { Jugador } from '../entities/Jugador.entity';
+import { Anfitrion } from '../entities/Anfitrion.entity';
 import type { CrearUsuarioDTO } from '../types/usuario.dto';
 /* capa repository: Separa la base de datos del resto de la aplicacion
 Solo este archivo sabe que estamos usando MikroORM (Arquitectura Limpia) */
@@ -44,6 +46,11 @@ export class UsuarioRepository {
   }
   // borra un usuario de la base de datos definitivamente
   async eliminar(usuario: Usuario): Promise<void> {
-    await this.em.removeAndFlush(usuario);
+    await this.em.transactional(async tx => {
+      const roles = [...await tx.find(Jugador, { usuario }), ...await tx.find(Anfitrion, { usuario })];
+      tx.remove(roles);
+      tx.remove(usuario);
+      await tx.flush();
+    });
   }
 }

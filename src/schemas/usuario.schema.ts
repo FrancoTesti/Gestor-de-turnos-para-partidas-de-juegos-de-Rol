@@ -12,7 +12,6 @@ export const crearUsuarioSchema = z.object({
     .min(3, 'El campo nickname debe tener al menos 3 caracteres')
     .max(50, 'El campo nickname no puede superar 50 caracteres'),
   contrasena: z.string({ message: 'El campo contrasena es obligatorio' })
-    .trim()
     .min(6, 'El campo contrasena debe tener al menos 6 caracteres')
     .max(100, 'El campo contrasena no puede superar 100 caracteres'),
   imagen: z.string().max(255, 'El campo imagen no puede superar 255 caracteres').optional(),
@@ -27,4 +26,4 @@ export const actualizarUsuarioSchema = crearUsuarioSchema
   });
 
 export type CrearUsuarioZodDTO = z.infer<typeof crearUsuarioSchema>;
-export type ActualizarUsuarioZodDTO = z.infer<typeof actualizarUsuarioSchema>;
+export type ActualizarUsuarioZodDTO = z.infer<typeof actualizarUsuarioSchema>;

@@ -1,7 +1,11 @@
 // maneja la conversión entre el DTO (lo que ve el frontend) y la entidad (lo que guarda la BD).
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { Sesion } from '../entities/Sesion.entity';
 import { Partida } from '../entities/Partida.entity';
 import { Anfitrion } from '../entities/Anfitrion.entity';
+import { Personaje } from '../entities/Personaje.entity';
+import { ErrorValidacionPartida } from '../validators/partida.validator';
+import { hashPassword } from '../security/password';
 import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/partida.dto';
 
 // error personalizado: el Anfitrion que se quiere asignar no existe
@@ -66,7 +70,7 @@ export class PartidaService {
       nombre: data.nombre,
       estado: data.estado === 'activa',             // conversión string -> boolean
       limiteJugadores: data.limiteJugadores,
-      contrasena: data.esPrivada ? (data.contrasena ?? '') : '', // '' = pública
+      contrasena: data.esPrivada ? await hashPassword(data.contrasena!) : '', // '' = pública
       anfitrion,
     } as any); // 'as any' porque TypeScript no infiere que idPartida es autoincrement
 
@@ -76,22 +80,33 @@ export class PartidaService {
 
   // actualiza los campos que lleguen en el body
   async actualizarPartida(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
+    return this.em.transactional(tx => new PartidaService(tx).actualizarEnTransaccion(id, data));
+  }
+
+  private async actualizarEnTransaccion(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
     const partida = await this.em.findOne(
       Partida,
       { idPartida: id },
-      { populate: ['anfitrion', 'anfitrion.usuario'] },
+      { populate: ['anfitrion', 'anfitrion.usuario'], lockMode: LockMode.PESSIMISTIC_WRITE },
     );
     if (!partida) return null;
+    if (data.estado === 'finalizada' && await this.em.count(Sesion, { partida, estadoSesion: 1 }) > 0) throw new ErrorValidacionPartida('Finalizá primero la sesión en curso');
+
+    const privada = data.esPrivada ?? (partida.contrasena !== '');
+    const password = privada ? (data.contrasena ?? partida.contrasena) : '';
+    if (privada && !password.trim()) throw new ErrorValidacionPartida('Para hacer privada una partida pública debés indicar una contraseña');
+    if (data.esPrivada === false && data.contrasena) throw new ErrorValidacionPartida('Una partida pública no debe tener contraseña');
+    if (data.esPrivada === undefined && !privada && data.contrasena) throw new ErrorValidacionPartida('Indicá esPrivada para establecer una contraseña');
+    if (data.limiteJugadores !== undefined) {
+      const cantidad = await this.em.count(Personaje, { partida });
+      if (data.limiteJugadores < cantidad) throw new ErrorValidacionPartida('El límite no puede ser menor que los personajes inscritos');
+    }
 
     // actualizamos solo los campos que llegaron
     if (data.nombre !== undefined) partida.nombre = data.nombre;
     if (data.limiteJugadores !== undefined) partida.limiteJugadores = data.limiteJugadores;
     if (data.estado !== undefined) partida.estado = data.estado === 'activa';
-    if (data.esPrivada !== undefined) {
-      // si cambian a publica, borramos la contraseña
-      if (!data.esPrivada) partida.contrasena = '';
-    }
-    if (data.contrasena !== undefined) partida.contrasena = data.contrasena;
+    partida.contrasena = privada && data.contrasena !== undefined ? await hashPassword(data.contrasena) : password;
 
     await this.em.flush();
     return this.aPartidaPublica(partida);
