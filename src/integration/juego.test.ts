@@ -215,6 +215,7 @@ test('inventarios CRUD: movimiento, rango, reducción, eliminación vacía', asy
   const listado = await request('/inventarios', 'GET', undefined, playerCookie);
   assert.equal(listado.status, 200); assert.equal(listado.body.length, 1); assert.equal(listado.body[0].idPersonaje, ids.character);
   assert.equal((await request(`/objetos/sugeridos/${ids.character}`, 'GET', undefined, playerCookie)).body[0].idObjeto, ids.object);
+  assert.equal((await request(`/objetos/sugeridos/clase/${ids.class}`, 'GET', undefined, playerCookie)).body[0].idObjeto, ids.object);
   const path = `/inventarios/${ids.character}/2`;
   assert.equal((await request('/inventarios', 'POST', { idPersonaje: ids.character, numInventario: 2, cantidadEspacio: 4 }, playerCookie)).status, 201);
   await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
@@ -222,6 +223,40 @@ test('inventarios CRUD: movimiento, rango, reducción, eliminación vacía', asy
   assert.equal((await request(path, 'PUT', { cantidadEspacio: 3 }, playerCookie)).status, 409);
   assert.equal((await request(path, 'DELETE', undefined, playerCookie)).status, 409);
   assert.equal((await request(`/inventarios/${ids.character}/1`, 'DELETE', undefined, playerCookie)).status, 204);
+});
+test('criterio de cierre: comprar objeto, moverlo de inventario y venderlo actualiza dinero y ubicación atómicamente', async () => {
+  // 1. Comprar objeto de tienda (40 oro) -> dinero: 100 - 40 = 60
+  const buy = await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  assert.equal(buy.status, 200); assert.equal(buy.body.dineroRestante, 60);
+
+  // 2. Crear segundo inventario y mover objeto a inventario 2, pos 2
+  await request('/inventarios', 'POST', { idPersonaje: ids.character, numInventario: 2, cantidadEspacio: 5 }, playerCookie);
+  const move = await request(`/inventarios/${ids.character}/2/mover`, 'POST', { idObjeto: ids.object, posicion: 2 }, playerCookie);
+  assert.equal(move.status, 200); assert.equal(move.body.numInventario, 2); assert.equal(move.body.posicion, 2);
+
+  // 3. Vender objeto por 30 oro (70% - 100% de 40 es 28 a 40) -> dinero: 60 + 30 = 90
+  const sell = await request(`/objetos/${ids.object}/vender`, 'POST', { idPersonaje: ids.character, idTienda: ids.store, precio: 30 }, playerCookie);
+  assert.equal(sell.status, 200); assert.equal(sell.body.dineroRestante, 90);
+
+  // Verificar en base de datos la consistencia final
+  const em = orm.em.fork();
+  const p = await em.findOneOrFail(Personaje, { idPersonaje: ids.character });
+  assert.equal(p.dinero, 90);
+  const obj = await em.findOneOrFail(Objeto, { idObjeto: ids.object }, { populate: ['tienda', 'inventario'] });
+  assert.equal(obj.inventario, null);
+  assert.equal(obj.tienda?.idTienda, ids.store);
+  assert.equal(obj.posicion, 0);
+});
+test('dos ventas concurrentes del mismo objeto: solo una gana y se acredita una sola vez', async () => {
+  await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  const data = { idPersonaje: ids.character, idTienda: ids.store, precio: 30 };
+  const results = await Promise.all([
+    request(`/objetos/${ids.object}/vender`, 'POST', data, playerCookie),
+    request(`/objetos/${ids.object}/vender`, 'POST', data, playerCookie),
+  ]);
+  assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
+  const p = await orm.em.fork().findOneOrFail(Personaje, { idPersonaje: ids.character });
+  assert.equal(p.dinero, 90);
 });
 test('sesión, misión, recompensas una sola vez, cierre y karma una sola vez', async () => {
   const session = `/sesiones/${ids.game}/1`;
