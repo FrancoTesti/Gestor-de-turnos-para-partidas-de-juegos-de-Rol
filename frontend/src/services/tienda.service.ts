@@ -1,46 +1,27 @@
 import type { Tienda } from '../interfaces.ts';
+import { api } from './api';
 
-const TIENDAS_URL = '/api/tiendas';
+const TIENDAS_URL = '/tiendas';
 
 export type CrearTiendaData = Omit<Tienda, 'idTienda'>;
 export type ActualizarTiendaData = Partial<CrearTiendaData>;
 
-async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
-  if (!respuesta.ok) {
-    const cuerpo = (await respuesta.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(cuerpo?.message ?? `Error HTTP ${respuesta.status}`);
-  }
-  return respuesta.json() as Promise<T>;
+export async function obtenerTiendas(): Promise<Tienda[]> {
+  return api<Tienda[]>(TIENDAS_URL);
 }
 
-export async function obtenerTiendas(): Promise<Tienda[]> {
-  const respuesta = await fetch(TIENDAS_URL);
-  return procesarRespuesta<Tienda[]>(respuesta);
+export async function obtenerTiendaPorId(idTienda: number): Promise<Tienda> {
+  return api<Tienda>(`${TIENDAS_URL}/${idTienda}`);
 }
 
 export async function crearTienda(data: CrearTiendaData): Promise<Tienda> {
-  const respuesta = await fetch(TIENDAS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<Tienda>(respuesta);
+  return api<Tienda>(TIENDAS_URL, 'POST', data);
 }
 
 export async function actualizarTienda(idTienda: number, data: ActualizarTiendaData): Promise<Tienda> {
-  const respuesta = await fetch(`${TIENDAS_URL}/${idTienda}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<Tienda>(respuesta);
+  return api<Tienda>(`${TIENDAS_URL}/${idTienda}`, 'PUT', data);
 }
 
 export async function eliminarTienda(idTienda: number): Promise<void> {
-  const respuesta = await fetch(`${TIENDAS_URL}/${idTienda}`, {
-    method: 'DELETE',
-  });
-  if (!respuesta.ok) {
-    await procesarRespuesta<never>(respuesta);
-  }
+  await api<void>(`${TIENDAS_URL}/${idTienda}`, 'DELETE');
 }
