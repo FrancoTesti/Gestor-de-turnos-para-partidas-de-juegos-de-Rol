@@ -1,4 +1,6 @@
-const OBJETOS_URL = '/api/objetos';
+import { api } from './api';
+
+const OBJETOS_URL = '/objetos';
 
 export interface ObjetoPublico {
   idObjeto: number;
@@ -29,59 +31,37 @@ export interface ResultadoCompraObjeto {
   dineroRestante: number;
 }
 
-async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
-  if (!respuesta.ok) {
-    const cuerpo = (await respuesta.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(cuerpo?.message ?? `Error HTTP ${respuesta.status}`);
-  }
-  return respuesta.json() as Promise<T>;
-}
-
 export async function obtenerObjetos(): Promise<ObjetoPublico[]> {
-  const respuesta = await fetch(OBJETOS_URL);
-  return procesarRespuesta<ObjetoPublico[]>(respuesta);
+  return api<ObjetoPublico[]>(OBJETOS_URL);
 }
 
 export async function obtenerObjetoPorId(idObjeto: number): Promise<ObjetoPublico> {
-  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}`);
-  return procesarRespuesta<ObjetoPublico>(respuesta);
+  return api<ObjetoPublico>(`${OBJETOS_URL}/${idObjeto}`);
+}
+
+/**
+ * Obtiene objetos sugeridos para un personaje según su clase.
+ * Usa la ruta autenticada GET /api/objetos/sugeridos/:character
+ */
+export async function obtenerSugeridos(idPersonaje: number): Promise<ObjetoPublico[]> {
+  return api<ObjetoPublico[]>(`${OBJETOS_URL}/sugeridos/${idPersonaje}`);
 }
 
 export async function crearObjeto(data: CrearObjetoData): Promise<ObjetoPublico> {
-  const respuesta = await fetch(OBJETOS_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<ObjetoPublico>(respuesta);
+  return api<ObjetoPublico>(OBJETOS_URL, 'POST', data);
 }
 
 export async function actualizarObjeto(idObjeto: number, data: ActualizarObjetoData): Promise<ObjetoPublico> {
-  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<ObjetoPublico>(respuesta);
+  return api<ObjetoPublico>(`${OBJETOS_URL}/${idObjeto}`, 'PUT', data);
 }
 
 export async function eliminarObjeto(idObjeto: number): Promise<void> {
-  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}`, {
-    method: 'DELETE',
-  });
-  if (!respuesta.ok) {
-    await procesarRespuesta<never>(respuesta);
-  }
+  await api<void>(`${OBJETOS_URL}/${idObjeto}`, 'DELETE');
 }
 
 export async function comprarObjeto(
   idObjeto: number,
   data: ComprarObjetoData,
 ): Promise<ResultadoCompraObjeto> {
-  const respuesta = await fetch(`${OBJETOS_URL}/${idObjeto}/comprar`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<ResultadoCompraObjeto>(respuesta);
+  return api<ResultadoCompraObjeto>(`${OBJETOS_URL}/${idObjeto}/comprar`, 'POST', data);
 }

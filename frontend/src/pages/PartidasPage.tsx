@@ -318,3 +318,11 @@ export default function PartidasPage() {
     </td>
   </tr>
 ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
+    </div>
+  );
+}

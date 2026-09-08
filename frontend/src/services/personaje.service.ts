@@ -1,6 +1,7 @@
 import type { Personaje } from '../interfaces.ts';
+import { api } from './api';
 
-const PERSONAJES_URL = '/api/personajes';
+const PERSONAJES_URL = '/personajes';
 
 export interface CrearPersonajeData {
   nombreFicticio: string;
@@ -11,55 +12,31 @@ export interface CrearPersonajeData {
   xp?: number;
   nivel?: number;
   dinero?: number;
+  contrasenaPartida?: string;
 }
 
-export type ActualizarPersonajeData = Partial<CrearPersonajeData>;
-
-async function procesarRespuesta<T>(respuesta: Response): Promise<T> {
-  if (!respuesta.ok) {
-    const cuerpo = (await respuesta.json().catch(() => null)) as { message?: string } | null;
-    throw new Error(cuerpo?.message ?? `Error HTTP ${respuesta.status}`);
-  }
-  return respuesta.json() as Promise<T>;
-}
+export type ActualizarPersonajeData = Partial<Omit<CrearPersonajeData, 'contrasenaPartida'>>;
 
 export async function obtenerPersonajes(idClase?: number): Promise<Personaje[]> {
-  const url = idClase ? `${PERSONAJES_URL}?idClase=${idClase}` : PERSONAJES_URL;
-  const respuesta = await fetch(url);
-  return procesarRespuesta<Personaje[]>(respuesta);
+  const path = idClase ? `${PERSONAJES_URL}?idClase=${idClase}` : PERSONAJES_URL;
+  return api<Personaje[]>(path);
 }
 
 export async function obtenerPersonajePorId(idPersonaje: number): Promise<Personaje> {
-  const respuesta = await fetch(`${PERSONAJES_URL}/${idPersonaje}`);
-  return procesarRespuesta<Personaje>(respuesta);
+  return api<Personaje>(`${PERSONAJES_URL}/${idPersonaje}`);
 }
 
 export async function crearPersonaje(data: CrearPersonajeData): Promise<Personaje> {
-  const respuesta = await fetch(PERSONAJES_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<Personaje>(respuesta);
+  return api<Personaje>(PERSONAJES_URL, 'POST', data);
 }
 
 export async function actualizarPersonaje(
   idPersonaje: number,
   data: ActualizarPersonajeData,
 ): Promise<Personaje> {
-  const respuesta = await fetch(`${PERSONAJES_URL}/${idPersonaje}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(data),
-  });
-  return procesarRespuesta<Personaje>(respuesta);
+  return api<Personaje>(`${PERSONAJES_URL}/${idPersonaje}`, 'PUT', data);
 }
 
 export async function eliminarPersonaje(idPersonaje: number): Promise<void> {
-  const respuesta = await fetch(`${PERSONAJES_URL}/${idPersonaje}`, {
-    method: 'DELETE',
-  });
-  if (!respuesta.ok) {
-    await procesarRespuesta<never>(respuesta);
-  }
+  await api<void>(`${PERSONAJES_URL}/${idPersonaje}`, 'DELETE');
 }
