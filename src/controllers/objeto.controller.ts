@@ -160,4 +160,21 @@ export class ObjetoController {
       res.status(500).json({ message: 'Error al comprar el objeto' });
     }
   }
+
+  async obtenerSugeridos(req: Request<{ idClase: string }>, res: Response): Promise<void> {
+    const idClase = obtenerId(req.params.idClase);
+    if (idClase === null) {
+      res.status(400).json({ message: 'ID de clase inválido' });
+      return;
+    }
+
+    try {
+      const sugeridos = await this.objetoService.obtenerSugeridos(idClase);
+      res.json(sugeridos);
+    } catch (error) {
+      console.error('Error al obtener sugeridos:', error);
+      res.status(500).json({ message: 'Error al obtener los objetos sugeridos' });
+    }
+  }
 }
+
