@@ -16,7 +16,6 @@ import { crearPersonajeRouter } from './routes/personaje.routes';
 import { createAuth } from './security/auth';
 import { authorizeCrud, HttpError } from './security/authorization';
 import { crearJuegoRouter } from './routes/juego.routes';
-import { crearSesionRouter } from './routes/sesion.routes'; // sesiones: Franco Testi
 
 import { ZodError } from 'zod';
 import { ForeignKeyConstraintViolationException, UniqueConstraintViolationException } from '@mikro-orm/core';
@@ -78,7 +77,6 @@ export function createApp(orm: MikroORM) {
   app.use('/api/anfitriones', crearAnfitrionRouter(orm.em));
   app.use('/api/partidas', crearPartidaRouter(orm.em));
   app.use('/api/personajes', crearPersonajeRouter(orm.em));
-  app.use('/api/sesiones', crearSesionRouter(orm.em)); // sesiones: Franco Testi
 
   // 404
   app.use((req, res) => {
