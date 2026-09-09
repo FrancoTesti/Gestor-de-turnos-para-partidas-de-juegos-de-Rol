@@ -8,7 +8,6 @@ import RegisterPage from './pages/RegisterPage';
 import UsersPage from './pages/UsersPage';
 import ModulePage from './pages/ModulePage';
 import ProfilesPage from './pages/ProfilesPage';
-import PartidasPage from './pages/PartidasPage'; // partidas + sesiones: Franco Testi
 import ClasesPage from './pages/ClasesPage';     // clases: Alejandro Ciesco
 import PersonajesPage from './pages/PersonajesPage'; // personajes: Alejandro Ciesco
 import TiendasPage from './pages/TiendasPage';   // tiendas: Octavio Gudiño
@@ -34,9 +33,9 @@ export default function App() {
             {/* Tiendas — Octavio Gudiño */}
             <Route path="/stores" element={<TiendasPage />} />
 
-            {/* Partidas — vistas de ModulePage y PartidasPage conviven */}
+            {/* Partidas y sesiones usan el flujo unificado de ModulePage. */}
             <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
-            <Route path="/partidas" element={<PartidasPage />} /> {/* vista completa: Franco Testi */}
+            <Route path="/partidas" element={<Navigate to="/games" replace />} />
 
             {/* Personajes — Alejandro Ciesco */}
             <Route path="/characters" element={<PersonajesPage />} />
