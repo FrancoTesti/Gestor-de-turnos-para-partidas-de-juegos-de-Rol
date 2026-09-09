@@ -3,7 +3,7 @@ import './clases.css';
 
 export interface ClaseDetalleProps {
   clase: Clase | null;
-  onVolver: () => void;
+  onVolver?: () => void;
   onEditar?: (clase: Clase) => void;
 }
 
@@ -12,9 +12,11 @@ export default function ClaseDetalle({ clase, onVolver, onEditar }: ClaseDetalle
     return (
       <div className="clase-detalle-card">
         <p>No se ha seleccionado ninguna clase.</p>
-        <button type="button" className="btn-secondary" onClick={onVolver}>
-          Volver al listado
-        </button>
+        {onVolver && (
+          <button type="button" className="btn-secondary" onClick={onVolver}>
+            Volver al listado
+          </button>
+        )}
       </div>
     );
   }
@@ -23,9 +25,11 @@ export default function ClaseDetalle({ clase, onVolver, onEditar }: ClaseDetalle
     <div className="clase-detalle-card">
       <div className="clase-header">
         <h2>Detalle de Clase #{clase.idClase}</h2>
-        <button type="button" className="btn-secondary" onClick={onVolver}>
-          ← Volver
-        </button>
+        {onVolver && (
+          <button type="button" className="btn-secondary" onClick={onVolver}>
+            ← Volver
+          </button>
+        )}
       </div>
 
       <div style={{ marginTop: '1rem' }}>
