@@ -42,12 +42,14 @@ Verificación local: compilación correcta, 44 pruebas aprobadas y lint sin erro
 
 ## Pruebas de navegador
 
-Dos recorridos locales aprobados con Chromium, Express y MySQL reales, sin reemplazar las respuestas de la API:
+Tres recorridos locales aprobados con Chromium, Express y MySQL reales, sin reemplazar las respuestas de la API:
 
 - Registro de anfitrión, login, creación de partida y sesión planificada, persistencia después de recargar, invalidación de cookie y redirección al login ante un `401`.
 - Cierre de sesión desde el botón y bloqueo del acceso posterior a una ruta privada.
+- Dos cuentas separadas: el anfitrión crea clase y partida; el jugador crea su personaje; el anfitrión inicia una sesión con ese participante, completa una misión con 50 XP y 100 monedas, finaliza la sesión y recibe karma +1 del jugador. Se verifica que no se ofrece completar de nuevo la misión y que el personaje conserva 50 XP y 200 monedas tras recargar.
+- Dentro del tercer recorrido se crea una tienda y un objeto de valor 40, se compra (saldo 160), se crea un segundo inventario y se mueve el objeto a su posición 2. Luego se vende por 28 (70 %), se comprueba que sale del inventario y que el saldo persistido queda en 188.
 
-Esto no demuestra todavía el ciclo completo de misiones, comercio, inventarios ni todos los permisos. Esos recorridos siguen pendientes.
+El recorrido positivo de juego y comercio queda comprobado. Esto no demuestra todos los permisos ni todas las variantes de negocio: deben contrastarse también con las pruebas unitarias, de integración y la matriz de requisitos pendiente. Tampoco sustituye la revisión responsive y de accesibilidad.
 
 Para repetirlos desde la raíz:
 
