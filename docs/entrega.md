@@ -22,7 +22,7 @@ Este archivo registra el cierre de la entrega. Una tarea pendiente no se conside
 
 `.github/workflows/verificacion.yml` ejecuta compilación, tests y lint del frontend, además de compilación, tests unitarios e integración MySQL del backend. La base del servicio CI es efímera; la suite crea y elimina exclusivamente su propia base aleatoria. La contraseña declarada en el workflow pertenece solo a ese servicio de prueba.
 
-La primera ejecución remota aprobó ambos trabajos: [Actions 34419939705](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34419939705). La automatización todavía no incluye E2E.
+La primera ejecución remota aprobó ambos trabajos: [Actions 34419939705](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34419939705). El workflow ahora incorpora también los recorridos E2E en Chromium y guarda las trazas de los fallos durante siete días; ese agregado debe verificarse en una nueva ejecución remota.
 
 ## Comunicación HTTP
 
@@ -39,3 +39,29 @@ Las cargas iniciales de clases, tiendas y personajes usan su estado inicial de c
 Personajes comprueba la existencia del perfil jugador independientemente del perfil anfitrión. Antes, una cuenta con ambos perfiles no veía la opción de crear personajes.
 
 Verificación local: compilación correcta, 44 pruebas aprobadas y lint sin errores ni advertencias. Las nuevas pruebas cubren reintentos después de fallos de conexión en las tres páginas y creación de personajes con perfiles combinados.
+
+## Pruebas de navegador
+
+Dos recorridos locales aprobados con Chromium, Express y MySQL reales, sin reemplazar las respuestas de la API:
+
+- Registro de anfitrión, login, creación de partida y sesión planificada, persistencia después de recargar, invalidación de cookie y redirección al login ante un `401`.
+- Cierre de sesión desde el botón y bloqueo del acceso posterior a una ruta privada.
+
+Esto no demuestra todavía el ciclo completo de misiones, comercio, inventarios ni todos los permisos. Esos recorridos siguen pendientes.
+
+Para repetirlos desde la raíz:
+
+```powershell
+npm ci
+npm --prefix frontend ci
+npx playwright install chromium
+$env:TEST_DB_HOST = '127.0.0.1'
+$env:TEST_DB_PORT = '3306'
+$env:TEST_DB_USER = 'usuario_de_pruebas'
+# Definir TEST_DB_PASSWORD en el entorno local, sin subirla al repositorio.
+npm run test:e2e
+```
+
+El usuario de MySQL necesita permiso para crear y eliminar bases de prueba. La suite exige `TEST_DB_PORT` explícito, crea una base `rpg_e2e_<identificador aleatorio>` y elimina únicamente esa base al finalizar, incluso ante fallos de pruebas. Nunca reutiliza `DB_NAME`. Un corte forzado del proceso puede impedir la limpieza: revisar cualquier base residual antes de eliminarla manualmente.
+
+Los puertos 5174 y 3101 deben estar libres. Vite mantiene su destino habitual `localhost:3000` al ejecutar la aplicación normalmente; solo el entorno E2E establece `API_PROXY_TARGET`. Las capturas y trazas de fallos quedan en `test-results/`, excluido de Git.

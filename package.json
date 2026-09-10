@@ -6,6 +6,7 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "test": "vitest run src/tests",
+    "test:e2e": "npm run build && playwright test",
     "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
     "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
     "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "@mikro-orm/cli": "^6.6.16",
+    "@playwright/test": "^1.63.0",
     "@types/node": "^26.2.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.17",
