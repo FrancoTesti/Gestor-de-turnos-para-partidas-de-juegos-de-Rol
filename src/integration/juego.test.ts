@@ -75,7 +75,7 @@ beforeEach(async () => {
   em.create(Inventario, { personaje: p, numInventario: 1, cantidadEspacio: 2 });
   em.create(Inventario, { personaje: q, numInventario: 1, cantidadEspacio: 2 });
   const tienda = em.create(Tienda, { nombre: 'Armería', claseTienda: 'Armas', clase });
-  const objeto = em.create(Objeto, { nombre: 'Espada', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, posicion: 0, tienda, inventario: null });
+  const objeto = em.create(Objeto, { nombre: 'Espada', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, esUnico: false, posicion: 0, tienda, inventario: null });
   await em.flush();
   ids = { host: h.idUsuario, player: u.idUsuario, other: o.idUsuario, game: partida.idPartida, character: p.idPersonaje, otherCharacter: q.idPersonaje, object: objeto.idObjeto, store: tienda.idTienda, class: clase.idClase };
   // Una app nueva por fixture evita que el rate limiter y las sesiones contaminen otros tests.
@@ -196,7 +196,7 @@ test('dos compras concurrentes del mismo objeto: solo una gana y solo un débito
   const players = await orm.em.fork().find(Personaje, {}); assert.equal(players.reduce((sum, p) => sum + p.dinero, 0), 160);
 });
 test('dos compras concurrentes a igual posición no duplican ni descuentan dos veces', async () => {
-  const em = orm.em.fork(); const tienda = await em.findOneOrFail(Tienda, { idTienda: ids.store }); const o = em.create(Objeto, { nombre: 'Escudo', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, posicion: 0, tienda }); await em.flush();
+  const em = orm.em.fork(); const tienda = await em.findOneOrFail(Tienda, { idTienda: ids.store }); const o = em.create(Objeto, { nombre: 'Escudo', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, esUnico: false, posicion: 0, tienda }); await em.flush();
   const data = { idPersonaje: ids.character, numInventario: 1, posicion: 0 };
   const results = await Promise.all([request(`/objetos/${ids.object}/comprar`, 'POST', data, playerCookie), request(`/objetos/${o.idObjeto}/comprar`, 'POST', data, playerCookie)]);
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);

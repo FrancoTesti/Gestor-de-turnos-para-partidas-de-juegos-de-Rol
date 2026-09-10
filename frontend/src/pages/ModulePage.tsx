@@ -146,11 +146,156 @@ function Workflow({ resource, row, refs, canManage, busy, perform }: { resource:
   </form>;
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
+    const totalCapacity = Number(row.cantidadEspacio);
+    const occupiedPositions = new Set(objects.map(o => Number(o.posicion)));
+    const freePositions: number[] = [];
+    for (let p = 0; p < totalCapacity; p++) {
+      if (!occupiedPositions.has(p)) freePositions.push(p);
+    }
+    const isFull = freePositions.length === 0;
     const selling = objects.find(o => String(o.idObjeto) === object);
-    return <div><h3>Objetos guardados</h3><ul>{objects.map(o => <li key={String(o.idObjeto)}>#{String(o.idObjeto)} — {label(o)} — posición {String(o.posicion)}, valor {String(o.valor)}</li>)}</ul>
-      <form onSubmit={e => { e.preventDefault(); void perform(() => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: Number(position) })); }}><h3>Mover a este inventario</h3><label>ID de un objeto del personaje<input type="number" min="1" required value={object} onChange={e => setObject(e.target.value)} /></label><label>Posición (comienza en 0)<input type="number" min="0" max={Number(row.cantidadEspacio) - 1} required value={position} onChange={e => setPosition(e.target.value)} /></label><button disabled={busy}>Mover objeto</button></form>
-      <form onSubmit={e => { e.preventDefault(); void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) })); }}><h3>Vender objeto</h3><p>Elegí un precio entero entre el 70 % y el 100 % del valor.</p><label>Objeto<select required value={object} onChange={e => { setObject(e.target.value); setPrice(''); }}><option value="">Seleccionar</option>{objects.map(o => <option key={String(o.idObjeto)} value={String(o.idObjeto)}>{label(o)}</option>)}</select></label><label>Precio {selling && `(${selling.minimo} a ${selling.maximo})`}<input required type="number" step="1" min={Number(selling?.minimo ?? 0)} max={Number(selling?.maximo ?? 0)} value={price} onChange={e => setPrice(e.target.value)} /></label><label>Tienda<select required value={store} onChange={e => setStore(e.target.value)}><option value="">Seleccionar</option>{refs.tiendas?.map(t => <option key={String(t.idTienda)} value={String(t.idTienda)}>{label(t)}</option>)}</select></label><button disabled={busy || !selling}>Vender</button></form>
-    </div>;
+
+    return (
+      <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
+        <h3>Mochila / Inventario #{String(row.numInventario)}</h3>
+        <p style={{ fontSize: '0.9rem', color: '#4a5568' }}>
+          Capacidad: <strong>{objects.length} / {totalCapacity} espacios ocupados</strong> ({freePositions.length} libres)
+        </p>
+
+        <div className="grid-posiciones" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          {Array.from({ length: totalCapacity }, (_, idx) => {
+            const item = objects.find(o => Number(o.posicion) === idx);
+            return (
+              <div
+                key={idx}
+                style={{
+                  border: item ? '1px solid #cbd5e0' : '1px dashed #cbd5e0',
+                  background: item ? '#ffffff' : '#f7fafc',
+                  padding: '0.5rem',
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                }}
+              >
+                <div style={{ fontWeight: 600, color: '#718096', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                {item ? (
+                  <div style={{ marginTop: '0.2rem' }}>
+                    <strong>{label(item)}</strong>
+                    <div style={{ color: '#4a5568', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
+                  </div>
+                ) : (
+                  <span style={{ color: '#a0aec0', fontStyle: 'italic' }}>[ Libre ]</span>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Mover objeto */}
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            const posNum = Number(position);
+            if (occupiedPositions.has(posNum) && !objects.some(o => String(o.idObjeto) === object && Number(o.posicion) === posNum)) {
+              setError('La posición seleccionada ya está ocupada.');
+              return;
+            }
+            void perform(() => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: posNum }));
+          }}
+          style={{ background: '#f7fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' }}
+        >
+          <h4 style={{ marginTop: 0 }}>Mover objeto a este inventario</h4>
+          {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>⚠️ Capacidad insuficiente: Este inventario está lleno.</p>}
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Objeto del personaje
+            <input
+              type="number"
+              min="1"
+              required
+              placeholder="ID del objeto"
+              value={object}
+              onChange={e => setObject(e.target.value)}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            />
+          </label>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Posición destino (0 a {totalCapacity - 1})
+            <select
+              required
+              value={position}
+              onChange={e => setPosition(e.target.value)}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            >
+              <option value="">Seleccionar posición disponible</option>
+              {freePositions.map(p => (
+                <option key={p} value={p}>Casillero #{p} [ Libre ]</option>
+              ))}
+              {Array.from({ length: totalCapacity }, (_, idx) => idx).filter(idx => occupiedPositions.has(idx)).map(p => (
+                <option key={`occ-${p}`} value={p} disabled>Casillero #{p} [ Ocupado ]</option>
+              ))}
+            </select>
+          </label>
+          <button className="btn-primary" disabled={busy || isFull}>Mover objeto</button>
+        </form>
+
+        {/* Vender objeto */}
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) }));
+          }}
+          style={{ background: '#f7fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+        >
+          <h4 style={{ marginTop: 0 }}>Vender objeto de este inventario</h4>
+          <p style={{ fontSize: '0.85rem', color: '#4a5568' }}>Elegí un precio entero entre el 70 % y el 100 % del valor base.</p>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Objeto a vender
+            <select
+              required
+              value={object}
+              onChange={e => { setObject(e.target.value); setPrice(''); }}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            >
+              <option value="">Seleccionar objeto</option>
+              {objects.map(o => (
+                <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
+                  {label(o)} (Posición {String(o.posicion)}, Valor ${String(o.valor)})
+                </option>
+              ))}
+            </select>
+          </label>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Precio de venta {selling && `(permitido: $${selling.minimo ?? Math.ceil(Number(selling.valor) * 0.7)} a $${selling.maximo ?? Math.floor(Number(selling.valor))})`}
+            <input
+              required
+              type="number"
+              step="1"
+              min={Number(selling?.minimo ?? Math.ceil(Number(selling?.valor ?? 0) * 0.7))}
+              max={Number(selling?.maximo ?? Math.floor(Number(selling?.valor ?? 0)))}
+              value={price}
+              onChange={e => setPrice(e.target.value)}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            />
+          </label>
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Tienda receptora
+            <select
+              required
+              value={store}
+              onChange={e => setStore(e.target.value)}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            >
+              <option value="">Seleccionar tienda</option>
+              {refs.tiendas?.map(t => (
+                <option key={String(t.idTienda)} value={String(t.idTienda)}>
+                  🏪 {label(t)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="btn-primary" disabled={busy || !selling}>Vender objeto</button>
+        </form>
+      </div>
+    );
   }
   return null;
 }

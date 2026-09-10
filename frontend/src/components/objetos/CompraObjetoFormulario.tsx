@@ -22,12 +22,18 @@ export default function CompraObjetoFormulario({
   const [numInventario, setNumInventario] = useState(1);
   const [posicion, setPosicion] = useState(0);
   const [comprando, setComprando] = useState(false);
+
+  const personajeSeleccionado = personajes.find(p => p.idPersonaje === idPersonaje);
+  const saldoActual = personajeSeleccionado ? personajeSeleccionado.dinero : 0;
+  const saldoRestante = saldoActual - objeto.valor;
+  const saldoInsuficiente = saldoActual < objeto.valor;
+
   const disponibles = inventarios?.filter(i => i.idPersonaje === idPersonaje);
   const elegido = disponibles?.find(i => i.numInventario === numInventario);
 
   async function enviar(evento: React.FormEvent): Promise<void> {
     evento.preventDefault();
-    if (!idPersonaje || numInventario < 1 || posicion < 0) return;
+    if (!idPersonaje || numInventario < 1 || posicion < 0 || saldoInsuficiente) return;
 
     setComprando(true);
     try {
@@ -40,10 +46,10 @@ export default function CompraObjetoFormulario({
   return (
     <form className="compra-formulario" onSubmit={(evento) => void enviar(evento)}>
       <h3>Comprar {objeto.nombre}</h3>
-      <p className="compra-precio">Precio: {objeto.valor}</p>
+      <p className="compra-precio">Precio del objeto: <strong>{objeto.valor}</strong></p>
 
       {personajes.length === 0 ? (
-        <p className="detalle-error">No hay personajes disponibles para realizar la compra.</p>
+        <p className="detalle-error" role="alert">No hay personajes disponibles para realizar la compra.</p>
       ) : (
         <>
           <label>
@@ -51,24 +57,39 @@ export default function CompraObjetoFormulario({
             <select value={idPersonaje} onChange={(e) => { const id = Number(e.target.value); setIdPersonaje(id); setNumInventario(inventarios?.find(i => i.idPersonaje === id)?.numInventario ?? 1); setPosicion(0); }} disabled={comprando}>
               {personajes.map((personaje) => (
                 <option key={personaje.idPersonaje} value={personaje.idPersonaje}>
-                  {personaje.nombreFicticio} — dinero: {personaje.dinero}
+                  {personaje.nombreFicticio} — Saldo: ${personaje.dinero}
                 </option>
               ))}
             </select>
           </label>
+
+          <div className="saldo-resumen" style={{ background: saldoInsuficiente ? '#fff5f5' : '#f0fff4', padding: '0.6rem 0.8rem', borderRadius: '6px', margin: '0.75rem 0', border: `1px solid ${saldoInsuficiente ? '#feb2b2' : '#9ae6b4'}` }}>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
+              💰 Saldo actual: <strong>${saldoActual}</strong>
+            </p>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: saldoInsuficiente ? '#c53030' : '#276749' }}>
+              📊 Saldo después de la compra: <strong>${saldoRestante}</strong>
+            </p>
+            {saldoInsuficiente && (
+              <p role="alert" style={{ margin: '0.25rem 0 0 0', color: '#c53030', fontWeight: 600, fontSize: '0.85rem' }}>
+                ⚠️ Saldo insuficiente. Te faltan ${objeto.valor - saldoActual} monedas.
+              </p>
+            )}
+          </div>
+
           <label>
             Número de inventario
-            {disponibles ? <select required value={elegido ? numInventario : ''} onChange={e => { setNumInventario(Number(e.target.value)); setPosicion(0); }}><option value="">Elegir inventario</option>{disponibles.map(i => <option key={i.numInventario} value={i.numInventario}>Inventario {i.numInventario} ({i.cantidadEspacio} espacios)</option>)}</select> : <input type="number" min="1" step="1" value={numInventario} onChange={(e) => setNumInventario(Number(e.target.value))} disabled={comprando} />}
+            {disponibles ? <select required value={elegido ? numInventario : ''} onChange={e => { setNumInventario(Number(e.target.value)); setPosicion(0); }}><option value="">Elegir inventario</option>{disponibles.map(i => <option key={i.numInventario} value={i.numInventario}>Inventario #{i.numInventario} ({i.cantidadEspacio} espacios)</option>)}</select> : <input type="number" min="1" step="1" value={numInventario} onChange={(e) => setNumInventario(Number(e.target.value))} disabled={comprando} />}
           </label>
           <label>
-            Posición
+            Posición en el inventario
             <input type="number" min="0" max={elegido ? elegido.cantidadEspacio - 1 : undefined} step="1" value={posicion} onChange={(e) => setPosicion(Number(e.target.value))} disabled={comprando} />
           </label>
         </>
       )}
 
       <div className="compra-acciones">
-        <button className="btn-comprar" type="submit" disabled={comprando || personajes.length === 0 || (disponibles !== undefined && !elegido)}>
+        <button className="btn-comprar" type="submit" disabled={comprando || personajes.length === 0 || saldoInsuficiente || (disponibles !== undefined && !elegido)}>
           {comprando ? 'Comprando...' : 'Confirmar compra'}
         </button>
         <button type="button" onClick={onCancelar} disabled={comprando}>Cancelar</button>

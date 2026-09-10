@@ -9,8 +9,10 @@ import {
   eliminarObjeto,
   obtenerObjetoPorId,
   obtenerObjetos,
+  venderObjeto,
   type CrearObjetoData,
   type ComprarObjetoData,
+  type VenderObjetoData,
   type ObjetoPublico,
 } from '../../services/objeto.service';
 import { obtenerPersonajes } from '../../services/personaje.service';
@@ -19,6 +21,7 @@ import CompraObjetoFormulario from './CompraObjetoFormulario';
 import ObjetoDetalle from './ObjetoDetalle';
 import ObjetoFormulario from './ObjetoFormulario';
 import ObjetoLista from './ObjetoLista';
+import VentaObjetoFormulario from './VentaObjetoFormulario';
 import './objetos.css';
 
 type Vista = 'listado' | 'formulario';
@@ -47,6 +50,7 @@ export default function ObjetosPage() {
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [compraAbierta, setCompraAbierta] = useState(false);
+  const [venderAbierto, setVenderAbierto] = useState(false);
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
@@ -86,6 +90,7 @@ export default function ObjetosPage() {
 
   async function seleccionar(objeto: ObjetoPublico): Promise<void> {
     setCompraAbierta(false);
+    setVenderAbierto(false);
     setCargandoDetalle(true);
     setErrorDetalle(null);
     try {
@@ -150,11 +155,43 @@ export default function ObjetosPage() {
           : personaje),
       );
       setCompraAbierta(false);
-      setMensaje(`Compra realizada. Dinero restante: ${resultado.dineroRestante}.`);
+      setMensaje(`Compra realizada con éxito. Saldo restante: $${resultado.dineroRestante}.`);
     } catch (e) {
       setError(mensajeDeError(e));
     }
   }
+
+  async function vender(data: VenderObjetoData): Promise<void> {
+    if (!seleccionado) return;
+    setError(null);
+    setMensaje(null);
+    try {
+      const resultado = await venderObjeto(seleccionado.idObjeto, data);
+      setObjetos((actuales) =>
+        actuales.map((o) =>
+          o.idObjeto === resultado.idObjeto
+            ? { ...o, idTienda: data.idTienda, idPersonaje: null, numInventario: null, posicion: 0 }
+            : o,
+        ),
+      );
+      setPersonajes((actuales) =>
+        actuales.map((p) =>
+          p.idPersonaje === resultado.idPersonaje
+            ? { ...p, dinero: resultado.dineroRestante }
+            : p,
+        ),
+      );
+      setVenderAbierto(false);
+      setSeleccionado(null);
+      setMensaje(`Venta realizada con éxito por $${resultado.precio}. Saldo actual: $${resultado.dineroRestante}.`);
+    } catch (e) {
+      setError(mensajeDeError(e));
+    }
+  }
+
+  const personajeDueno = seleccionado && seleccionado.idPersonaje !== null
+    ? personajes.find(p => p.idPersonaje === seleccionado.idPersonaje)
+    : undefined;
 
   return (
     <section>
@@ -191,8 +228,18 @@ export default function ObjetosPage() {
                 cargando={cargandoDetalle}
                 error={errorDetalle}
                 nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
-                onComprar={seleccionado !== null && seleccionado.idTienda !== null ? () => setCompraAbierta(true) : undefined}
+                onComprar={seleccionado !== null && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
               />
+              {personajeDueno && !venderAbierto && (
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ marginTop: '0.75rem', width: '100%' }}
+                  onClick={() => { setCompraAbierta(false); setVenderAbierto(true); }}
+                >
+                  💰 Vender este objeto
+                </button>
+              )}
               {seleccionado && compraAbierta && (
                 <CompraObjetoFormulario
                   objeto={seleccionado}
@@ -200,6 +247,15 @@ export default function ObjetosPage() {
                   inventarios={inventarios}
                   onComprar={comprar}
                   onCancelar={() => setCompraAbierta(false)}
+                />
+              )}
+              {seleccionado && personajeDueno && venderAbierto && (
+                <VentaObjetoFormulario
+                  objeto={seleccionado}
+                  personaje={personajeDueno}
+                  tiendas={tiendas}
+                  onVender={vender}
+                  onCancelar={() => setVenderAbierto(false)}
                 />
               )}
             </aside>

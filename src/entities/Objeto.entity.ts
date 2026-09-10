@@ -24,6 +24,9 @@ export class Objeto {
   @Property({ type: 'string', length: 50 })
   tipoObjeto!: string;
 
+  @Property({ type: 'boolean', default: false })
+  esUnico: boolean = false;
+
   @ManyToOne({ entity: () => Tienda, fieldName: 'idTienda', nullable: true })
   tienda?: Tienda | null;
 

@@ -22,6 +22,7 @@ export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error, o
       <dl>
         <div><dt>Nivel</dt><dd>{objeto.nivelObjeto}</dd></div>
         <div><dt>Valor</dt><dd>{objeto.valor}</dd></div>
+        <div><dt>Único</dt><dd>{objeto.esUnico ? '⭐ Sí (Objeto único)' : 'No'}</dd></div>
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>
         <div><dt>Ubicación</dt><dd>{nombreTienda ?? (objeto.idPersonaje ? `Inventario ${objeto.numInventario} del personaje #${objeto.idPersonaje}` : 'Sin asignar')}</dd></div>
       </dl>

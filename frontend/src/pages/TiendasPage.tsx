@@ -132,7 +132,7 @@ export default function TiendasPage() {
     }
   }
 
-  const tiposTienda = [...new Set(tiendas.map((t) => t.claseTienda))].sort();
+  const tiposTienda = [...new Set(tiendas.map((t) => t.claseTienda))].filter(Boolean).sort();
 
   const tiendasFiltradas = tiendas.filter((t) => {
     const coincideTexto = !busqueda.trim() ||
@@ -183,7 +183,7 @@ export default function TiendasPage() {
               ⚠️ {errorForm}
             </p>
           )}
-          <form onSubmit={(e) => void handleGuardar(e)} style={{ display: 'grid', gap: '1rem' }}>
+          <form onSubmit={(e) => { e.preventDefault(); void handleGuardar(e); }} style={{ display: 'grid', gap: '1rem' }}>
             <label>
               Nombre de la tienda *
               <input
@@ -220,7 +220,7 @@ export default function TiendasPage() {
               >
                 <option value="">Sin restricción de clase</option>
                 {clases.map((c) => (
-                  <option key={c.idClase} value={c.idClase}>{c.nombreClase}</option>
+                  <option key={String(c.idClase)} value={c.idClase}>{c.nombreClase}</option>
                 ))}
               </select>
             </label>
@@ -299,7 +299,7 @@ export default function TiendasPage() {
             <tbody>
               {tiendasFiltradas.map((t) => (
                 <tr
-                  key={t.idTienda}
+                  key={String(t.idTienda)}
                   style={{
                     borderBottom: '1px solid #e2e8f0',
                     background: seleccionada?.idTienda === t.idTienda ? '#ebf8ff' : undefined,

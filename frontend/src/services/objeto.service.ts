@@ -9,6 +9,7 @@ export interface ObjetoPublico {
   nombre: string;
   nivelObjeto: number;
   tipoObjeto: string;
+  esUnico: boolean;
   idTienda: number | null;
   idPersonaje: number | null;
   numInventario: number | null;
@@ -29,6 +30,19 @@ export interface ResultadoCompraObjeto {
   idPersonaje: number;
   numInventario: number;
   dineroRestante: number;
+}
+
+export interface VenderObjetoData {
+  idPersonaje: number;
+  idTienda: number;
+  precio: number;
+}
+
+export interface ResultadoVentaObjeto {
+  idObjeto: number;
+  idPersonaje: number;
+  dineroRestante: number;
+  precio: number;
 }
 
 export async function obtenerObjetos(): Promise<ObjetoPublico[]> {
@@ -64,4 +78,11 @@ export async function comprarObjeto(
   data: ComprarObjetoData,
 ): Promise<ResultadoCompraObjeto> {
   return api<ResultadoCompraObjeto>(`${OBJETOS_URL}/${idObjeto}/comprar`, 'POST', data);
+}
+
+export async function venderObjeto(
+  idObjeto: number,
+  data: VenderObjetoData,
+): Promise<ResultadoVentaObjeto> {
+  return api<ResultadoVentaObjeto>(`${OBJETOS_URL}/${idObjeto}/vender`, 'POST', data);
 }

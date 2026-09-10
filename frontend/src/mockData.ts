@@ -155,6 +155,7 @@ export const MOCK_OBJETOS: Objeto[] = [
     nombre: "Espada Bastarda",
     nivelObjeto: 1,
     tipoObjeto: "Arma",
+    esUnico: false,
     idTienda: 1,
     idPersonaje: 501, // La tiene equipada Thorin
     numInventario: 1, // Está guardada en su inventario 1
@@ -167,6 +168,7 @@ export const MOCK_OBJETOS: Objeto[] = [
     nombre: "Poción de Maná Mayor",
     nivelObjeto: 2,
     tipoObjeto: "Consumible",
+    esUnico: false,
     idTienda: 2,
     idPersonaje: 502, // La tiene Elminster
     numInventario: 2,
