@@ -22,4 +22,8 @@ Este archivo registra el cierre de la entrega. Una tarea pendiente no se conside
 
 `.github/workflows/verificacion.yml` ejecuta compilación, tests y lint del frontend, además de compilación, tests unitarios e integración MySQL del backend. La base del servicio CI es efímera; la suite crea y elimina exclusivamente su propia base aleatoria. La contraseña declarada en el workflow pertenece solo a ese servicio de prueba.
 
-La ejecución remota debe verificarse antes de considerar cerrado este punto. La automatización todavía no incluye E2E.
+La primera ejecución remota aprobó ambos trabajos: [Actions 34419939705](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34419939705). La automatización todavía no incluye E2E.
+
+## Comunicación HTTP
+
+Los servicios de usuarios, jugadores y partidas ya utilizan `api.ts`. Una búsqueda de `fetch(` en `frontend/src` encuentra únicamente el cliente común. Después de la migración, la compilación del frontend y sus 34 pruebas aprobaron. Sigue pendiente comprobar y resolver la expiración global de sesión.
