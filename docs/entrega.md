@@ -31,3 +31,11 @@ Los servicios de usuarios, jugadores y partidas ya utilizan `api.ts`. Una búsqu
 Una respuesta protegida `401` notifica al contexto, que limpia identidad, usuarios y perfiles. El layout protegido existente redirige al login al perder la identidad. Un rechazo de contraseña al iniciar sesión no dispara esa notificación. Las recargas de listas iniciadas antes de limpiar la sesión no vuelven a introducir datos privados.
 
 El cliente también identifica errores de conexión sin reintentar escrituras, admite respuestas `204` y conserva el estado HTTP ante cuerpos de error inesperados. Compilación y 39 pruebas del frontend aprobadas; lint sin errores, con tres advertencias previas. La prueba de contexto verifica limpieza de identidad y listas ante un `401` del cliente real; falta comprobar la navegación completa en E2E.
+
+## Carga de pantallas y perfiles combinados
+
+Las cargas iniciales de clases, tiendas y personajes usan su estado inicial de carga; los reintentos se solicitan desde eventos y descartan respuestas de efectos anteriores o pantallas desmontadas. Se eliminaron las tres advertencias de React sin desactivar reglas de lint.
+
+Personajes comprueba la existencia del perfil jugador independientemente del perfil anfitrión. Antes, una cuenta con ambos perfiles no veía la opción de crear personajes.
+
+Verificación local: compilación correcta, 44 pruebas aprobadas y lint sin errores ni advertencias. Las nuevas pruebas cubren reintentos después de fallos de conexión en las tres páginas y creación de personajes con perfiles combinados.

@@ -12,7 +12,7 @@
  *
  * Cada tienda muestra: nombre, tipo de tienda, clase asociada (si tiene).
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Clase, Tienda } from '../interfaces';
 import { useUser } from '../context/UserContext';
 import { obtenerClases } from '../services/clase.service';
@@ -55,16 +55,21 @@ export default function TiendasPage() {
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
 
-  const cargar = useCallback(() => {
+  const [revision, setRevision] = useState(0);
+  function cargar() {
     setCargando(true);
     setError(null);
-    Promise.all([obtenerTiendas(), obtenerClases()])
-      .then(([t, c]) => { setTiendas(t); setClases(c); })
-      .catch((e) => setError(mensajeError(e)))
-      .finally(() => setCargando(false));
-  }, []);
+    setRevision(value => value + 1);
+  }
 
-  useEffect(() => { cargar(); }, [cargar]);
+  useEffect(() => {
+    let activo = true;
+    Promise.all([obtenerTiendas(), obtenerClases()])
+      .then(([t, c]) => { if (activo) { setTiendas(t); setClases(c); } })
+      .catch((e) => { if (activo) setError(mensajeError(e)); })
+      .finally(() => { if (activo) setCargando(false); });
+    return () => { activo = false; };
+  }, [revision]);
 
   function abrirFormularioCrear() {
     setEnEdicion(null);
