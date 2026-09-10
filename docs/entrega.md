@@ -26,4 +26,8 @@ La primera ejecución remota aprobó ambos trabajos: [Actions 34419939705](https
 
 ## Comunicación HTTP
 
-Los servicios de usuarios, jugadores y partidas ya utilizan `api.ts`. Una búsqueda de `fetch(` en `frontend/src` encuentra únicamente el cliente común. Después de la migración, la compilación del frontend y sus 34 pruebas aprobaron. Sigue pendiente comprobar y resolver la expiración global de sesión.
+Los servicios de usuarios, jugadores y partidas ya utilizan `api.ts`. Una búsqueda de `fetch(` en `frontend/src` encuentra únicamente el cliente común.
+
+Una respuesta protegida `401` notifica al contexto, que limpia identidad, usuarios y perfiles. El layout protegido existente redirige al login al perder la identidad. Un rechazo de contraseña al iniciar sesión no dispara esa notificación. Las recargas de listas iniciadas antes de limpiar la sesión no vuelven a introducir datos privados.
+
+El cliente también identifica errores de conexión sin reintentar escrituras, admite respuestas `204` y conserva el estado HTTP ante cuerpos de error inesperados. Compilación y 39 pruebas del frontend aprobadas; lint sin errores, con tres advertencias previas. La prueba de contexto verifica limpieza de identidad y listas ante un `401` del cliente real; falta comprobar la navegación completa en E2E.
