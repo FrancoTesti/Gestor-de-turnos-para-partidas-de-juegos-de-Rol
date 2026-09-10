@@ -91,6 +91,7 @@ export class ObjetoService {
       tipoObjeto: data.tipoObjeto,
       valor: data.valor,
       nivelObjeto: data.nivelObjeto,
+      esUnico: data.esUnico ?? false,
       posicion: data.posicion ?? 0,
       tienda,
     });
@@ -115,6 +116,7 @@ export class ObjetoService {
     if (data.tipoObjeto !== undefined) objeto.tipoObjeto = data.tipoObjeto;
     if (data.valor !== undefined) objeto.valor = data.valor;
     if (data.nivelObjeto !== undefined) objeto.nivelObjeto = data.nivelObjeto;
+    if (data.esUnico !== undefined) objeto.esUnico = data.esUnico;
     if (data.posicion !== undefined) objeto.posicion = data.posicion;
 
     await this.em.flush();
@@ -149,9 +151,20 @@ export class ObjetoService {
       const personaje = await em.findOne(
         Personaje,
         { idPersonaje: data.idPersonaje },
-        { lockMode: LockMode.PESSIMISTIC_WRITE },
+        { populate: ['partida'], lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!personaje) throw new PersonajeNoEncontradoError();
+
+      if (objeto.esUnico && personaje.partida) {
+        const objetoExistente = await em.findOne(Objeto, {
+          nombre: objeto.nombre,
+          esUnico: true,
+          inventario: { personaje: { partida: { idPartida: personaje.partida.idPartida } } },
+        });
+        if (objetoExistente) {
+          throw new ErrorValidacionObjeto(`El objeto único '${objeto.nombre}' ya pertenece a un personaje de esta partida`);
+        }
+      }
 
       const inventario = await em.findOne(
         Inventario,
@@ -196,6 +209,7 @@ export class ObjetoService {
       tipoObjeto: o.tipoObjeto,
       valor: o.valor,
       nivelObjeto: o.nivelObjeto,
+      esUnico: o.esUnico ?? false,
       idTienda: o.tienda ? o.tienda.idTienda : null,
       idPersonaje: o.inventario ? o.inventario.personaje.idPersonaje : null,
       numInventario: o.inventario ? o.inventario.numInventario : null,

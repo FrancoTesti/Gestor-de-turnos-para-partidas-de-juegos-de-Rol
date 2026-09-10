@@ -91,6 +91,7 @@ export interface Objeto {
   nombre: string;
   nivelObjeto: number;
   tipoObjeto: string;
+  esUnico: boolean;
   idTienda: number | null;      // CF -> Tienda(idTienda) (opcional)
   idPersonaje: number | null;   // CF -> Inventario(idPersonaje, numInventario) (opcional)
   numInventario: number | null; // CF -> Inventario(idPersonaje, numInventario) (opcional)

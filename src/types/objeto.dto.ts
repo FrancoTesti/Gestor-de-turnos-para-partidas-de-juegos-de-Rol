@@ -4,6 +4,7 @@ export interface CrearObjetoDTO {
   nombre: string;
   nivelObjeto: number;
   tipoObjeto: string;
+  esUnico?: boolean;
   idTienda?: number | null;
   posicion?: number;
 }
@@ -14,6 +15,7 @@ export interface ActualizarObjetoDTO {
   nombre?: string;
   nivelObjeto?: number;
   tipoObjeto?: string;
+  esUnico?: boolean;
   idTienda?: number | null;
   posicion?: number;
 }
@@ -25,6 +27,7 @@ export interface ObjetoPublicoDTO {
   nombre: string;
   nivelObjeto: number;
   tipoObjeto: string;
+  esUnico: boolean;
   idTienda: number | null;
   idPersonaje: number | null;
   numInventario: number | null;

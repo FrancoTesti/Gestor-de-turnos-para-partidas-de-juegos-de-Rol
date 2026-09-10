@@ -121,6 +121,7 @@ CREATE TABLE `objetos` (
   `nombre` varchar(100) not null,
   `nivelObjeto` int not null,
   `tipoObjeto` varchar(50) not null,
+  `esUnico` tinyint(1) not null default 0,
   `idTienda` int unsigned null,
   `idPersonaje` int unsigned null,
   `numInventario` int unsigned null,

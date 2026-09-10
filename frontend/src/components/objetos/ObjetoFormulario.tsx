@@ -47,6 +47,7 @@ function ObjetoFormularioBody({
     valor: String(objeto.valor), nivelObjeto: String(objeto.nivelObjeto),
     idTienda: objeto.idTienda === null ? '' : String(objeto.idTienda), posicion: String(objeto.posicion),
   } : formularioVacio);
+  const [esUnico, setEsUnico] = useState<boolean>(() => objeto ? (objeto.esUnico ?? false) : false);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
 
@@ -86,6 +87,7 @@ function ObjetoFormularioBody({
         tipoObjeto: form.tipoObjeto.trim(),
         valor: Number(form.valor),
         nivelObjeto: Number(form.nivelObjeto),
+        esUnico,
         idTienda: form.idTienda ? Number(form.idTienda) : null,
         posicion: Number(form.posicion),
       });
@@ -109,6 +111,19 @@ function ObjetoFormularioBody({
       <Campo label="Tipo" error={errores.tipoObjeto}>
         <input value={form.tipoObjeto} onChange={(e) => cambiar('tipoObjeto', e.target.value)} placeholder="Arma, armadura, poción..." disabled={guardando} />
       </Campo>
+
+      <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0' }}>
+        <input
+          id="esUnicoCheck"
+          type="checkbox"
+          checked={esUnico}
+          onChange={(e) => setEsUnico(e.target.checked)}
+          disabled={guardando}
+        />
+        <label htmlFor="esUnicoCheck" style={{ fontWeight: 600, cursor: 'pointer' }}>
+          ⭐ Objeto Único (solo puede existir una vez por personaje / partida)
+        </label>
+      </div>
 
       <div className="objeto-campos-numericos">
         <Campo label="Valor" error={errores.valor}>
