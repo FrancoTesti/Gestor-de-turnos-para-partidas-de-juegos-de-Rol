@@ -4,19 +4,16 @@ import { useUser } from '../context/UserContext';
 import './ModulePage.css';
 
 type Row = Record<string, unknown>;
-type Resource = 'clases' | 'tiendas' | 'partidas' | 'personajes' | 'sesiones' | 'misiones' | 'inventarios';
+type Resource = 'clases' | 'tiendas' | 'partidas' | 'personajes' | 'inventarios';
 type Field = { key: string; label: string; type?: 'number' | 'boolean' | 'password'; ref?: string; optional?: boolean; initial?: string | number | boolean; min?: number; max?: number; createOnly?: boolean };
 type Config = { title: string; keys: string[]; fields: Field[] };
 const field = (key: string, label: string, options: Omit<Field, 'key' | 'label'> = {}): Field => ({ key, label, ...options });
 const game = field('idPartida', 'Partida', { ref: 'partidas', createOnly: true });
-const session = field('numSesion', 'Número de sesión', { type: 'number', min: 1, createOnly: true });
 const configs: Record<Resource, Config> = {
   clases: { title: 'Clases', keys: ['idClase'], fields: [field('nombreClase', 'Nombre'), field('descripcionClase', 'Descripción')] },
   tiendas: { title: 'Tiendas', keys: ['idTienda'], fields: [field('nombre', 'Nombre'), field('claseTienda', 'Tipo de tienda'), field('idClase', 'Clase sugerida', { ref: 'clases', optional: true })] },
   partidas: { title: 'Partidas', keys: ['idPartida'], fields: [field('nombre', 'Nombre'), field('estado', 'Estado', { initial: 'activa' }), field('limiteJugadores', 'Límite de jugadores', { type: 'number', min: 1, initial: 4 }), field('esPrivada', 'Privada', { type: 'boolean', initial: false }), field('contrasena', 'Contraseña (vacía: conservar al editar)', { type: 'password', optional: true })] },
   personajes: { title: 'Personajes', keys: ['idPersonaje'], fields: [field('nombreFicticio', 'Nombre'), field('raza', 'Raza'), field('idClase', 'Clase', { ref: 'clases' }), game, field('contrasenaPartida', 'Contraseña de partida privada', { type: 'password', optional: true, createOnly: true })] },
-  sesiones: { title: 'Sesiones', keys: ['idPartida', 'numSesion'], fields: [game, session, field('duracionSesion', 'Duración (minutos)', { type: 'number', min: 0, initial: 60 })] },
-  misiones: { title: 'Misiones', keys: ['idPartida', 'numSesion', 'numMision'], fields: [game, session, field('numMision', 'Número de misión', { type: 'number', min: 1, createOnly: true }), field('descripcion', 'Descripción'), field('dineroTotal', 'Dinero total', { type: 'number', min: 0, initial: 0 }), field('xpTotal', 'XP total', { type: 'number', min: 0, initial: 0 }), field('asistenciaGrupoGrande', 'Asistencia de grupo grande', { type: 'number', min: 0, initial: 0 })] },
   inventarios: { title: 'Inventarios', keys: ['idPersonaje', 'numInventario'], fields: [field('idPersonaje', 'Personaje', { ref: 'personajes', createOnly: true }), field('numInventario', 'Número de inventario', { type: 'number', min: 1, createOnly: true }), field('cantidadEspacio', 'Capacidad', { type: 'number', min: 1, max: 1000, initial: 10 })] },
 };
 const idKeys: Record<string, string> = { clases: 'idClase', partidas: 'idPartida', personajes: 'idPersonaje', tiendas: 'idTienda' };

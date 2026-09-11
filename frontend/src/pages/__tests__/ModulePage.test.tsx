@@ -14,7 +14,7 @@ beforeEach(() => {
     return [];
   });
 });
-it.each([['clases', 'Clases'], ['tiendas', 'Tiendas'], ['partidas', 'Partidas'], ['personajes', 'Personajes'], ['sesiones', 'Sesiones'], ['misiones', 'Misiones'], ['inventarios', 'Inventarios']] as const)('carga módulo %s desde API', async (resource, title) => {
+it.each([['clases', 'Clases'], ['tiendas', 'Tiendas'], ['partidas', 'Partidas'], ['personajes', 'Personajes'], ['inventarios', 'Inventarios']] as const)('carga módulo %s desde API', async (resource, title) => {
   render(<ModulePage resource={resource} />);
   expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
   await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
@@ -27,11 +27,4 @@ it('guarda partida propia sin enviar contraseña para una partida pública', asy
   fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Nueva' } });
   fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
   await waitFor(() => expect(mocks.api).toHaveBeenCalledWith('/partidas', 'POST', { nombre: 'Nueva', estado: 'activa', limiteJugadores: 4, esPrivada: false, idUsuarioAnfitrion: 1 }));
-});
-it('edita misión usando su clave compuesta, sin cambiar identificadores', async () => {
-  render(<ModulePage resource="misiones" />);
-  fireEvent.click(await screen.findByRole('button', { name: 'Editar' }));
-  fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'Otro rescate' } });
-  fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
-  await waitFor(() => expect(mocks.api).toHaveBeenCalledWith('/misiones/1/2/3', 'PUT', { descripcion: 'Otro rescate', xpTotal: 20, dineroTotal: 10, asistenciaGrupoGrande: 0 }));
 });
