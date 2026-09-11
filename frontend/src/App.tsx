@@ -11,6 +11,8 @@ import ProfilesPage from './pages/ProfilesPage';
 import ClasesPage from './pages/ClasesPage';     // clases: Alejandro Ciesco
 import PersonajesPage from './pages/PersonajesPage'; // personajes: Alejandro Ciesco
 import TiendasPage from './pages/TiendasPage';   // tiendas: Octavio Gudiño
+import SesionesPage from './pages/SesionesPage';
+import MisionesPage from './pages/MisionesPage';
 
 import './App.css';
 
@@ -40,8 +42,8 @@ export default function App() {
             {/* Personajes — Alejandro Ciesco */}
             <Route path="/characters" element={<PersonajesPage />} />
 
-            <Route path="/sessions" element={<ModulePage key="sesiones" resource="sesiones" />} />
-            <Route path="/missions" element={<ModulePage key="misiones" resource="misiones" />} />
+            <Route path="/sessions" element={<SesionesPage />} />
+            <Route path="/missions" element={<MisionesPage />} />
             <Route path="/inventory" element={<ModulePage key="inventarios" resource="inventarios" />} />
             <Route path="/profiles" element={<ProfilesPage />} />
           </Route>
