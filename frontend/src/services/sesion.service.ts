@@ -31,6 +31,6 @@ export function finalizarSesion(game: number, number: number) {
   return api<Sesion>(`/sesiones/${game}/${number}/finalizar`, 'POST');
 }
 
-export function calificarAnfitrion(game: number, number: number, karma: number) {
-  return api<void>(`/sesiones/${game}/${number}/calificar`, 'POST', { karma });
+export function calificarAnfitrion(game: number, number: number, valor: number) {
+  return api<{ karma: number }>(`/sesiones/${game}/${number}/calificar`, 'POST', { valor });
 }
