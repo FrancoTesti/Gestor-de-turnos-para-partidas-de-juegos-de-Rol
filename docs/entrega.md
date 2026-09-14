@@ -30,7 +30,7 @@ Los servicios de usuarios, jugadores y partidas ya utilizan `api.ts`. Una búsqu
 
 Una respuesta protegida `401` notifica al contexto, que limpia identidad, usuarios y perfiles. El layout protegido existente redirige al login al perder la identidad. Un rechazo de contraseña al iniciar sesión no dispara esa notificación. Las recargas de listas iniciadas antes de limpiar la sesión no vuelven a introducir datos privados.
 
-El cliente también identifica errores de conexión sin reintentar escrituras, admite respuestas `204` y conserva el estado HTTP ante cuerpos de error inesperados. Compilación y 39 pruebas del frontend aprobadas; lint sin errores, con tres advertencias previas. La prueba de contexto verifica limpieza de identidad y listas ante un `401` del cliente real; falta comprobar la navegación completa en E2E.
+El cliente también identifica errores de conexión sin reintentar escrituras, admite respuestas `204` y conserva el estado HTTP ante cuerpos de error inesperados. La prueba de contexto verifica la limpieza de identidad y listas ante un `401` del cliente real, y el primer recorrido de navegador comprueba que ese `401` termina en el login al intentar volver a una ruta privada.
 
 ## Carga de pantallas y perfiles combinados
 
@@ -38,16 +38,21 @@ Las cargas iniciales de clases, tiendas y personajes usan su estado inicial de c
 
 Personajes comprueba la existencia del perfil jugador independientemente del perfil anfitrión. Antes, una cuenta con ambos perfiles no veía la opción de crear personajes.
 
-Verificación local: compilación correcta, 44 pruebas aprobadas y lint sin errores ni advertencias. Las nuevas pruebas cubren reintentos después de fallos de conexión en las tres páginas y creación de personajes con perfiles combinados.
+Verificación local: compilación correcta, 52 pruebas aprobadas y lint sin errores ni advertencias. Las nuevas pruebas cubren reintentos después de fallos de conexión en las tres páginas y creación de personajes con perfiles combinados.
+
+## Rutas inexistentes
+
+`App.tsx` ya no envía cualquier dirección desconocida al dashboard. La ruta comodín muestra `NotFoundPage`, que informa la dirección solicitada y ofrece volver al dashboard si hay sesión o ir al login si no la hay. Está cubierta por una prueba de componente y por un recorrido de navegador.
 
 ## Pruebas de navegador
 
-Tres recorridos locales aprobados con Chromium, Express y MySQL reales, sin reemplazar las respuestas de la API:
+Cuatro recorridos locales aprobados con Chromium, Express y MySQL reales, sin reemplazar las respuestas de la API:
 
 - Registro de anfitrión, login, creación de partida y sesión planificada, persistencia después de recargar, invalidación de cookie y redirección al login ante un `401`.
 - Cierre de sesión desde el botón y bloqueo del acceso posterior a una ruta privada.
 - Dos cuentas separadas: el anfitrión crea clase y partida; el jugador crea su personaje; el anfitrión inicia una sesión con ese participante, completa una misión con 50 XP y 100 monedas, finaliza la sesión y recibe karma +1 del jugador. Se verifica que no se ofrece completar de nuevo la misión y que el personaje conserva 50 XP y 200 monedas tras recargar.
 - Dentro del tercer recorrido se crea una tienda y un objeto de valor 40, se compra (saldo 160), se crea un segundo inventario y se mueve el objeto a su posición 2. Luego se vende por 28 (70 %), se comprueba que sale del inventario y que el saldo persistido queda en 188.
+- Una dirección inexistente con sesión iniciada muestra la página de error, conserva la ruta en la barra y permite volver al dashboard.
 
 El recorrido positivo de juego y comercio queda comprobado. Esto no demuestra todos los permisos ni todas las variantes de negocio: deben contrastarse también con las pruebas unitarias, de integración y la matriz de requisitos pendiente. Tampoco sustituye la revisión responsive y de accesibilidad.
 
@@ -66,4 +71,4 @@ npm run test:e2e
 
 El usuario de MySQL necesita permiso para crear y eliminar bases de prueba. La suite exige `TEST_DB_PORT` explícito, crea una base `rpg_e2e_<identificador aleatorio>` y elimina únicamente esa base al finalizar, incluso ante fallos de pruebas. Nunca reutiliza `DB_NAME`. Un corte forzado del proceso puede impedir la limpieza: revisar cualquier base residual antes de eliminarla manualmente.
 
-Los puertos 5174 y 3101 deben estar libres. Vite mantiene su destino habitual `localhost:3000` al ejecutar la aplicación normalmente; solo el entorno E2E establece `API_PROXY_TARGET`. Las capturas y trazas de fallos quedan en `test-results/`, excluido de Git.
+Los puertos 5174 y 3101 deben estar libres. El preparador E2E levanta Vite dentro del mismo proceso, con la raíz `frontend/`, y redirige `/api` al backend de prueba en `127.0.0.1:3101`; por eso no depende del `webServer` de Playwright ni de `API_PROXY_TARGET`. Al ejecutar la aplicación a mano, Vite conserva su destino habitual `localhost:3000` o el que indique `API_PROXY_TARGET`. Las capturas y trazas de fallos quedan en `test-results/`, excluido de Git.
