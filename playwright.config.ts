@@ -11,10 +11,4 @@ export default defineConfig({
     trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
   },
-  webServer: {
-    command: 'npm --prefix frontend run dev -- --host 127.0.0.1 --port 5174 --strictPort',
-    url: 'http://127.0.0.1:5174',
-    env: { API_PROXY_TARGET: 'http://127.0.0.1:3101' },
-    reuseExistingServer: false,
-  },
 });
