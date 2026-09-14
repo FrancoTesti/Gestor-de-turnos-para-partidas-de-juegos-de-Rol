@@ -22,7 +22,9 @@ Este archivo registra el cierre de la entrega. Una tarea pendiente no se conside
 
 `.github/workflows/verificacion.yml` ejecuta compilación, tests y lint del frontend, además de compilación, tests unitarios e integración MySQL del backend. La base del servicio CI es efímera; la suite crea y elimina exclusivamente su propia base aleatoria. La contraseña declarada en el workflow pertenece solo a ese servicio de prueba.
 
-La primera ejecución remota aprobó ambos trabajos: [Actions 34419939705](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34419939705). El workflow ahora incorpora también los recorridos E2E en Chromium y guarda las trazas de los fallos durante siete días; ese agregado debe verificarse en una nueva ejecución remota.
+La ejecución [Actions 34906172625](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34906172625) aprobó los dos trabajos completos: el de frontend compiló, ejecutó lint y las 52 pruebas; el de backend compiló, ejecutó las 76 pruebas unitarias, las 19 de integración MySQL y los recorridos E2E en Chromium. Las acciones del workflow se actualizaron a las versiones con soporte de Node 24, por lo que ya no aparece la deprecación de Node 20.
+
+El único aviso que permanece en Actions es ajeno a este trabajo: el árbol del repositorio original contiene un enlace de submodule `temp_repo` sin entrada en `.gitmodules`, así que la limpieza del checkout informa `fatal: No url found for submodule path 'temp_repo'`. No afecta ninguna etapa, pero conviene eliminar ese enlace en un cambio aparte acordado por el grupo.
 
 ## Comunicación HTTP
 
