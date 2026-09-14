@@ -93,6 +93,23 @@ npm run test:integration
 
 El comando genera un nombre `rpg_test_<aleatorio>`, crea la base, ejecuta los casos y elimina solo esa base. No limpia ninguna base preexistente. Si el proceso es interrumpido abruptamente puede quedar una base temporal; identificarla antes de eliminarla manualmente. Para aislamiento máximo, ejecutar las pruebas en otra instancia de MySQL.
 
+### Pruebas de navegador (E2E)
+
+Los recorridos de navegador usan Playwright con Chromium y necesitan el backend compilado, MySQL y un usuario de pruebas. Desde la raíz:
+
+```powershell
+npm ci
+npm --prefix frontend ci
+npx playwright install chromium
+$env:TEST_DB_HOST = '127.0.0.1'
+$env:TEST_DB_PORT = '3306'
+$env:TEST_DB_USER = 'usuario_pruebas'
+$env:TEST_DB_PASSWORD = 'completar_localmente'
+npm run test:e2e
+```
+
+La suite crea una base `rpg_e2e_<aleatorio>`, levanta Express en el puerto 3101 y Vite en el 5174, ejecuta los recorridos y elimina únicamente su propia base. Nunca usa `DB_NAME`. Si los puertos 3101 o 5174 están ocupados, el preparador falla antes de ejecutar los casos. Las capturas y trazas de los fallos quedan en `test-results/`, que no se versiona. El detalle de cada recorrido y sus límites está en [entrega.md](entrega.md).
+
 ## Sesiones y despliegue
 
 Las sesiones duran ocho horas y usan cookies HttpOnly y SameSite=Strict. La recarga del navegador conserva el ingreso; cerrar sesión, cambiar la contraseña o reiniciar el backend lo invalida. Los tokens se guardan solo en memoria del servidor: un despliegue con varias instancias necesitará un almacén de sesiones compartido.

@@ -8,6 +8,7 @@ import RegisterPage from './pages/RegisterPage';
 import UsersPage from './pages/UsersPage';
 import ModulePage from './pages/ModulePage';
 import ProfilesPage from './pages/ProfilesPage';
+import NotFoundPage from './pages/NotFoundPage';
 import ClasesPage from './pages/ClasesPage';     // clases: Alejandro Ciesco
 import PersonajesPage from './pages/PersonajesPage'; // personajes: Alejandro Ciesco
 import TiendasPage from './pages/TiendasPage';   // tiendas: Octavio Gudiño
@@ -49,7 +50,7 @@ export default function App() {
           </Route>
 
           <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </BrowserRouter>
     </UserProvider>

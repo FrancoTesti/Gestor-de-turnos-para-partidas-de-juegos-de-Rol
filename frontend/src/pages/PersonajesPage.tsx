@@ -17,7 +17,7 @@
  *  - Personaje con historial de sesiones (no se puede eliminar)
  *  - Personaje con objetos en inventario (venderlos primero)
  */
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Clase, Personaje } from '../interfaces';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
@@ -46,9 +46,9 @@ function mensajeError(e: unknown): string {
 }
 
 export default function PersonajesPage() {
-  const { usuarioLogueado, rolDe } = useUser();
+  const { usuarioLogueado, jugadores } = useUser();
   const userId = usuarioLogueado!.idUsuario;
-  const esJugador = rolDe(userId) === 'jugador';
+  const esJugador = jugadores.some(jugador => jugador.idUsuario === userId);
 
   const [personajes, setPersonajes] = useState<Personaje[]>([]);
   const [clases, setClases] = useState<Clase[]>([]);
@@ -69,20 +69,25 @@ export default function PersonajesPage() {
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
 
-  const cargar = useCallback(() => {
+  const [revision, setRevision] = useState(0);
+  function cargar() {
     setCargando(true);
     setError(null);
+    setRevision(value => value + 1);
+  }
+
+  useEffect(() => {
+    let activo = true;
     Promise.all([
       obtenerPersonajes(),
       obtenerClases(),
       api<PartidaSimple[]>('/partidas'),
     ])
-      .then(([p, c, pt]) => { setPersonajes(p); setClases(c); setPartidas(pt); })
-      .catch((e) => setError(mensajeError(e)))
-      .finally(() => setCargando(false));
-  }, []);
-
-  useEffect(() => { cargar(); }, [cargar]);
+      .then(([p, c, pt]) => { if (activo) { setPersonajes(p); setClases(c); setPartidas(pt); } })
+      .catch((e) => { if (activo) setError(mensajeError(e)); })
+      .finally(() => { if (activo) setCargando(false); });
+    return () => { activo = false; };
+  }, [revision]);
 
   function abrirFormularioCrear() {
     setEnEdicion(null);

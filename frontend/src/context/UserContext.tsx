@@ -1,6 +1,6 @@
-import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import type { Usuario, Jugador, Anfitrion } from '../interfaces';
-import { api, ApiError } from '../services/api';
+import { api, ApiError, SESSION_EXPIRED_EVENT } from '../services/api';
 interface Session { usuario: Usuario; roles: { idUsuario: number; jugador: boolean; anfitrion: boolean } }
 interface UserContextType {
   usuarios: Usuario[]; jugadores: Jugador[]; anfitriones: Anfitrion[];
@@ -18,15 +18,28 @@ export function UserProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [cargandoSesion, setCargandoSesion] = useState(true);
   const [mensaje, setMensaje] = useState('');
+  const sessionVersion = useRef(0);
+  const clearSession = useCallback(() => {
+    sessionVersion.current += 1;
+    setSession(null); setUsuarios([]); setJugadores([]); setAnfitriones([]);
+  }, []);
+  useEffect(() => {
+    const expired = () => { clearSession(); };
+    window.addEventListener(SESSION_EXPIRED_EVENT, expired);
+    return () => window.removeEventListener(SESSION_EXPIRED_EVENT, expired);
+  }, [clearSession]);
   const recargar = useCallback(async () => {
+    const version = sessionVersion.current;
     const [u, j, a] = await Promise.all([api<Usuario[]>('/usuarios'), api<Jugador[]>('/jugadores'), api<Anfitrion[]>('/anfitriones')]);
+    if (version !== sessionVersion.current) return;
     setUsuarios(u); setJugadores(j); setAnfitriones(a);
     setSession(prev => prev ? { ...prev, usuario: u.find(x => x.idUsuario === prev.usuario.idUsuario) ?? prev.usuario } : null);
   }, []);
   useEffect(() => {
     let active = true;
+    const version = sessionVersion.current;
     api<Session>('/auth/me').then(async s => {
-      if (active) { setSession(s); await recargar(); }
+      if (active && version === sessionVersion.current) { setSession(s); await recargar(); }
     }).catch(error => {
       if (active && !(error instanceof ApiError && error.status === 401)) setMensaje('No se pudo conectar con el servidor. Reintentá al iniciar sesión.');
     }).finally(() => { if (active) setCargandoSesion(false); });
@@ -40,11 +53,12 @@ export function UserProvider({ children }: { children: ReactNode }) {
   };
   const loguearse = async (nickname: string, contrasena: string) => {
     const s = await api<Session>('/auth/login', 'POST', { nickname, contrasena });
+    sessionVersion.current += 1;
     setSession(s); await recargar(); setMensaje(`Bienvenido, ${s.usuario.nickname}.`);
   };
   const logout = async () => {
     await api('/auth/logout', 'POST');
-    setSession(null); setUsuarios([]); setJugadores([]); setAnfitriones([]); setMensaje('Sesión cerrada.');
+    clearSession(); setMensaje('Sesión cerrada.');
   };
   const rolDe = (id: number) => {
     if (anfitriones.some(a => a.idUsuario === id)) return 'anfitrion';

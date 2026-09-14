@@ -4,6 +4,8 @@ node_modules/
 # Builds
 dist/
 build/
+playwright-report/
+test-results/
 
 # TypeScript
 *.tsbuildinfo

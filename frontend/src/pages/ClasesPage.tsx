@@ -43,25 +43,21 @@ export default function ClasesPage() {
   const [error, setError] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
+  const [revision, setRevision] = useState(0);
 
   useEffect(() => {
     let activo = true;
-    setCargando(true);
-    setError(null);
     obtenerClases()
       .then((data) => { if (activo) { setClases(data); } })
       .catch((e) => { if (activo) setError(mensajeError(e)); })
       .finally(() => { if (activo) setCargando(false); });
     return () => { activo = false; };
-  }, []);
+  }, [revision]);
 
   function recargar() {
     setCargando(true);
     setError(null);
-    obtenerClases()
-      .then(setClases)
-      .catch((e) => setError(mensajeError(e)))
-      .finally(() => setCargando(false));
+    setRevision(value => value + 1);
   }
 
   async function guardar(data: CrearClaseData | ActualizarClaseData): Promise<void> {

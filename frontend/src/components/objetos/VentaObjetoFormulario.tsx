@@ -11,7 +11,7 @@ interface VentaObjetoFormularioProps {
   onCancelar: () => void;
 }
 
-export function rangoVenta(valor: number) {
+function rangoVenta(valor: number) {
   return {
     minimo: Math.ceil((valor * 70) / 100),
     maximo: Math.floor((valor * 100) / 100),
