@@ -2,9 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
 import type { Sesion, Partida, Personaje } from '../interfaces';
-import { obtenerSesiones, obtenerSesion, crearSesion, jugarSesion, finalizarSesion, calificarAnfitrion, SesionDetalleDTO } from '../services/sesion.service';
+import { obtenerSesiones, obtenerSesion, crearSesion, jugarSesion, finalizarSesion, calificarAnfitrion } from '../services/sesion.service';
+import type { SesionDetalleDTO } from '../services/sesion.service';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
+
+function mensajeError(e: unknown): string {
+  return e instanceof Error ? e.message : 'No se pudo completar la operación';
+}
 
 export default function SesionesPage() {
   const { usuarioLogueado, rolDe } = useUser();
@@ -16,31 +21,28 @@ export default function SesionesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selected, setSelected] = useState<SesionDetalleDTO | null>(null);
+  const [aviso, setAviso] = useState('');
+  const [revision, setRevision] = useState(0);
 
   // estados de formularios
   const [nuevaSesion, setNuevaSesion] = useState({ idPartida: '', numSesion: '', duracionSesion: 60 });
   const [participantesIds, setParticipantesIds] = useState<number[]>([]);
-  const [karma, setKarma] = useState(1);
+  const [valorKarma, setValorKarma] = useState<1 | -1>(1);
 
-  const cargarDatos = async () => {
-    try {
-      setLoading(true);
-      const [ses, pts, pjs] = await Promise.all([
-        obtenerSesiones(),
-        api<Partida[]>('/partidas'),
-        api<Personaje[]>('/personajes')
-      ]);
-      setSesiones(ses);
-      setPartidas(pts);
-      setPersonajes(pjs);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let activo = true;
+    Promise.all([obtenerSesiones(), api<Partida[]>('/partidas'), api<Personaje[]>('/personajes')])
+      .then(([ses, pts, pjs]) => { if (activo) { setSesiones(ses); setPartidas(pts); setPersonajes(pjs); } })
+      .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
+      .finally(() => { if (activo) setLoading(false); });
+    return () => { activo = false; };
+  }, [revision]);
 
-  useEffect(() => { void cargarDatos(); }, []);
+  function recargar() {
+    setLoading(true);
+    setError('');
+    setRevision(value => value + 1);
+  }
 
   const handleVerDetalle = async (idPartida: number, numSesion: number) => {
     try {
@@ -48,8 +50,8 @@ export default function SesionesPage() {
       const detalle = await obtenerSesion(idPartida, numSesion);
       setSelected(detalle);
       setParticipantesIds([]);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -62,10 +64,11 @@ export default function SesionesPage() {
         numSesion: Number(nuevaSesion.numSesion),
         duracionSesion: Number(nuevaSesion.duracionSesion)
       });
-      await cargarDatos();
+      recargar();
+      setAviso('Sesión creada correctamente.');
       setNuevaSesion({ idPartida: '', numSesion: '', duracionSesion: 60 });
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -79,9 +82,10 @@ export default function SesionesPage() {
       setError('');
       await jugarSesion(selected.idPartida, selected.numSesion, participantesIds);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
-      await cargarDatos();
-    } catch (e: any) {
-      setError(e.message);
+      recargar();
+      setAviso('Sesión iniciada con los participantes elegidos.');
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -91,9 +95,10 @@ export default function SesionesPage() {
       setError('');
       await finalizarSesion(selected.idPartida, selected.numSesion);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
-      await cargarDatos();
-    } catch (e: any) {
-      setError(e.message);
+      recargar();
+      setAviso('Sesión finalizada.');
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -101,11 +106,11 @@ export default function SesionesPage() {
     if (!selected) return;
     try {
       setError('');
-      await calificarAnfitrion(selected.idPartida, selected.numSesion, karma);
+      await calificarAnfitrion(selected.idPartida, selected.numSesion, valorKarma);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
-      alert('Anfitrión calificado con éxito!');
-    } catch (e: any) {
-      setError(e.message);
+      setAviso('Calificación enviada.');
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -115,6 +120,7 @@ export default function SesionesPage() {
     <div className="module-page">
       <h1>Gestión de Sesiones</h1>
       {error && <Alert type="error" message={error} />}
+      {aviso && <p role="status">{aviso}</p>}
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 50%' }}>
@@ -222,8 +228,11 @@ export default function SesionesPage() {
                 }) && (
                   <div className="app-form" style={{ marginTop: '1rem' }}>
                     <h3>Calificar Anfitrión</h3>
-                    <label>Puntos de Karma:
-                      <input type="number" min="1" max="5" value={karma} onChange={e => setKarma(Number(e.target.value))} />
+                    <label>Experiencia con el anfitrión:
+                      <select value={valorKarma} onChange={e => setValorKarma(Number(e.target.value) === -1 ? -1 : 1)}>
+                        <option value={1}>Buena experiencia (+1)</option>
+                        <option value={-1}>Mala experiencia (-1)</option>
+                      </select>
                     </label>
                     <button className="btn" onClick={() => void handleCalificar()}>Enviar Calificación</button>
                   </div>

@@ -48,7 +48,6 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     if (resource === 'personajes') return r ? r.idUsuarioJugador === userId : true;
     if (resource === 'inventarios') return true;
     if (resource === 'partidas') return host && (!r || r.idUsuarioAnfitrion === userId);
-    if (resource === 'sesiones' || resource === 'misiones') return host && (!r || refs.partidas?.some(p => p.idPartida === r.idPartida && p.idUsuarioAnfitrion === userId));
     return host;
   };
   const startEdit = (r?: Row) => {
@@ -75,13 +74,12 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   });
   const detail = async (r: Row) => { setError(''); try { setSelected(await api<Row>(url(r))); } catch (e) { setError((e as Error).message); } };
   const filtered = rows.filter(r => Object.values(r).join(' ').toLocaleLowerCase().includes(search.toLocaleLowerCase()) && (!classFilter || String(r.idClase) === classFilter) && (!activeOnly || r.estado === 'activa'));
-  const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : []), ...(resource === 'sesiones' ? ['estadoSesion', 'cantJugadores'] : []), ...(resource === 'misiones' ? ['estado'] : [])])];
+  const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
     const referenced = f?.ref && refs[f.ref]?.find(x => x[idKeys[f.ref!]] === r[key]);
     if (referenced) return `${r[key]} — ${label(referenced)}`;
     if (key === 'estadoSesion') return ['Planificada', 'En curso', 'Finalizada'][Number(r[key])] ?? String(r[key]);
-    if (key === 'estado' && resource === 'misiones') return r[key] ? 'Completada' : 'Pendiente';
     return typeof r[key] === 'boolean' ? (r[key] ? 'Sí' : 'No') : String(r[key] ?? '—');
   };
   return <section className="module-page">
@@ -107,40 +105,19 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => <td key={k}>{display(r, k)}</td>)}<td><button onClick={() => void detail(r)}>Ver detalle</button>{allowed(r) && <><button onClick={() => startEdit(r)}>Editar</button><button disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
       {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{config.fields.find(f => f.key === k)?.label ?? k}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
-        <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} canManage={allowed(selected)} busy={busy} perform={perform} />
+        <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} />
         <button onClick={() => setSelected(null)}>Cerrar detalle</button>
       </article>}
     </>}
   </section>;
 }
 
-function Workflow({ resource, row, refs, canManage, busy, perform }: { resource: Resource; row: Row; refs: Record<string, Row[]>; canManage: boolean; busy: boolean; perform: (f: () => Promise<unknown>) => Promise<void> }) {
-  const [participants, setParticipants] = useState<number[]>([]);
-  const [rewards, setRewards] = useState<Record<number, { dinero: string; xp: string }>>({});
-  const [attendees, setAttendees] = useState<Row[]>([]);
+function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; row: Row; refs: Record<string, Row[]>; busy: boolean; perform: (f: () => Promise<unknown>) => Promise<void> }) {
   const [error, setError] = useState('');
   const [object, setObject] = useState('');
   const [position, setPosition] = useState('0');
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
-  useEffect(() => {
-    if (resource !== 'misiones') return;
-    let active = true;
-    api<{ participantes: Row[] }>(`/sesiones/${row.idPartida}/${row.numSesion}`).then(s => { if (active) setAttendees(s.participantes); }).catch(e => { if (active) setError(e.message); });
-    return () => { active = false; };
-  }, [resource, row.idPartida, row.numSesion]);
-  if (resource === 'sesiones') {
-    const path = `/sesiones/${row.idPartida}/${row.numSesion}`;
-    return <div><h3>Jugar sesión</h3>{Number(row.estadoSesion) === 0 && canManage && <form onSubmit={e => { e.preventDefault(); void perform(() => api(`${path}/jugar`, 'POST', { idPersonajes: participants })); }}>
-      <fieldset><legend>Participantes</legend>{refs.personajes?.filter(p => p.idPartida === row.idPartida).map(p => <label key={String(p.idPersonaje)}><input type="checkbox" checked={participants.includes(Number(p.idPersonaje))} onChange={e => setParticipants(e.target.checked ? [...participants, Number(p.idPersonaje)] : participants.filter(id => id !== p.idPersonaje))} />{label(p)}</label>)}</fieldset><button disabled={busy || !participants.length}>Iniciar sesión</button>
-    </form>}{Number(row.estadoSesion) === 1 && canManage && <button disabled={busy} onClick={() => void perform(() => api(`${path}/finalizar`, 'POST'))}>Finalizar sesión</button>}
-      {Number(row.estadoSesion) === 2 && <><p>Si participaste, podés calificar al anfitrión una sola vez.</p>{[-1, 1].map(valor => <button key={valor} disabled={busy} onClick={() => void perform(() => api(`${path}/calificar`, 'POST', { valor }))}>{valor > 0 ? 'Buena experiencia (+1)' : 'Mala experiencia (-1)'}</button>)}</>}
-    </div>;
-  }
-  if (resource === 'misiones' && canManage && !row.estado) return <form onSubmit={e => { e.preventDefault(); void perform(() => api(`/misiones/${row.idPartida}/${row.numSesion}/${row.numMision}/completar`, 'POST', { recompensas: attendees.map(p => ({ idPersonaje: p.idPersonaje, dinero: Number(rewards[Number(p.idPersonaje)]?.dinero ?? 0), xp: Number(rewards[Number(p.idPersonaje)]?.xp ?? 0) })) })); }}>
-    <h3>Completar y repartir recompensas</h3><p>El anfitrión define el reparto. Las sumas deben coincidir con los totales de la misión.</p>{error && <p role="alert">{error}</p>}
-    {attendees.map(p => <fieldset key={String(p.idPersonaje)}><legend>{String(p.nombre)}</legend>{(['dinero', 'xp'] as const).map(k => <label key={k}>{k}<input type="number" min="0" step="1" value={rewards[Number(p.idPersonaje)]?.[k] ?? '0'} onChange={e => setRewards({ ...rewards, [Number(p.idPersonaje)]: { dinero: '0', xp: '0', ...rewards[Number(p.idPersonaje)], [k]: e.target.value } })} /></label>)}</fieldset>)}<button disabled={busy || !attendees.length}>Completar misión</button>
-  </form>;
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
     const totalCapacity = Number(row.cantidadEspacio);
@@ -155,6 +132,7 @@ function Workflow({ resource, row, refs, canManage, busy, perform }: { resource:
     return (
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
         <h3>Mochila / Inventario #{String(row.numInventario)}</h3>
+        {error && <p role="alert">{error}</p>}
         <p style={{ fontSize: '0.9rem', color: '#4a5568' }}>
           Capacidad: <strong>{objects.length} / {totalCapacity} espacios ocupados</strong> ({freePositions.length} libres)
         </p>
@@ -191,6 +169,7 @@ function Workflow({ resource, row, refs, canManage, busy, perform }: { resource:
         <form
           onSubmit={e => {
             e.preventDefault();
+            setError('');
             const posNum = Number(position);
             if (occupiedPositions.has(posNum) && !objects.some(o => String(o.idObjeto) === object && Number(o.posicion) === posNum)) {
               setError('La posición seleccionada ya está ocupada.');

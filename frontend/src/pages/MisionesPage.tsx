@@ -2,10 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
 import type { Mision, Sesion, Partida } from '../interfaces';
-import { obtenerMisiones, crearMision, actualizarMision, eliminarMision, completarMision, Recompensa } from '../services/mision.service';
-import { SesionDetalleDTO, obtenerSesion } from '../services/sesion.service';
+import { obtenerMisiones, crearMision, actualizarMision, eliminarMision, completarMision } from '../services/mision.service';
+import type { Recompensa } from '../services/mision.service';
+import { obtenerSesion } from '../services/sesion.service';
+import type { SesionDetalleDTO } from '../services/sesion.service';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
+
+function mensajeError(e: unknown): string {
+  return e instanceof Error ? e.message : 'No se pudo completar la operación';
+}
 
 export default function MisionesPage() {
   const { usuarioLogueado, rolDe } = useUser();
@@ -16,6 +22,8 @@ export default function MisionesPage() {
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [aviso, setAviso] = useState('');
+  const [revision, setRevision] = useState(0);
   
   const estadoInicialMision = { idPartida: '', numSesion: '', numMision: '', descripcion: '', dineroTotal: 0, xpTotal: 0, asistenciaGrupoGrande: 0 };
   const [nuevaMision, setNuevaMision] = useState(estadoInicialMision);
@@ -25,25 +33,20 @@ export default function MisionesPage() {
   const [participantes, setParticipantes] = useState<SesionDetalleDTO['participantes']>([]);
   const [recompensas, setRecompensas] = useState<Recompensa[]>([]);
 
-  const cargarDatos = async () => {
-    try {
-      setLoading(true);
-      const [mis, ses, pts] = await Promise.all([
-        obtenerMisiones(),
-        api<Sesion[]>('/sesiones'),
-        api<Partida[]>('/partidas')
-      ]);
-      setMisiones(mis);
-      setSesiones(ses);
-      setPartidas(pts);
-    } catch (e: any) {
-      setError(e.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+  useEffect(() => {
+    let activo = true;
+    Promise.all([obtenerMisiones(), api<Sesion[]>('/sesiones'), api<Partida[]>('/partidas')])
+      .then(([mis, ses, pts]) => { if (activo) { setMisiones(mis); setSesiones(ses); setPartidas(pts); } })
+      .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
+      .finally(() => { if (activo) setLoading(false); });
+    return () => { activo = false; };
+  }, [revision]);
 
-  useEffect(() => { void cargarDatos(); }, []);
+  function recargar() {
+    setLoading(true);
+    setError('');
+    setRevision(value => value + 1);
+  }
 
   const handleCrearOActualizar = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,11 +75,12 @@ export default function MisionesPage() {
           asistenciaGrupoGrande: Number(nuevaMision.asistenciaGrupoGrande)
         });
       }
-      await cargarDatos();
+      recargar();
+      setAviso(editando ? 'Misión actualizada.' : 'Misión creada.');
       setNuevaMision(estadoInicialMision);
       setEditando(false);
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -98,9 +102,10 @@ export default function MisionesPage() {
     try {
       setError('');
       await eliminarMision(m.idPartida, m.numSesion, m.numMision);
-      await cargarDatos();
-    } catch (e: any) {
-      setError(e.message);
+      recargar();
+      setAviso('Misión eliminada.');
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -111,8 +116,8 @@ export default function MisionesPage() {
       const sesionDetalle = await obtenerSesion(mision.idPartida, mision.numSesion);
       setParticipantes(sesionDetalle.participantes ?? []);
       setRecompensas((sesionDetalle.participantes ?? []).map(p => ({ idPersonaje: p.idPersonaje, dinero: 0, xp: 0 })));
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -125,11 +130,11 @@ export default function MisionesPage() {
     try {
       setError('');
       await completarMision(selectedMision.idPartida, selectedMision.numSesion, selectedMision.numMision, recompensas);
-      await cargarDatos();
+      recargar();
+      setAviso('Misión completada y recompensas acreditadas.');
       setSelectedMision(null);
-      alert('¡Misión completada con éxito!');
-    } catch (e: any) {
-      setError(e.message);
+    } catch (e: unknown) {
+      setError(mensajeError(e));
     }
   };
 
@@ -143,12 +148,13 @@ export default function MisionesPage() {
     <div className="module-page">
       <h1>Gestión de Misiones</h1>
       {error && <Alert type="error" message={error} />}
+      {aviso && <p role="status">{aviso}</p>}
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
         <div style={{ flex: '1 1 50%' }}>
           <table className="app-table">
             <thead>
-              <tr><th>Partida</th><th>Sesión</th><th>Misión</th><th>Premio</th><th>Estado</th><th>Acciones</th></tr>
+              <tr><th>Partida</th><th>Sesión</th><th>Misión</th><th>Descripción</th><th>Premio</th><th>Estado</th><th>Acciones</th></tr>
             </thead>
             <tbody>
               {misiones.map(m => (
@@ -156,6 +162,7 @@ export default function MisionesPage() {
                   <td>{partidas.find(p => p.idPartida === m.idPartida)?.nombre}</td>
                   <td>S{m.numSesion}</td>
                   <td>M{m.numMision}</td>
+                  <td>{m.descripcion}</td>
                   <td>${m.dineroTotal} | {m.xpTotal}XP</td>
                   <td>{m.estado ? <b style={{ color: 'green' }}>Completada</b> : <b style={{ color: 'orange' }}>Pendiente</b>}</td>
                   <td>
