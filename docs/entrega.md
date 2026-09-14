@@ -24,7 +24,7 @@ Este archivo registra el cierre de la entrega. Una tarea pendiente no se conside
 
 La ejecución [Actions 34906172625](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34906172625) aprobó los dos trabajos completos: el de frontend compiló, ejecutó lint y las 52 pruebas; el de backend compiló, ejecutó las 76 pruebas unitarias, las 19 de integración MySQL y los recorridos E2E en Chromium. Las acciones del workflow se actualizaron a las versiones con soporte de Node 24, por lo que ya no aparece la deprecación de Node 20.
 
-El único aviso que permanece en Actions es ajeno a este trabajo: el árbol del repositorio original contiene un enlace de submodule `temp_repo` sin entrada en `.gitmodules`, así que la limpieza del checkout informa `fatal: No url found for submodule path 'temp_repo'`. No afecta ninguna etapa, pero conviene eliminar ese enlace en un cambio aparte acordado por el grupo.
+El árbol del repositorio tenía un enlace de submodule `temp_repo` sin entrada en `.gitmodules`, así que la limpieza del checkout informaba `fatal: No url found for submodule path 'temp_repo'`. No rompía ninguna etapa, pero impedía clonar con submodules. Se eliminó el enlace porque no tiene URL, no tiene contenido y ningún archivo del proyecto lo referencia.
 
 ## Reparación del main tras los merges del 14/9
 
