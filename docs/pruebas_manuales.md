@@ -30,6 +30,12 @@ Usar una base de desarrollo descartable, nunca los datos de una entrega. Estas c
 - [ ] Registrar anfitrión y jugador; entrar con ambos en navegadores separados.
 - [ ] Recargar la página: la sesión permanece. Cerrar sesión: una ruta protegida vuelve al login.
 - [ ] Editar el perfil propio y comprobar persistencia tras recargar; provocar nickname duplicado y ver el error.
+- [ ] Registrarse repitiendo mal la contraseña: la pantalla avisa y no llama al servidor.
+- [ ] Registrarse con un nickname ya usado: el mensaje dice que está en uso, no «Ese registro ya existe».
+- [ ] Entrar con contraseña incorrecta y con un nickname inexistente: el mensaje es el mismo en los dos casos.
+- [ ] En «Mis perfiles», sumar el segundo perfil (jugador o anfitrión) y comprobar que aparece en el dashboard.
+- [ ] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona.
+- [ ] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué.
 - [ ] Crear clase, tienda para esa clase y objeto. Ver listado, detalle y edición.
 - [ ] Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
 - [ ] Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.

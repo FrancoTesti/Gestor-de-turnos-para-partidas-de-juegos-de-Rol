@@ -9,16 +9,26 @@
 54342 - Ciesco, Alejandro Mario <br>
 
 ### Repositorios
-* [frontend app](http://hyperlinkToGihubOrGitlab)
-* [backend app](http://hyperlinkToGihubOrGitlab)
+Backend y frontend viven en el mismo repositorio:
+
+* [Repositorio completo](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol)
+* [Backend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/src) (`src/`, Express + MikroORM)
+* [Frontend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/frontend) (`frontend/`, React + Vite)
+* [Documentación](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/blob/main/docs/README.md)
 
 ## Tema
 ### Descripción
 Trata de un gestor de turnos para partidas de juegos de Rol, con sistema de compra-venta de objetos del juego en las partidas, con registro y logueo tanto para “Jugador” como “Anfitrión” y sistema para crear personajes de rol.
 
 ### Modelo
-LINK:https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing
-![Texto alternativo](ModeloDominio.drawio.png)
+El modelo vigente, entidad por entidad y con las reglas que no se ven en el diagrama, está en
+[docs/modelo.md](docs/modelo.md). El diagrama entidad-relación actualizado es este:
+
+![Diagrama entidad-relación del sistema](docs/DER_NEW.png)
+
+La versión conceptual original se conserva como historial en `docs/ModeloDominioOLD.drawio.png`
+([enlace al Drive](https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing));
+quedó desactualizada respecto de lo implementado.
 
 
 
@@ -51,3 +61,13 @@ Adicionales para Aprobación
 |CUU/Epic|1. <br>2. |
 |Otros|1. |
 
+## Estado de lo implementado
+
+El alcance mínimo y los adicionales para aprobación están implementados de punta a punta
+(interfaz → API → MySQL) y cada requisito tiene su prueba asociada en la matriz de
+[docs/entrega.md](docs/entrega.md), que también registra lo que queda parcial: la revisión responsive
+y de accesibilidad todavía no recorrió todas las pantallas. Las reglas de negocio están en
+[docs/funcionalidad.md](docs/funcionalidad.md) y los endpoints, en [docs/api.md](docs/api.md).
+
+El alcance adicional voluntario quedó vacío a propósito: el grupo priorizó cerrar el alcance de
+aprobación con pruebas automáticas antes que sumar funciones nuevas.

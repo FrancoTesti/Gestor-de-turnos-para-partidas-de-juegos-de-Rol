@@ -1,22 +1,92 @@
 # Seguimiento de cierre del TP
 
-Base de trabajo: `f1a7dfd`, sincronizada desde el repositorio original al fork de Renzo Scollo el 9 de septiembre de 2026. Rama de implementación: `entrega/completar-tp`.
+Última actualización: 15 de septiembre de 2026, sobre `a3ac59e` (todos los PR del grupo fusionados en `main`).
+Rama de trabajo actual para cuentas, perfiles y documentación: `ramaEmaIteracion2y3`.
 
 Este archivo registra el cierre de la entrega. Una tarea pendiente no se considera cumplida por la sola presencia de código o por un informe anterior.
 
-## Requisitos y evidencia pendiente
+## Matriz de requisitos
 
-| Área | Trabajo para cerrar | Evidencia necesaria |
+Cada fila enlaza el requisito de `proposal.md` con dónde está implementado y con qué prueba lo
+respalda. «E2E» se refiere a `e2e/autenticacion.spec.ts`; «integración», a
+`src/integration/juego.test.ts` (ambos contra MySQL real).
+
+### Alcance mínimo
+
+| Requisito | Implementación | Prueba |
 | --- | --- | --- |
-| Requisitos | Contrastar propuesta, documento del grupo y condiciones vigentes de la cátedra | Matriz requisito → implementación → prueba |
-| Comunicación HTTP | Unificar clientes y gestionar expiración de sesión | Pruebas de errores y sesión; recorrido en navegador |
-| Funcionalidad | Auditar todos los CRUD, filtros y casos de uso | Pruebas por requisito y por rol |
-| Objeto único | Precisar alcance e incorporar dato requerido | Persistencia, DTO, interfaz y pruebas |
-| Frontend | Resolver advertencias, accesibilidad y presentación responsive | Lint y revisión en tamaños pequeño, medio y grande |
-| E2E | Ejecutar flujo real desde navegador con backend y MySQL | Suite reproducible y resultado guardado |
-| CI | Automatizar frontend, backend y MySQL | Ejecución verde en Actions del fork |
-| Documentación | Actualizar propuesta, modelo, API e índice | Enlaces válidos e instalación comprobada |
-| Demostración | Preparar datos, guion, video y despliegue según alcance | Artefactos reales, sin credenciales privadas |
+| CRUD Usuario | `src/routes/usuario.routes.ts`, `frontend/src/pages/UsersPage.tsx` | `src/tests/usuario.service.test.ts`, `usuario.controller.test.ts`, `usuario.schema.test.ts`, `frontend/.../UsersPage.test.tsx` |
+| CRUD Objeto | módulo `objeto`, `frontend/src/components/objetos/` | `src/tests/objeto.compra.test.ts`, `objeto.esunico.test.ts`, E2E |
+| CRUD Tienda | módulo `tienda`, `frontend/src/pages/TiendasPage.tsx` | `src/tests/tienda.service.test.ts`, `frontend/.../TiendasPage.test.tsx`, E2E |
+| CRUD Misión | `juego.service.ts` + `juego.routes.ts`, `frontend/src/pages/MisionesPage.tsx` | `src/tests/juego.service.test.ts`, `frontend/.../MisionesPage.test.tsx`, integración, E2E |
+| CRUD Clase | módulo `clase`, `frontend/src/pages/ClasesPage.tsx` | `frontend/.../CargaPaginas.test.tsx`, E2E |
+| CRUD Personaje (depende de Jugador) | módulo `personaje`, `frontend/src/pages/PersonajesPage.tsx` | `frontend/.../CargaPaginas.test.tsx`, integración, E2E |
+| CRUD Jugador (depende de Usuario) | módulo `jugador`, `frontend/src/pages/ProfilesPage.tsx` | `frontend/.../ProfilesPage.test.tsx`, E2E |
+| CRUD Anfitrión (depende de Usuario) | módulo `anfitrion`, `frontend/src/pages/ProfilesPage.tsx` | `frontend/.../ProfilesPage.test.tsx`, E2E |
+| Listado de partidas activas con detalle | `GET /api/partidas/activas`, `ModulePage` con recurso `partidas` | integración, E2E |
+| Listado de objetos sugeridos por clase | `GET /api/objetos/sugeridos/:idPersonaje` y `/sugeridos/clase/:idClase` | `src/tests/objeto.esunico.test.ts`, integración |
+| Listado de personajes por clase, con filtro que se puede limpiar | `GET /api/personajes?idClase=`, `PersonajesPage.tsx` | `frontend/.../CargaPaginas.test.tsx`, E2E |
+| CUU Jugar una sesión | `JuegoService.play/finish`, `SesionesPage.tsx` | `src/tests/juego.service.test.ts`, integración, E2E |
+| CUU Gestionar comercialización de objetos | `ObjetoService`, `JuegoService.sell`, `venta.rules.ts` | `objeto.compra.test.ts`, `venta.rules.test.ts`, integración, E2E |
+| CUU Realizar misión | `JuegoService.completeMission` | `juego.service.test.ts`, integración, E2E |
+
+### Adicionales para aprobación
+
+| Requisito | Implementación | Prueba |
+| --- | --- | --- |
+| CRUD Partida | módulo `partida`, `ModulePage` recurso `partidas` | integración, E2E |
+| CRUD Sesión | `juego.routes.ts`, `SesionesPage.tsx` | `frontend/.../SesionesPage.test.tsx`, integración, E2E |
+| CRUD Inventario | `juego.routes.ts`, `ModulePage` recurso `inventarios` | integración, E2E |
+| CUU Gestionar inventario (mover objetos) | `JuegoService.moveObject` | integración, E2E |
+| CUU Calificar anfitrión | `JuegoService.rate` | `juego.service.test.ts`, integración, E2E |
+| CUU Crear personaje | `PersonajeService` (personaje + inventario en una transacción) | integración, E2E |
+| CUU Gestionar partida | `PartidaService`, permisos de `authorizeCrud` | integración, E2E |
+| CUU Actualizar usuario | `UsuarioService.actualizarUsuario`, `UsersPage.tsx`, `ProfilesPage.tsx` | `usuario.service.test.ts`, `UsersPage.test.tsx`, `ProfilesPage.test.tsx` |
+
+### Requisitos transversales
+
+| Requisito | Estado | Evidencia |
+| --- | --- | --- |
+| Autenticación con contraseñas hasheadas y sesión recuperable | Cerrado | `src/tests/auth.cuentas.test.ts`, `seguridad.test.ts`, E2E |
+| Permisos comprobados en el servidor, no ocultando botones | Cerrado | `authorizeCrud`, pruebas de integración por rol |
+| Transacciones y concurrencia en MySQL | Cerrado | `src/integration/juego.test.ts`, `objeto.compra.test.ts` |
+| Integración continua con build, lint y pruebas | Cerrado | `.github/workflows/verificacion.yml` |
+| Documentación de instalación, API, modelo y demo | Cerrado | `docs/README.md` y los documentos que enlaza |
+| Revisión responsive y de accesibilidad completa | Parcial | Revisadas las pantallas de cuentas, perfiles, clases, tiendas y personajes; falta recorrer el resto en pantalla chica |
+| Alcance adicional voluntario | No iniciado | Decisión del grupo: se priorizó cerrar el alcance de aprobación |
+
+## Cuentas, perfiles y documentación (Emanuel Salomón)
+
+- El registro avisa con un mensaje propio cuando el nickname ya existe, en vez del texto genérico de
+  la restricción única, tanto si lo detecta antes de insertar como si la colisión aparece al guardar.
+- El registro pide repetir la contraseña y valida longitudes antes de enviar, sin reemplazar la
+  validación del servidor.
+- Login y registro tienen etiquetas asociadas a cada campo, `autocomplete` y estados de envío.
+- «Mis perfiles» muestra los datos de la cuenta, permite editarlos (incluida la contraseña, que
+  cierra la sesión) y administra los perfiles de jugador y anfitrión con sus mensajes de error.
+- `frontend/src/services/anfitrion.service.ts` estaba vacío: se completó y las pantallas de perfiles
+  pasan por los servicios en lugar de armar las rutas a mano.
+- Se eliminó `frontend/src/mockData.ts`, que ya no importaba ninguna pantalla y todavía guardaba
+  usuarios de prueba con contraseñas en texto plano, junto con el ayudante `simularRetardo`.
+- Documentación nueva: índice `docs/README.md`, referencia de API `docs/api.md`, modelo vigente
+  `docs/modelo.md`, guion de demostración `docs/demo.md` y despliegue `docs/despliegue.md`.
+  `proposal.md` y `README.md` quedaron con enlaces reales y la lista completa de comandos.
+
+## Enlaces a los PR del grupo
+
+| PR | Autor | Contenido |
+| --- | --- | --- |
+| [#34](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/34) | Renzo Scollo | Reparación del build del frontend y de la calificación de sesiones |
+| [#33](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/33) | Renzo Scollo | Calidad del frontend, recorridos E2E y CI |
+| [#32](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/32) | Franco Testi | Flujo completo de partidas, sesiones y misiones |
+| [#31](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/31) | Grupo | Integración de los cambios del 9 de septiembre |
+| [#30](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/30) | Renzo Scollo | Corrección de la compilación del frontend |
+| [#29](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/29) | Octavio Gudiño | Objetos, tiendas, compra, venta e inventarios |
+| [#28](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/28) | Alejandro Ciesco | Clases, personajes y acceso a partidas |
+| [#27](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/27) | Franco Testi | Sesiones, participantes y calificación del anfitrión |
+| [#26](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/26) y [#25](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/25) | Renzo Scollo | Autenticación, permisos y pantallas conectadas |
+
+Al abrir un PR nuevo hay que sumarlo a esta tabla.
 
 ## Automatización
 
@@ -87,3 +157,33 @@ npm run test:e2e
 El usuario de MySQL necesita permiso para crear y eliminar bases de prueba. La suite exige `TEST_DB_PORT` explícito, crea una base `rpg_e2e_<identificador aleatorio>` y elimina únicamente esa base al finalizar, incluso ante fallos de pruebas. Nunca reutiliza `DB_NAME`. Un corte forzado del proceso puede impedir la limpieza: revisar cualquier base residual antes de eliminarla manualmente.
 
 Los puertos 5174 y 3101 deben estar libres. El preparador E2E levanta Vite dentro del mismo proceso, con la raíz `frontend/`, y redirige `/api` al backend de prueba en `127.0.0.1:3101`; por eso no depende del `webServer` de Playwright ni de `API_PROXY_TARGET`. Al ejecutar la aplicación a mano, Vite conserva su destino habitual `localhost:3000` o el que indique `API_PROXY_TARGET`. Las capturas y trazas de fallos quedan en `test-results/`, excluido de Git.
+
+## Evidencia de verificación local (15/9/2026)
+
+Ejecutado sobre `ramaEmaIteracion2y3`, con dependencias instaladas mediante `npm ci` en la raíz y en
+`frontend/`:
+
+| Comando | Resultado |
+| --- | --- |
+| `npm run build` (backend) | Compila sin errores |
+| `npm test` (backend) | 11 archivos, **83 pruebas aprobadas** (76 previas + 7 nuevas de cuentas y sesión) |
+| `npm run build` (frontend) | Compila sin errores |
+| `npm run lint` (frontend) | Sin errores ni advertencias |
+| `npm test` (frontend) | 17 archivos, **61 pruebas aprobadas** (51 previas + 10 nuevas de perfiles y registro) |
+
+Pruebas nuevas incorporadas en esta tanda:
+
+- `src/tests/auth.cuentas.test.ts` — registro sin devolver la contraseña y con hash scrypt, nickname
+  repetido detectado antes y durante el guardado, contraseña corta, login/`/me`/logout con cookie y
+  mismo mensaje para credenciales incorrectas. Monta el router real de autenticación sobre un
+  `EntityManager` simulado, así que no necesita MySQL.
+- `frontend/src/pages/__tests__/RegisterPage.test.tsx` — alta de jugador y de anfitrión, contraseñas
+  que no coinciden, longitud mínima y rechazo del servidor por nickname repetido.
+- `frontend/src/pages/__tests__/ProfilesPage.test.tsx` — datos propios, alta y baja de cada perfil,
+  karma calculado por el servidor, edición sin enviar el identificador y cierre de sesión al cambiar
+  la contraseña.
+
+**Lo que no se pudo ejecutar en esta máquina:** `npm run test:integration` y `npm run test:e2e`
+necesitan un MySQL local, que acá no está instalado. La última corrida verde de ambos es la de
+Actions citada más abajo. Antes de la entrega hay que volver a ejecutarlos, porque el recorrido E2E
+de registro se actualizó para completar el campo «Repetir contraseña» que ahora pide la pantalla.
