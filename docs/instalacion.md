@@ -21,6 +21,35 @@ cd ..
 
 ## Base de datos
 
+### Instalar MySQL en Windows
+
+Si la máquina todavía no tiene el servidor (no alcanza con MySQL Workbench, que es solo la interfaz
+gráfica), instalarlo antes de seguir:
+
+1. Descargar **MySQL Installer** desde el sitio oficial: <https://dev.mysql.com/downloads/installer/>.
+   Elegir el MSI grande (unos 450 MB), no el `web-community`. Debajo del botón hay un enlace
+   «No thanks, just start my download» para saltear la cuenta de Oracle.
+2. La instalación **pide permisos de administrador** de Windows. Sin esa contraseña no se puede
+   completar; en ese caso queda la alternativa de usar el MySQL de otra máquina y apuntar `DB_HOST`
+   a su dirección.
+3. Si antes hubo otro MySQL en la máquina, puede quedar una carpeta de datos en
+   `C:\ProgramData\MySQL\MySQL Server 8.0`. Si el instalador se queja de que ya existe,
+   **renombrarla** (por ejemplo a `MySQL Server 8.0.old`) en lugar de borrarla.
+4. En el asistente: tipo de instalación **Server only**, puerto **3306**, «Use Strong Password
+   Encryption» y servicio de Windows activado. **Anotar la contraseña de root**: no se puede
+   recuperar y se necesita para el `.env`.
+5. Comprobar que quedó escuchando:
+
+```powershell
+Get-Service MySQL* | Select-Object Name, Status
+Test-NetConnection 127.0.0.1 -Port 3306
+```
+
+El servidor escucha solo en `127.0.0.1`: no queda expuesto a la red. La base de este proyecto es
+descartable y se puede recrear en cualquier momento.
+
+### Configurar la conexión
+
 Copiar `.env.example` a `.env` y completar `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` y `PORT`. No subir `.env` al repositorio.
 
 Para una instalación nueva, crear una base vacía en MySQL, por ejemplo:
@@ -118,6 +147,11 @@ En producción usar HTTPS, `NODE_ENV=production` (cookie Secure), un origen expl
 
 ## Problemas frecuentes
 
+- `ECONNREFUSED 127.0.0.1:3306` al ejecutar `npm run dev`: no hay ningún MySQL escuchando. Revisar
+  que el servicio esté iniciado (`Get-Service MySQL*`) y que exista el archivo `.env`; sin `.env` la
+  configuración cae a `127.0.0.1`, usuario `root` y base `hola`, aunque la base esté en otra máquina.
+- `Error HTTP 502` en el navegador: el frontend está levantado pero el backend no. Iniciar `npm run dev`
+  en la raíz; la pantalla avisa que el servidor no responde.
 - Error de conexión: comprobar que MySQL esté iniciado y que puerto/credenciales sean correctos.
 - Login rechazado con cuentas antiguas: revisar la migración, no borrar usuarios ni desactivar la autenticación.
 - `401`: la sesión falta o expiró. Volver a ingresar.
