@@ -35,3 +35,15 @@ it('explica fallos de conexión sin reintentar una escritura', async () => {
   await expect(api('/objetos/1/comprar', 'POST', {})).rejects.toMatchObject({ status: 0, message: expect.stringContaining('conectar') });
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
+
+it('explica que el backend está caído cuando el proxy devuelve 502, 503 o 504', async () => {
+  for (const status of [502, 503, 504]) {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html>Bad Gateway</html>', { status })));
+    await expect(api('/auth/me')).rejects.toMatchObject({ status, message: expect.stringContaining('backend esté iniciado') });
+  }
+});
+
+it('prefiere el mensaje de la API si el servidor sí respondió con uno', async () => {
+  vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"message":"Servidor ocupado. Intentá más tarde."}', { status: 503 })));
+  await expect(api('/auth/login', 'POST', {})).rejects.toMatchObject({ status: 503, message: 'Servidor ocupado. Intentá más tarde.' });
+});

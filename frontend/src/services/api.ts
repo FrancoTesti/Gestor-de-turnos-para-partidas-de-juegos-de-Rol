@@ -22,7 +22,12 @@ export async function api<T>(path: string, method = 'GET', data?: unknown): Prom
     const detail = Array.isArray(body?.errors) ? body.errors
       .filter((e: unknown): e is { campo: string; mensaje: string } => !!e && typeof e === 'object' && 'campo' in e && 'mensaje' in e && typeof e.campo === 'string' && typeof e.mensaje === 'string')
       .map((e: { campo: string; mensaje: string }) => `${e.campo}: ${e.mensaje}`).join('; ') : '';
-    throw new ApiError(response.status, detail || (typeof body?.message === 'string' ? body.message : `Error HTTP ${response.status}`));
+    // 502/503/504 los devuelve el proxy o el servidor caído, no la API: el cuerpo no es
+    // JSON nuestro, así que sin este caso la pantalla mostraría "Error HTTP 502" a secas.
+    const caido = [502, 503, 504].includes(response.status)
+      ? 'El servidor no está respondiendo. Verificá que el backend esté iniciado e intentá nuevamente.'
+      : `Error HTTP ${response.status}`;
+    throw new ApiError(response.status, detail || (typeof body?.message === 'string' ? body.message : caido));
   }
   if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
