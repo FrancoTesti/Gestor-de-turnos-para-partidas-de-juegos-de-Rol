@@ -250,23 +250,49 @@ export default function PersonajesPage() {
               </select>
             </label>
             {!enEdicion && (
-              <label>
-                Partida *
-                <select
-                  required
-                  value={idPartida}
-                  onChange={(e) => { setIdPartida(Number(e.target.value)); setContrasenaPartida(''); }}
-                  disabled={guardando}
-                  style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-                >
-                  <option value="">Seleccionar partida activa…</option>
-                  {partidasActivas.map((p) => (
-                    <option key={p.idPartida} value={p.idPartida}>
-                      {p.nombre} (#{p.idPartida}) — hasta {p.limiteJugadores} jug.{p.esPrivada ? ' 🔒' : ''}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <>
+                <label>
+                  Partida *
+                  <select
+                    required
+                    value={idPartida}
+                    onChange={(e) => { setIdPartida(Number(e.target.value)); setContrasenaPartida(''); }}
+                    disabled={guardando}
+                    style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                  >
+                    <option value="">Seleccionar partida activa…</option>
+                    {partidasActivas.map((p) => {
+                      const ocupados = personajes.filter((pj) => pj.idPartida === p.idPartida).length;
+                      const disponibles = Math.max(0, p.limiteJugadores - ocupados);
+                      return (
+                        <option key={p.idPartida} value={p.idPartida}>
+                          {p.nombre} (#{p.idPartida}) — {p.esPrivada ? '🔒 Privada' : '🌐 Pública'} — Cupos: {disponibles}/{p.limiteJugadores} disponibles
+                        </option>
+                      );
+                    })}
+                  </select>
+                </label>
+
+                {partidaSeleccionada && (
+                  <div style={{ background: '#edf2f7', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem', color: '#2d3748' }}>
+                    <p style={{ margin: '0.2rem 0' }}>
+                      <strong>Partida:</strong> {partidaSeleccionada.nombre} (#{partidaSeleccionada.idPartida})
+                    </p>
+                    <p style={{ margin: '0.2rem 0' }}>
+                      <strong>Acceso:</strong> {partidaSeleccionada.esPrivada ? '🔒 Privada (requiere contraseña)' : '🌐 Pública (acceso directo)'}
+                    </p>
+                    {(() => {
+                      const ocupados = personajes.filter((pj) => pj.idPartida === partidaSeleccionada.idPartida).length;
+                      const disponibles = Math.max(0, partidaSeleccionada.limiteJugadores - ocupados);
+                      return (
+                        <p style={{ margin: '0.2rem 0', color: disponibles > 0 ? '#276749' : '#c53030' }}>
+                          <strong>Cupos:</strong> {disponibles} de {partidaSeleccionada.limiteJugadores} disponibles {disponibles === 0 && '— ⚠️ ¡Partida llena!'}
+                        </p>
+                      );
+                    })()}
+                  </div>
+                )}
+              </>
             )}
             {requiereContrasena && (
               <label>

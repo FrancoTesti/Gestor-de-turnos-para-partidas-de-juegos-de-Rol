@@ -84,6 +84,16 @@ export default function PersonajeLista({
                 </option>
               ))}
             </select>
+            {filtroClase !== 'todas' && (
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ padding: '0.3rem 0.6rem', fontSize: '0.85rem' }}
+                onClick={() => setFiltroClase('todas')}
+              >
+                Limpiar filtro
+              </button>
+            )}
           </div>
 
           {onNuevo && (
