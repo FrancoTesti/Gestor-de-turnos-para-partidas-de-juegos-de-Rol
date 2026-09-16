@@ -1,9 +1,6 @@
 import type { Usuario } from '../interfaces';
 import { api } from './api';
 
-export function simularRetardo(ms: number): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 export type CrearUsuarioData = Omit<Usuario, 'idUsuario'> & { contrasena: string };
 export type ActualizarUsuarioData = Partial<CrearUsuarioData>;
 

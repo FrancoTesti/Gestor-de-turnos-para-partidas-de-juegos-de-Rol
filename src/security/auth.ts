@@ -1,6 +1,6 @@
 import { randomBytes, createHash } from 'node:crypto';
 import { Router, type Request, type RequestHandler } from 'express';
-import { EntityManager } from '@mikro-orm/core';
+import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { z } from 'zod';
 import { Usuario } from '../entities/Usuario.entity';
 import { Jugador } from '../entities/Jugador.entity';
@@ -13,6 +13,7 @@ declare global { namespace Express { interface Request { identity?: Identity } }
 export const publicUser = (u: Usuario) => ({ idUsuario: u.idUsuario, nombreUsuario: u.nombreUsuario, nickname: u.nickname, imagen: u.imagen });
 const digest = (value: string) => createHash('sha256').update(value).digest('hex');
 const cookieName = 'rpg_session';
+const nicknameEnUso = 'Ese nickname ya está en uso. Elegí otro para poder iniciar sesión.';
 const sessionDuration = 8 * 60 * 60 * 1000;
 
 export function createAuth(em: EntityManager) {
@@ -54,14 +55,23 @@ export function createAuth(em: EntityManager) {
   });
   router.post('/register', async (req, res) => {
     const data = crearUsuarioSchema.extend({ tipo: z.enum(['jugador', 'anfitrion']) }).parse(req.body);
-    const result = await em.transactional(async tx => {
-      const u = tx.create(Usuario, { nombreUsuario: data.nombreUsuario, nickname: data.nickname, imagen: data.imagen ?? '', contrasena: await hashPassword(data.contrasena) });
-      if (data.tipo === 'jugador') tx.create(Jugador, { usuario: u, estado: true });
-      else tx.create(Anfitrion, { usuario: u, cantPartidasActuales: 0, karma: 0 });
-      await tx.flush();
-      return publicUser(u);
-    });
-    res.status(201).json(result);
+    // El nickname identifica a la cuenta en el login: avisamos con un mensaje propio
+    // en vez de dejar que la restricción única devuelva un texto genérico.
+    if (await em.findOne(Usuario, { nickname: data.nickname })) { res.status(409).json({ message: nicknameEnUso }); return; }
+    try {
+      const result = await em.transactional(async tx => {
+        const u = tx.create(Usuario, { nombreUsuario: data.nombreUsuario, nickname: data.nickname, imagen: data.imagen ?? '', contrasena: await hashPassword(data.contrasena) });
+        if (data.tipo === 'jugador') tx.create(Jugador, { usuario: u, estado: true });
+        else tx.create(Anfitrion, { usuario: u, cantPartidasActuales: 0, karma: 0 });
+        await tx.flush();
+        return publicUser(u);
+      });
+      res.status(201).json(result);
+    } catch (error) {
+      // Dos registros simultáneos con el mismo nickname: la BD decide y avisamos igual.
+      if (error instanceof UniqueConstraintViolationException) { res.status(409).json({ message: nicknameEnUso }); return; }
+      throw error;
+    }
   });
   router.post('/login', async (req, res) => {
     const data = z.object({ nickname: z.string().trim().min(1).max(50), contrasena: z.string().min(1).max(100) }).strict().parse(req.body);

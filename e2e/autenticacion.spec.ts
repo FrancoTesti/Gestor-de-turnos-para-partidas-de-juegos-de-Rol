@@ -5,6 +5,7 @@ async function registrar(page: Page, nickname: string, tipo = 'Anfitrión') {
   await page.getByPlaceholder('Nombre y apellido').fill('Anfitrión de prueba');
   await page.getByPlaceholder('Nickname').fill(nickname);
   await page.getByPlaceholder('Contraseña', { exact: true }).fill('PruebaSegura123');
+  await page.getByPlaceholder('Repetir contraseña', { exact: true }).fill('PruebaSegura123');
   await page.getByLabel(tipo, { exact: true }).check();
   await page.getByRole('button', { name: 'Registrar', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);

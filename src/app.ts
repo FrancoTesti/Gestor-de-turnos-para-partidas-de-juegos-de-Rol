@@ -83,18 +83,21 @@ export function createApp(orm: MikroORM) {
     res.status(404).json({ message: `No existe la ruta ${req.method} ${req.path}` });
   });
 
-  const errors: ErrorRequestHandler = (err, _req, res, _next) => {
-    if (err instanceof HttpError) { res.status(err.status).json({ message: err.message }); return; }
-    if (err instanceof ZodError) { res.status(400).json({ message: err.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') }); return; }
-    if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
-    if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
-    if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }
-    console.error(err);
-    res.status(500).json({ message: 'No se pudo completar la operación' });
-  };
-  app.use(errors);
+  app.use(manejarErrores);
   return app;
 }
+
+// Traduce los errores conocidos a respuestas HTTP. Se exporta para que las pruebas
+// monten routers sueltos con el mismo tratamiento de errores que la aplicación real.
+export const manejarErrores: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof HttpError) { res.status(err.status).json({ message: err.message }); return; }
+  if (err instanceof ZodError) { res.status(400).json({ message: err.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') }); return; }
+  if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
+  if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
+  if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }
+  console.error(err);
+  res.status(500).json({ message: 'No se pudo completar la operación' });
+};
 
 async function main() {
   const orm = await MikroORM.init(config);

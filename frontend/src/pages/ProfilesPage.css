@@ -1,0 +1,78 @@
+.profiles-page {
+  padding: 1rem;
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1rem;
+}
+
+.profiles-page h1 {
+  margin: 0;
+}
+
+.perfil-card {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  background: var(--bg);
+  box-shadow: var(--shadow);
+}
+
+.perfil-card h2 {
+  margin-top: 0;
+  font-size: 1.25rem;
+}
+
+.perfil-datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.35rem 1rem;
+  margin: 0 0 0.75rem;
+}
+
+.perfil-datos dt {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.perfil-datos dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.perfil-nota {
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.perfil-acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.perfil-error,
+.perfil-aviso {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  border: 1px solid;
+}
+
+.perfil-error {
+  border-color: #c62828;
+  background: rgba(198, 40, 40, 0.1);
+  color: #c62828;
+}
+
+.perfil-aviso {
+  border-color: #2e7d32;
+  background: rgba(46, 125, 50, 0.1);
+  color: #2e7d32;
+}
+
+@media (max-width: 600px) {
+  .perfil-datos {
+    grid-template-columns: 1fr;
+  }
+}

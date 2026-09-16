@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import './AuthPages.css';
 
 export default function LoginPage() {
-  const [nickname, setNickname] = React.useState('');
-  const [contrasena, setContrasena] = React.useState('');
+  const [nickname, setNickname] = useState('');
+  const [contrasena, setContrasena] = useState('');
   const [errorLogin, setErrorLogin] = useState('');
   const { usuarioLogueado, loguearse } = useUser();
   const [busy, setBusy] = useState(false);
@@ -18,20 +19,13 @@ export default function LoginPage() {
     }
   }, [usuarioLogueado, navigate]);
 
-  // Auto-limpiar error después de 3 segundos
-  useEffect(() => {
-    if (errorLogin) {
-      const timer = setTimeout(() => setErrorLogin(''), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [errorLogin]);
-
-  const handleLogin = async () => {
+  const handleLogin = async (evento?: FormEvent) => {
+    evento?.preventDefault();
     if (!nickname || !contrasena) {
       setErrorLogin('Completa todos los campos');
       return;
     }
-    
+
     setBusy(true); setErrorLogin('');
     try { await loguearse(nickname, contrasena); navigate('/dashboard'); }
     catch (e) { setErrorLogin(e instanceof Error ? e.message : 'No se pudo iniciar sesión'); }
@@ -39,7 +33,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div style={{ maxWidth: 420, margin: '2rem auto', fontFamily: 'sans-serif' }}>
+    <main className="auth-page">
       <h2>Iniciar Sesión</h2>
 
       {errorLogin && (
@@ -50,30 +44,49 @@ export default function LoginPage() {
         />
       )}
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <input
-          placeholder="Nickname"
-          value={nickname}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-          style={{ padding: '0.5rem', fontSize: '1rem' }}
-        />
-        <input
-          placeholder="Contraseña"
-          type="password"
-          value={contrasena}
-          onChange={(e: React.ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-          style={{ padding: '0.5rem', fontSize: '1rem' }}
-        />
-        <button disabled={busy} onClick={handleLogin} style={{ padding: '0.5rem', fontSize: '1rem', color: 'black' }}>
-          Ingresar
+      <form className="auth-form" onSubmit={handleLogin} noValidate>
+        <div className="auth-campo">
+          <label htmlFor="login-nickname">Nickname</label>
+          <input
+            id="login-nickname"
+            name="nickname"
+            autoComplete="username"
+            placeholder="Nickname"
+            value={nickname}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+
+        <div className="auth-campo">
+          <label htmlFor="login-contrasena">Contraseña</label>
+          <input
+            id="login-contrasena"
+            name="contrasena"
+            type="password"
+            autoComplete="current-password"
+            placeholder="Contraseña"
+            value={contrasena}
+            onChange={(e: ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
+            disabled={busy}
+          />
+        </div>
+
+        <button type="submit" className="auth-primario" disabled={busy} aria-busy={busy}>
+          {busy ? 'Ingresando…' : 'Ingresar'}
         </button>
         <button
+          type="button"
+          className="auth-secundario"
           onClick={() => navigate('/register')}
-          style={{ padding: '0.5rem', fontSize: '1rem', background: '#2f2f2f' }}
         >
           Ir a Registro
         </button>
-      </div>
-    </div>
+      </form>
+
+      <p className="auth-nota">
+        ¿Todavía no tenés cuenta? Registrate eligiendo si vas a jugar o a dirigir partidas.
+      </p>
+    </main>
   );
 }
