@@ -293,7 +293,9 @@ test('migración explícita de usuarios y partidas, diagnóstico sin escritura e
   const user = await em.findOneOrFail(Usuario, { idUsuario: ids.player });
   const game = await em.findOneOrFail(Partida, { idPartida: ids.game });
   user.contrasena = 'legado123'; game.contrasena = 'partida123'; await em.flush();
-  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, DB_HOST: process.env.TEST_DB_HOST ?? '127.0.0.1', DB_PORT: process.env.TEST_DB_PORT, DB_USER: process.env.TEST_DB_USER ?? 'root', DB_PASSWORD: process.env.TEST_DB_PASSWORD ?? '', DB_NAME: database }, timeout: 15000 });
+  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, DB_HOST: process.env.TEST_DB_HOST ?? '127.0.0.1', DB_PORT: process.env.TEST_DB_PORT, DB_USER: process.env.TEST_DB_USER ?? 'root', DB_PASSWORD: process.env.TEST_DB_PASSWORD ?? '', // 30 s: arrancar el script (Node + MikroORM + conexión) tarda cerca de 7 s en una
+  // máquina lenta, y acá se ejecuta tres veces con la base ya cargada.
+  DB_NAME: database }, timeout: 30000 });
   assert.match(run(false), /Modo diagnóstico/);
   assert.equal((await orm.em.fork().findOneOrFail(Usuario, { idUsuario: ids.player })).contrasena, 'legado123');
   const output = run(true); assert.doesNotMatch(output, /legado123|partida123/);
