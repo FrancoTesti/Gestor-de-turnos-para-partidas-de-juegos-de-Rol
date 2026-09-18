@@ -340,6 +340,29 @@ test('casos borde: saldo insuficiente, objeto ajeno, venta a tienda de otra clas
   assert.equal(reducirCapacidad.status, 409);
   assert.match(reducirCapacidad.body.message, /Mové los objetos antes de reducir/i);
 });
+
+test('sesión, rechaza suma distinta al total y sesión concurrente', async () => {
+  await request('/sesiones', 'POST', { idPartida: ids.game, numSesion: 2, duracionSesion: 60 });
+  await request('/misiones', 'POST', { idPartida: ids.game, numSesion: 2, numMision: 1, descripcion: 'Prueba', dineroTotal: 10, xpTotal: 20 });
+  const start = await request(`/sesiones/${ids.game}/2/jugar`, 'POST', { idPersonajes: [ids.character] });
+  assert.equal(start.status, 200);
+
+  // Segunda sesión en curso en la misma partida
+  await request('/sesiones', 'POST', { idPartida: ids.game, numSesion: 3, duracionSesion: 60 });
+  const concurrent = await request(`/sesiones/${ids.game}/3/jugar`, 'POST', { idPersonajes: [ids.character] });
+  assert.equal(concurrent.status, 409); // rechaza porque la sesión 2 está en curso
+
+  // Suma distinta
+  const badRewards = { recompensas: [{ idPersonaje: ids.character, dinero: 5, xp: 20 }] };
+  const badReq = await request(`/misiones/${ids.game}/2/1/completar`, 'POST', badRewards);
+  assert.equal(badReq.status, 409);
+
+  // Limpieza y completar bien
+  const goodRewards = { recompensas: [{ idPersonaje: ids.character, dinero: 10, xp: 20 }] };
+  assert.equal((await request(`/misiones/${ids.game}/2/1/completar`, 'POST', goodRewards)).status, 200);
+  assert.equal((await request(`/sesiones/${ids.game}/2/finalizar`, 'POST')).status, 200);
+  assert.equal((await request(`/sesiones/${ids.game}/3`, 'DELETE')).status, 204);
+});
 test('sesión, misión, recompensas una sola vez, cierre y karma una sola vez', async () => {
   const session = `/sesiones/${ids.game}/1`;
   assert.equal((await request('/sesiones', 'POST', { idPartida: ids.game, numSesion: 1, duracionSesion: 60 })).status, 201);

@@ -8,6 +8,7 @@ import { obtenerSesion } from '../services/sesion.service';
 import type { SesionDetalleDTO } from '../services/sesion.service';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
+import Modal from '../components/ui/Modal';
 
 function mensajeError(e: unknown): string {
   return e instanceof Error ? e.message : 'No se pudo completar la operación';
@@ -28,6 +29,7 @@ export default function MisionesPage() {
   const estadoInicialMision = { idPartida: '', numSesion: '', numMision: '', descripcion: '', dineroTotal: 0, xpTotal: 0, asistenciaGrupoGrande: 0 };
   const [nuevaMision, setNuevaMision] = useState(estadoInicialMision);
   const [editando, setEditando] = useState(false);
+  const [misionAEliminar, setMisionAEliminar] = useState<Mision | null>(null);
 
   const [selectedMision, setSelectedMision] = useState<Mision | null>(null);
   const [participantes, setParticipantes] = useState<SesionDetalleDTO['participantes']>([]);
@@ -97,15 +99,21 @@ export default function MisionesPage() {
     setEditando(true);
   };
 
-  const handleEliminar = async (m: Mision) => {
-    if (!window.confirm(`¿Seguro que deseas eliminar la misión ${m.numMision}?`)) return;
+  const handleEliminar = (m: Mision) => {
+    setMisionAEliminar(m);
+  };
+
+  const confirmarEliminacion = async () => {
+    if (!misionAEliminar) return;
     try {
       setError('');
-      await eliminarMision(m.idPartida, m.numSesion, m.numMision);
+      await eliminarMision(misionAEliminar.idPartida, misionAEliminar.numSesion, misionAEliminar.numMision);
       recargar();
       setAviso('Misión eliminada.');
     } catch (e: unknown) {
       setError(mensajeError(e));
+    } finally {
+      setMisionAEliminar(null);
     }
   };
 
@@ -241,6 +249,15 @@ export default function MisionesPage() {
           </div>
         )}
       </div>
+
+      <Modal
+        isOpen={misionAEliminar !== null}
+        title="Eliminar misión"
+        message={`¿Seguro que deseas eliminar la misión ${misionAEliminar?.numMision}?`}
+        onConfirm={() => void confirmarEliminacion()}
+        onCancel={() => setMisionAEliminar(null)}
+        type="confirm"
+      />
     </div>
   );
 }
