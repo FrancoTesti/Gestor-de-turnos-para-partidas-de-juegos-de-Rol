@@ -74,46 +74,4 @@ aleatorio, nunca contra `DB_NAME`. Su configuración está en la [guía de insta
 Detalle de reglas en [funcionalidad.md](docs/funcionalidad.md), endpoints en [api.md](docs/api.md)
 y modelo de datos en [modelo.md](docs/modelo.md).
 
-## Módulos por integrante
-
-- **Renzo Scollo** — cliente HTTP único del frontend, manejo de errores y expiración de sesión,
-  pruebas E2E con Playwright e integración continua en GitHub Actions.
-- **Franco Testi** — partidas, sesiones, misiones, reparto de recompensas y calificación del anfitrión.
-- **Alejandro Mario Ciesco** — clases, personajes, acceso a partidas públicas y privadas, filtros y
-  creación transaccional del inventario inicial.
-- **Octavio Alejandro Gudiño** — tiendas, objetos (incluido `esUnico`), compra con bloqueo pesimista,
-  venta entre el 70 % y el 100 % del valor, y gestión de inventarios.
-- **Emanuel Salomón** — cuentas y perfiles (registro, login, sesión, edición de datos propios) y
-  documentación de entrega.
-
----
-
-## Cambios implementados — Rama Alejandro Mario Ciesco (`feat/ciesco-clases-personajes-partidas`)
-
-Esta rama implementa y valida de punta a punta las responsabilidades de **Alejandro Mario Ciesco**:
-
-### 1. Clases de Personaje (`frontend/src/pages/ClasesPage.tsx`, `ClaseLista.tsx`, `ClaseFormulario.tsx`, `ClaseDetalle.tsx`)
-- **Visualización y búsqueda**: Catálogo completo de clases con filtro interactivo por nombre y descripción, estado de carga (`Cargando...`), lista vacía y manejo de errores con reintento.
-- **Control de acceso**: Solo los usuarios con rol de anfitrión pueden crear, editar o eliminar clases. Los jugadores pueden consultar el catálogo y ver el detalle de cada clase.
-- **Integridad referencial**: Mensajes de error claros al intentar eliminar clases asociadas a tiendas o personajes.
-
-### 2. Personajes y Acceso a Partidas (`frontend/src/pages/PersonajesPage.tsx`, `PersonajeLista.tsx`, `PersonajeDetalle.tsx`)
-- **Acceso a partidas públicas y privadas**:
-  - Selector de partidas activas con indicador de privacidad (🌐 Pública / 🔒 Privada) y cálculo dinámico de cupos disponibles (`X/Y disponibles`).
-  - Solicitud de contraseña de partida exclusivamente cuando la partida es privada.
-  - Bloqueo visual e informativo cuando una partida ya tiene su cupo completo.
-- **CRUD y creación transaccional**:
-  - Creación de personaje vinculada de forma segura al jugador autenticado (no permite crear a nombre de otros jugadores).
-  - Creación automática del inventario inicial (`numInventario = 1`, `cantidadEspacio = 10`) en la misma transacción del backend.
-  - Edición restringida a campos permitidos (`nombreFicticio`, `raza`, `idClase`), protegiendo nivel, experiencia, dinero y pertenencia.
-  - Eliminación con validación de reglas de negocio: rechazo informado si el personaje posee historial de sesiones o si tiene objetos en inventario sin vender.
-- **Filtro por clase**: Selector de filtro por clase con botón para limpiar el filtro fácilmente.
-
-### 3. Pruebas Automatizadas
-- **Backend (`src/tests/`)**:
-  - `clase.service.test.ts`: Pruebas unitarias de CRUD completo para `ClaseService`.
-  - `personaje.service.test.ts`: Pruebas unitarias de creación transaccional, validación de partidas privadas (contraseña), cupos máximos, jugador inactivo, jugador duplicado en la misma partida y restricciones de eliminación.
-- **Frontend (`frontend/src/pages/__tests__/`)**:
-  - `ClasesPage.test.tsx`: Pruebas de renderizado, búsqueda en tiempo real, creación y visualización de detalle.
-  - `PersonajesPage.test.tsx`: Pruebas de listado, filtro por clase, solicitud condicional de contraseña en partidas privadas y feedback de creación.
 
