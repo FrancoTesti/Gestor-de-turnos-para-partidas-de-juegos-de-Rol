@@ -4,6 +4,8 @@ import { api } from '../services/api';
 import type { Sesion, Partida, Personaje } from '../interfaces';
 import { obtenerSesiones, obtenerSesion, crearSesion, jugarSesion, finalizarSesion, calificarAnfitrion } from '../services/sesion.service';
 import type { SesionDetalleDTO } from '../services/sesion.service';
+import { obtenerMisiones } from '../services/mision.service';
+import type { Mision } from '../interfaces';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
 
@@ -16,6 +18,7 @@ export default function SesionesPage() {
   const host = rolDe(usuarioLogueado?.idUsuario ?? 0) === 'anfitrion';
   
   const [sesiones, setSesiones] = useState<Sesion[]>([]);
+  const [misiones, setMisiones] = useState<Mision[]>([]);
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [personajes, setPersonajes] = useState<Personaje[]>([]);
   const [loading, setLoading] = useState(true);
@@ -31,8 +34,8 @@ export default function SesionesPage() {
 
   useEffect(() => {
     let activo = true;
-    Promise.all([obtenerSesiones(), api<Partida[]>('/partidas'), api<Personaje[]>('/personajes')])
-      .then(([ses, pts, pjs]) => { if (activo) { setSesiones(ses); setPartidas(pts); setPersonajes(pjs); } })
+    Promise.all([obtenerSesiones(), obtenerMisiones(), api<Partida[]>('/partidas'), api<Personaje[]>('/personajes')])
+      .then(([ses, mis, pts, pjs]) => { if (activo) { setSesiones(ses); setMisiones(mis); setPartidas(pts); setPersonajes(pjs); } })
       .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
       .finally(() => { if (activo) setLoading(false); });
     return () => { activo = false; };
@@ -126,13 +129,15 @@ export default function SesionesPage() {
         <div style={{ flex: '1 1 50%' }}>
           <table className="app-table">
             <thead>
-              <tr><th>Partida</th><th>Sesión</th><th>Estado</th><th>Acciones</th></tr>
+              <tr><th>Partida</th><th>Sesión</th><th>Duración (min)</th><th>Jugadores</th><th>Estado</th><th>Acciones</th></tr>
             </thead>
             <tbody>
               {sesiones.map(s => (
                 <tr key={`${s.idPartida}-${s.numSesion}`}>
                   <td>{partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? s.idPartida}</td>
                   <td>{s.numSesion}</td>
+                  <td>{s.duracionSesion}</td>
+                  <td>{s.cantJugadores}</td>
                   <td>
                     {s.estadoSesion === 0 && <b style={{ color: 'gray' }}>Planificada</b>}
                     {s.estadoSesion === 1 && <b style={{ color: 'blue' }}>En Curso</b>}
@@ -211,10 +216,17 @@ export default function SesionesPage() {
               </div>
             )}
 
-            {/* ESTADO 2: FINALIZADA */}
+                {/* ESTADO 2: FINALIZADA */}
             {selected.estadoSesion === 2 && (
               <div style={{ marginTop: '1rem' }}>
-                <h3>Participantes del historial</h3>
+                <h3>Resumen de Recompensas</h3>
+                <p>
+                  <strong>Total entregado:</strong>{' '}
+                  {misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion && m.estado).reduce((acc, m) => acc + m.dineroOtorgadoAJugadores, 0)} Monedas y {' '}
+                  {misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion && m.estado).reduce((acc, m) => acc + m.xpOtorgadoJugadores, 0)} XP
+                </p>
+
+                <h3 style={{ marginTop: '1rem' }}>Participantes del historial</h3>
                 <ul>
                   {selected.participantes?.map(p => (
                     <li key={p.idPersonaje}>{p.nombre} {p.dioKarma ? '⭐' : ''}</li>

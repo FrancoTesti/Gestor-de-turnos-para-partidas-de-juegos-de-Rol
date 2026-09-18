@@ -46,10 +46,10 @@ Usar una base de desarrollo descartable, nunca los datos de una entrega. Estas c
 - [ ] Comprar con saldo insuficiente o en posición ocupada: rechazo con mensaje claro y sin débito.
 - [ ] Crear otro inventario y mover objeto; probar mover a posición ocupada, reducir capacidad con objeto al límite o borrar ocupado: rechazo.
 - [ ] Vender a 70 % y a 100 % comprobando saldo inicial y final antes de confirmar; intentar vender a tienda de otra clase, fuera de rango o repetir venta: rechazo.
-- [ ] Crear sesión y misión; iniciar con personajes de la partida.
-- [ ] Completar misión con suma incorrecta: rechazo; con suma correcta: crédito persistente.
-- [ ] Repetir finalización de misión: rechazo sin recompensa duplicada.
-- [ ] Finalizar sesión y calificar desde jugador; segunda calificación y autocalificación: rechazo.
+- [x] Franco Testi (18/09) Crear sesión y misión; iniciar con personajes de la partida.
+- [x] Franco Testi (18/09) Completar misión con suma incorrecta: rechazo; con suma correcta: crédito persistente.
+- [x] Franco Testi (18/09) Repetir finalización de misión: rechazo sin recompensa duplicada.
+- [x] Franco Testi (18/09) Finalizar sesión y calificar desde jugador; segunda calificación y autocalificación: rechazo.
 - [ ] Probar acceso ajeno desde solicitudes HTTP, no solo ocultando botones.
 - [ ] Revisar escritorio y móvil, tema claro/oscuro, navegación por teclado y errores de conexión.
 
