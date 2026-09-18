@@ -88,10 +88,10 @@ export default function VentaObjetoFormulario({
 
       <div className="saldo-resumen" style={{ background: '#f0fff4', padding: '0.6rem 0.8rem', borderRadius: '6px', marginBottom: '0.75rem', border: '1px solid #9ae6b4' }}>
         <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
-          💰 Saldo actual del personaje: <strong>${saldoActual}</strong>
+          💰 Saldo actual: <strong>${saldoActual}</strong>
         </p>
         <p style={{ margin: 0, fontSize: '0.9rem', color: '#276749' }}>
-          📈 Saldo posterior a la venta: <strong>${saldoResultante}</strong>
+          📊 Saldo después de la venta: <strong>${saldoResultante}</strong>
         </p>
       </div>
 
