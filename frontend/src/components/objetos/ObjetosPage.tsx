@@ -44,6 +44,8 @@ export default function ObjetosPage() {
   const [vista, setVista] = useState<Vista>('listado');
   const [busqueda, setBusqueda] = useState('');
   const [tipo, setTipo] = useState('');
+  const [nivel, setNivel] = useState('');
+  const [valorMax, setValorMax] = useState('');
   const [cargando, setCargando] = useState(true);
   const [cargandoDetalle, setCargandoDetalle] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -84,9 +86,12 @@ export default function ObjetosPage() {
       const coincideTexto = !texto || objeto.nombre.toLocaleLowerCase().includes(texto) || objeto.descripcion.toLocaleLowerCase().includes(texto);
       const clase = personajes.find(p => p.idPersonaje === Number(sugerirPara))?.idClase;
       const sugerido = !sugerirPara || (objeto.idTienda !== null && objeto.idPersonaje === null && tiendas.some(t => t.idTienda === objeto.idTienda && t.idClase === clase));
-      return coincideTexto && (!tipo || objeto.tipoObjeto === tipo) && sugerido;
+      const coincideTipo = !tipo || objeto.tipoObjeto === tipo;
+      const coincideNivel = !nivel || objeto.nivelObjeto === Number(nivel);
+      const coincideValor = !valorMax || objeto.valor <= Number(valorMax);
+      return coincideTexto && coincideTipo && coincideNivel && coincideValor && sugerido;
     });
-  }, [busqueda, objetos, tipo, sugerirPara, personajes, tiendas]);
+  }, [busqueda, objetos, tipo, nivel, valorMax, sugerirPara, personajes, tiendas]);
 
   async function seleccionar(objeto: ObjetoPublico): Promise<void> {
     setCompraAbierta(false);
@@ -219,6 +224,24 @@ export default function ObjetosPage() {
               <option value="">Todos los tipos</option>
               {tipos.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
+            <input
+              type="number"
+              min="1"
+              value={nivel}
+              onChange={(e) => setNivel(e.target.value)}
+              placeholder="Nivel exacto"
+              aria-label="Filtrar por nivel"
+              style={{ width: '120px' }}
+            />
+            <input
+              type="number"
+              min="0"
+              value={valorMax}
+              onChange={(e) => setValorMax(e.target.value)}
+              placeholder="Valor máx"
+              aria-label="Filtrar por valor máximo"
+              style={{ width: '120px' }}
+            />
           </div>
           <div className="objetos-layout">
             <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={host ? (objeto) => { setEnEdicion(objeto); setVista('formulario'); } : undefined} onEliminar={host ? (objeto) => void borrar(objeto) : undefined} />

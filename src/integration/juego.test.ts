@@ -258,6 +258,88 @@ test('dos ventas concurrentes del mismo objeto: solo una gana y se acredita una 
   const p = await orm.em.fork().findOneOrFail(Personaje, { idPersonaje: ids.character });
   assert.equal(p.dinero, 90);
 });
+test('concurrencia de compra y venta de objeto único', async () => {
+  const em = orm.em.fork();
+  const tienda = await em.findOneOrFail(Tienda, { idTienda: ids.store });
+  const unico = em.create(Objeto, {
+    nombre: 'Reliquia Única',
+    descripcion: 'Objeto único para prueba de concurrencia',
+    tipoObjeto: 'Reliquia',
+    valor: 40,
+    nivelObjeto: 5,
+    esUnico: true,
+    posicion: 0,
+    tienda,
+  });
+  await em.flush();
+
+  // 1. Compra concurrente del objeto único por dos jugadores en la misma partida
+  const resultsCompra = await Promise.all([
+    request(`/objetos/${unico.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie),
+    request(`/objetos/${unico.idObjeto}/comprar`, 'POST', { idPersonaje: ids.otherCharacter, numInventario: 1, posicion: 0 }, otherCookie),
+  ]);
+  assert.deepEqual(resultsCompra.map(r => r.status).sort(), [200, 409]);
+
+  // Verificar en DB cuál personaje logró comprar el objeto único
+  const emPostCompra = orm.em.fork();
+  const unicoDb = await emPostCompra.findOneOrFail(Objeto, { idObjeto: unico.idObjeto }, { populate: ['inventario.personaje'] });
+  assert.ok(unicoDb.inventario);
+  const compradorId = unicoDb.inventario.personaje.idPersonaje;
+  const compradorCookie = compradorId === ids.character ? playerCookie : otherCookie;
+
+  // 2. Venta concurrente del objeto único
+  const dataVenta = { idPersonaje: compradorId, idTienda: ids.store, precio: 35 };
+  const resultsVenta = await Promise.all([
+    request(`/objetos/${unico.idObjeto}/vender`, 'POST', dataVenta, compradorCookie),
+    request(`/objetos/${unico.idObjeto}/vender`, 'POST', dataVenta, compradorCookie),
+  ]);
+  assert.deepEqual(resultsVenta.map(r => r.status).sort(), [200, 409]);
+
+  const unicoFinal = await orm.em.fork().findOneOrFail(Objeto, { idObjeto: unico.idObjeto });
+  assert.equal(unicoFinal.inventario, null);
+  assert.equal(unicoFinal.tienda?.idTienda, ids.store);
+});
+test('casos borde: saldo insuficiente, objeto ajeno, venta a tienda de otra clase, posición ocupada y capacidad al límite', async () => {
+  const em = orm.em.fork();
+  const claseMago = em.create(Clase, { nombreClase: 'Mago', descripcionClase: 'Magia' });
+  const tiendaMago = em.create(Tienda, { nombre: 'Boutique Mágica', claseTienda: 'Túnicá', clase: claseMago });
+  const objetoCaro = em.create(Objeto, { nombre: 'Artefacto Costoso', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 500, nivelObjeto: 10, esUnico: false, posicion: 0, tienda: tiendaMago });
+  await em.flush();
+
+  // 1. Saldo insuficiente (dinero del personaje = 100, valor = 500)
+  const compraSinSaldo = await request(`/objetos/${objetoCaro.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  assert.equal(compraSinSaldo.status, 409);
+  assert.match(compraSinSaldo.body.message, /dinero suficiente/i);
+
+  // 2. Comprar objeto normal para las siguientes pruebas
+  await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+
+  // 3. Objeto que no pertenece al personaje (el jugador 'other' intenta vender el objeto del jugador 'player')
+  const ventaAjena = await request(`/objetos/${ids.object}/vender`, 'POST', { idPersonaje: ids.character, idTienda: ids.store, precio: 30 }, otherCookie);
+  assert.equal(ventaAjena.status, 403);
+
+  // 4. Venta a una tienda de otra clase (personaje Guerrero intentando vender a la tienda de Mago)
+  const ventaOtraClase = await request(`/objetos/${ids.object}/vender`, 'POST', { idPersonaje: ids.character, idTienda: tiendaMago.idTienda, precio: 30 }, playerCookie);
+  assert.equal(ventaOtraClase.status, 409);
+  assert.match(ventaOtraClase.body.message, /tienda de otra clase/i);
+
+  // 5. Movimiento a una posición ocupada
+  const tiendaActual = await em.findOneOrFail(Tienda, { idTienda: ids.store });
+  const objeto2 = em.create(Objeto, { nombre: 'Daga', descripcion: 'Acero', tipoObjeto: 'Arma', valor: 20, nivelObjeto: 1, esUnico: false, posicion: 0, tienda: tiendaActual });
+  await em.flush();
+  await request(`/objetos/${objeto2.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 1 }, playerCookie);
+
+  // Intentar mover objeto2 a la posición 0 (ocupada por el primer objeto)
+  const moverOcupado = await request(`/inventarios/${ids.character}/1/mover`, 'POST', { idObjeto: objeto2.idObjeto, posicion: 0 }, playerCookie);
+  assert.equal(moverOcupado.status, 409);
+  assert.match(moverOcupado.body.message, /posición está ocupada/i);
+
+  // 6. Reducción de capacidad con un objeto en la última posición
+  // Inventario 1 tiene capacidad 2, objeto2 está en posición 1 (última posición permitida)
+  const reducirCapacidad = await request(`/inventarios/${ids.character}/1`, 'PUT', { cantidadEspacio: 1 }, playerCookie);
+  assert.equal(reducirCapacidad.status, 409);
+  assert.match(reducirCapacidad.body.message, /Mové los objetos antes de reducir/i);
+});
 test('sesión, misión, recompensas una sola vez, cierre y karma una sola vez', async () => {
   const session = `/sesiones/${ids.game}/1`;
   assert.equal((await request('/sesiones', 'POST', { idPartida: ids.game, numSesion: 1, duracionSesion: 60 })).status, 201);

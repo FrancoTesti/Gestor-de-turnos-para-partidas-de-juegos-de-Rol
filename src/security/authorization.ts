@@ -14,7 +14,7 @@ export const routeId = (value: string) => {
   return idSchema.parse(Number(value));
 };
 export async function ownedCharacter(em: EntityManager, id: number, userId: number) {
-  const p = await em.findOne(Personaje, { idPersonaje: id }, { populate: ['jugador.usuario', 'partida'] });
+  const p = await em.findOne(Personaje, { idPersonaje: id }, { populate: ['jugador.usuario', 'partida', 'clase'] });
   if (!p) throw new HttpError(404, 'Personaje no encontrado');
   if (p.jugador.usuario.idUsuario !== userId) throw new HttpError(403, 'Ese personaje pertenece a otro jugador');
   return p;

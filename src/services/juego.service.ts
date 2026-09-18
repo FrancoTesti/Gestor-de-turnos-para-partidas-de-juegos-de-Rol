@@ -208,8 +208,9 @@ export class JuegoService {
       const p = await ownedCharacter(tx, data.idPersonaje, user);
       await tx.lock(p, LockMode.PESSIMISTIC_WRITE);
       conflict(object.inventario?.personaje.idPersonaje !== p.idPersonaje || !!object.tienda, 'El objeto no está en tu inventario');
-      const tienda = await tx.findOne(Tienda, { idTienda: data.idTienda });
+      const tienda = await tx.findOne(Tienda, { idTienda: data.idTienda }, { populate: ['clase'] });
       if (!tienda) throw new HttpError(404, 'Tienda no encontrada');
+      conflict(!!tienda.clase && !!p.clase && tienda.clase.idClase !== p.clase.idClase, 'No podés vender a una tienda de otra clase');
       const rango = rangoVenta(object.valor);
       conflict(data.precio < rango.minimo || data.precio > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
       conflict(p.dinero + data.precio > 2147483647, 'El saldo excedería el límite permitido');
