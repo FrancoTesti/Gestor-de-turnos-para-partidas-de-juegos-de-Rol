@@ -3,6 +3,8 @@
 .objeto-acciones,
 .objeto-campos-numericos {
   display: flex;
+  /* Sin wrap, el último control de la fila se salía de la pantalla en un ancho de 1280. */
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -33,7 +35,8 @@
 }
 
 .objeto-filtros input {
-  flex: 1;
+  flex: 1 1 10rem;
+  min-width: 0;
 }
 
 .objetos-layout {
