@@ -22,5 +22,19 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary'],
+      reportsDirectory: '../coverage/frontend',
+      include: ['src/**/*.{ts,tsx}'],
+      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/main.tsx', 'src/**/*.d.ts'],
+      thresholds: {
+        // Valor real medido el 21/9/2026. Frena regresiones; subirlo es trabajo aparte.
+        lines: 47,
+        statements: 45,
+        functions: 36,
+        branches: 42,
+      },
+    },
   },
 })
