@@ -71,8 +71,6 @@ export default function ClaseLista({
                 key={clase.idClase}
                 className={`clase-card ${esSeleccionado ? 'seleccionado' : ''}`}
                 onClick={() => onSeleccionar?.(clase)}
-                role={onSeleccionar ? 'button' : undefined}
-                tabIndex={onSeleccionar ? 0 : undefined}
               >
                 <div>
                   <div className="clase-icon-badge">🛡️</div>
@@ -82,6 +80,18 @@ export default function ClaseLista({
 
                 {(onEditar || onEliminar) && (
                   <div className="clase-acciones">
+                    {onSeleccionar && (
+                      <button
+                        type="button"
+                        className="btn-secondary"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          onSeleccionar(clase);
+                        }}
+                      >
+                        Ver detalle
+                      </button>
+                    )}
                     {onEditar && (
                       <button
                         type="button"

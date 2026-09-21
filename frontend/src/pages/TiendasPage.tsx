@@ -156,7 +156,7 @@ export default function TiendasPage() {
     <section style={{ padding: '1.5rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#718096', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
             Comercio del sistema
           </p>
           <h1 style={{ margin: 0 }}>Tiendas</h1>
@@ -281,7 +281,7 @@ export default function TiendasPage() {
       {cargando && <p role="status">⏳ Cargando tiendas…</p>}
 
       {!cargando && !error && tiendasFiltradas.length === 0 && (
-        <p style={{ color: '#718096', fontStyle: 'italic' }}>
+        <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
           {busqueda || filtroTipo
             ? 'No hay tiendas que coincidan con los filtros.'
             : 'No hay tiendas registradas en el sistema.'}
@@ -290,7 +290,7 @@ export default function TiendasPage() {
 
       {/* Tabla de tiendas */}
       {!cargando && tiendasFiltradas.length > 0 && (
-        <div style={{ overflowX: 'auto' }}>
+        <div className="tabla-scroll">
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
             <thead>
               <tr style={{ background: '#edf2f7', textAlign: 'left' }}>
@@ -312,10 +312,10 @@ export default function TiendasPage() {
                   }}
                   onClick={() => setSeleccionada(t)}
                 >
-                  <td style={{ padding: '0.6rem 1rem', color: '#718096' }}>#{t.idTienda}</td>
+                  <td style={{ padding: '0.6rem 1rem', color: '#4a5568' }}>#{t.idTienda}</td>
                   <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>🏪 {t.nombre}</td>
                   <td style={{ padding: '0.6rem 1rem' }}>
-                    <span style={{ background: '#bee3f8', color: '#2b6cb0', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.85rem' }}>
+                    <span style={{ background: '#bee3f8', color: '#2c5282', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.85rem' }}>
                       {t.claseTienda}
                     </span>
                   </td>
@@ -367,7 +367,7 @@ export default function TiendasPage() {
               <dd style={{ margin: 0 }}>{nombreClase(seleccionada.idClase)}</dd>
             </div>
           </dl>
-          <p style={{ fontSize: '0.85rem', color: '#718096', marginTop: '0.75rem' }}>
+          <p style={{ fontSize: '0.85rem', color: '#4a5568', marginTop: '0.75rem' }}>
             Los objetos de esta tienda aparecerán como sugeridos para personajes de la clase vinculada.
           </p>
           <button type="button" style={{ marginTop: '0.5rem' }} onClick={() => setSeleccionada(null)}>

@@ -67,7 +67,8 @@ export default function PersonajeFormulario({
           if (partidasRes.length > 0) setIdPartida(partidasRes[0].idPartida);
         }
       } catch (err) {
-        console.error('Error al cargar datos de referencia:', err);
+        // Sin este aviso el formulario quedaba con listas vacías y sin explicación.
+        setError(err instanceof Error ? err.message : 'No se pudieron cargar clases, jugadores y partidas.');
       } finally {
         setCargandoRef(false);
       }
@@ -129,7 +130,7 @@ export default function PersonajeFormulario({
       <h3>{esEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje (Caso de Uso)'}</h3>
 
       {error && <div className="mensaje-error">{error}</div>}
-      {cargandoRef && <div style={{ marginBottom: '1rem', color: '#718096' }}>Cargando clases, jugadores y partidas...</div>}
+      {cargandoRef && <div style={{ marginBottom: '1rem', color: '#4a5568' }}>Cargando clases, jugadores y partidas...</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="form-grid-2">

@@ -25,7 +25,23 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run lint
-      - run: npm test
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: cobertura-frontend
+          path: coverage/frontend/
+          retention-days: 7
+
+  documentacion:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm run docs:check
 
   backend:
     runs-on: ubuntu-latest
@@ -56,14 +72,20 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build
-      - run: npm test
+      - run: npm run test:coverage
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: cobertura-backend
+          path: coverage/
+          retention-days: 7
       - run: npm run test:integration
       - run: npm --prefix frontend ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - uses: actions/upload-artifact@v7
-        if: failure()
+        if: always()
         with:
-          name: errores-e2e
+          name: evidencia-e2e
           path: test-results/
           retention-days: 7

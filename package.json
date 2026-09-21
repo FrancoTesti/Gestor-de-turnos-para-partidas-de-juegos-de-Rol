@@ -6,6 +6,8 @@
     "start": "node dist/app.js",
     "build": "tsc",
     "test": "vitest run src/tests",
+    "test:coverage": "vitest run --coverage",
+    "docs:check": "node scripts/verificar-enlaces-docs.mjs",
     "test:e2e": "npm run build && playwright test",
     "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
     "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
@@ -24,11 +26,13 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
     "@mikro-orm/cli": "^6.6.16",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.2.0",
     "@types/prompt-sync": "^4.2.3",
     "@types/react": "^19.2.17",
+    "@vitest/coverage-v8": "^4.1.11",
     "nodemon": "^3.1.14",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3",

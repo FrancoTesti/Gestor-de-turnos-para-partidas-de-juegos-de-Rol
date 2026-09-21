@@ -6,6 +6,7 @@ dist/
 build/
 playwright-report/
 test-results/
+coverage/
 
 # TypeScript
 *.tsbuildinfo

@@ -159,7 +159,8 @@ export default function MisionesPage() {
       {aviso && <p role="status">{aviso}</p>}
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 50%' }}>
+        <div style={{ flex: '1 1 50%', minWidth: 0 }}>
+          <div className="tabla-scroll">
           <table className="app-table">
             <thead>
               <tr><th>Partida</th><th>Sesión</th><th>Misión</th><th>Descripción</th><th>Premio</th><th>Estado</th><th>Acciones</th></tr>
@@ -186,6 +187,7 @@ export default function MisionesPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {host && (
             <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form" style={{ marginTop: '2rem' }}>

@@ -34,13 +34,15 @@ test('registro, login, partida y sesión persistentes; expiración de autenticac
   await page.getByLabel(/^Número Sesión:/).fill('1');
   await page.getByRole('button', { name: 'Crear Sesión', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Sesión creada correctamente');
-  await expect(page.getByRole('cell', { name: 'Planificada', exact: true })).toBeVisible();
+  // La lista muestra las sesiones de todas las partidas: se acota a la fila de esta partida.
+  const filaSesion = page.getByRole('row').filter({ hasText: 'Campaña E2E' });
+  await expect(filaSesion).toContainText('Planificada');
   await page.reload();
-  await expect(page.getByRole('cell', { name: 'Planificada', exact: true })).toBeVisible();
+  await expect(page.getByRole('row').filter({ hasText: 'Campaña E2E' })).toContainText('Planificada');
   // Invalida la cookie en el servidor, sin cambiar el estado React: el próximo 401 debe limpiar la sesión.
   const logout = await context.request.post('/api/auth/logout');
   expect(logout.ok()).toBeTruthy();
-  await page.getByRole('button', { name: 'Ver detalle' }).first().click();
+  await page.getByRole('row').filter({ hasText: 'Campaña E2E' }).getByRole('button', { name: 'Ver detalle' }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto('/sessions');
   await expect(page).toHaveURL(/\/login$/);

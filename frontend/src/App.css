@@ -27,7 +27,7 @@
 .modulo-nav button.activo {
   border-color: var(--accent);
   color: white;
-  background: var(--accent);
+  background: var(--accent-solid, #7c22c9);
 }
 
 .app-header {
@@ -44,7 +44,8 @@
 }
 
 .app-eyebrow {
-  color: var(--accent);
+  /* #aa3bff sobre blanco queda en 4.39:1; este tono supera 4.5:1 y mantiene el mismo rol visual. */
+  color: #6b21a8;
   font-weight: 700;
 }
 
@@ -60,7 +61,7 @@
 
 .btn-nuevo {
   color: white;
-  background: var(--accent);
+  background: var(--accent-solid, #7c22c9);
 }
 
 .mensaje {

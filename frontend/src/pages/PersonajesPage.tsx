@@ -177,7 +177,7 @@ export default function PersonajesPage() {
     <section style={{ padding: '1.5rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#718096', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
             Juego de Rol
           </p>
           <h1 style={{ margin: 0 }}>Personajes</h1>

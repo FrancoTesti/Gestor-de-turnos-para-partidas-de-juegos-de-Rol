@@ -5,6 +5,8 @@
   --border: #e5e4e7;
   --code-bg: #f4f3ec;
   --accent: #aa3bff;
+  /* Variante del acento para fondos con texto blanco: #aa3bff queda en 4.39:1 y no alcanza. */
+  --accent-solid: #7c22c9;
   --accent-bg: rgba(170, 59, 255, 0.1);
   --accent-border: rgba(169, 57, 255, 0.5);
   --social-bg: rgba(244, 243, 236, 0.5);
@@ -38,6 +40,7 @@
     --border: #2e303a;
     --code-bg: #1f2028;
     --accent: #c084fc;
+    --accent-solid: #7c3aed;
     --accent-bg: rgba(192, 132, 252, 0.15);
     --accent-border: rgba(192, 132, 252, 0.5);
     --social-bg: rgba(47, 48, 58, 0.5);
@@ -100,4 +103,59 @@ code {
   line-height: 135%;
   padding: 4px 8px;
   background: var(--code-bg);
+}
+
+/* Tablas anchas: se desplazan dentro de su propio contenedor y no arrastran la pantalla. */
+.tabla-scroll {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+/* Ningún control debe forzar el ancho de la pantalla en un teléfono. */
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+/* Tablas y formularios de sesiones y misiones, que no tenían estilos propios. */
+.app-table {
+  width: 100%;
+  font-size: 0.95rem;
+}
+
+.app-table th,
+.app-table td {
+  padding: 0.6rem 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.app-form label {
+  display: block;
+  margin-bottom: 0.75rem;
+}
+
+.app-form input:not([type='checkbox']),
+.app-form select {
+  display: block;
+  width: 100%;
+  max-width: 30rem;
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 600px) {
+  .app-table th,
+  .app-table td {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
 }

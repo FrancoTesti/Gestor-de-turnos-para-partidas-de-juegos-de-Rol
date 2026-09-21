@@ -126,7 +126,8 @@ export default function SesionesPage() {
       {aviso && <p role="status">{aviso}</p>}
 
       <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 50%' }}>
+        <div style={{ flex: '1 1 50%', minWidth: 0 }}>
+          <div className="tabla-scroll">
           <table className="app-table">
             <thead>
               <tr><th>Partida</th><th>Sesión</th><th>Duración (min)</th><th>Jugadores</th><th>Estado</th><th>Acciones</th></tr>
@@ -139,7 +140,7 @@ export default function SesionesPage() {
                   <td>{s.duracionSesion}</td>
                   <td>{s.cantJugadores}</td>
                   <td>
-                    {s.estadoSesion === 0 && <b style={{ color: 'gray' }}>Planificada</b>}
+                    {s.estadoSesion === 0 && <b style={{ color: '#4b5563' }}>Planificada</b>}
                     {s.estadoSesion === 1 && <b style={{ color: 'blue' }}>En Curso</b>}
                     {s.estadoSesion === 2 && <b style={{ color: 'green' }}>Finalizada</b>}
                   </td>
@@ -150,6 +151,7 @@ export default function SesionesPage() {
               ))}
             </tbody>
           </table>
+          </div>
 
           {host && (
             <form onSubmit={(e) => void handleCrear(e)} className="app-form" style={{ marginTop: '2rem' }}>
