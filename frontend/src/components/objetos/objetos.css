@@ -73,7 +73,8 @@
 }
 
 .objeto-tipo {
-  color: var(--accent);
+  /* El acento claro no alcanza 4.5:1 sobre blanco; esta variante sí y conserva el rol visual. */
+  color: var(--accent-solid, #7c22c9);
   font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.06em;

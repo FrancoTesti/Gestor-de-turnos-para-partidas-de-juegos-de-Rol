@@ -48,6 +48,7 @@ function PartidaFormularioBody({
   const [form, setForm] = useState<PartidaFormData>(() => partida ? { ...partida, contrasena: '' } : initialForm);
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
+  const [errorServidor, setErrorServidor] = useState<string | null>(null);
 
   // actualizamos un campo del form y limpia su error
   function handleChange(campo: keyof PartidaFormData, valor: string | boolean | number) {
@@ -107,7 +108,8 @@ function PartidaFormularioBody({
 
       await onGuardar(datos);
     } catch (error) {
-      console.error('Error al guardar la partida:', error);
+      // Antes solo se registraba en consola y la pantalla no avisaba nada.
+      setErrorServidor(error instanceof Error ? error.message : 'No se pudo guardar la partida.');
     } finally {
       setGuardando(false);
     }
@@ -116,6 +118,7 @@ function PartidaFormularioBody({
   return (
     <form className="partida-formulario" onSubmit={handleSubmit} noValidate>
       <h2>{esEdicion ? 'Editar Partida' : 'Nueva Partida'}</h2>
+      {errorServidor && <p role="alert" className="error-text">{errorServidor}</p>}
 
       {/* nombre */}
       <div className="form-group">

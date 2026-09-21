@@ -9,7 +9,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div style={{ maxWidth: 800, margin: '2rem auto', fontFamily: 'sans-serif', color: 'black' }}>
+    <div style={{ width: '100%', maxWidth: 800, margin: '2rem auto', padding: '0 1rem', boxSizing: 'border-box', fontFamily: 'sans-serif', color: 'black' }}>
       <h2>Dashboard</h2>
 
       <div style={{ background: '#f0f0f0', padding: '1rem', borderRadius: 4, marginBottom: '1rem', color: 'black' }}>
@@ -37,7 +37,7 @@ export default function DashboardPage() {
       <hr />
 
       <h3>Estadísticas</h3>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', color: '#161616 '}}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(8rem, 1fr))', gap: '1rem', color: '#161616 ' }}>
         <div style={{ background: '#e3f2fd', padding: '1rem', borderRadius: 4 }}>
           <strong>Usuarios</strong>
           <p style={{ fontSize: '2rem', margin: '0.5rem 0' }}>{usuarios.length}</p>

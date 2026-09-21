@@ -109,7 +109,7 @@ export default function ClasesPage() {
     <section style={{ padding: '1.5rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#718096', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
             Catálogo del sistema
           </p>
           <h1 style={{ margin: 0 }}>Clases de Personaje</h1>
@@ -172,7 +172,7 @@ export default function ClasesPage() {
           </div>
 
           {!cargando && !error && clasesFiltradas.length === 0 && (
-            <p style={{ color: '#718096', fontStyle: 'italic' }}>
+            <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
               {busqueda ? 'No hay clases que coincidan con la búsqueda.' : 'No hay clases registradas en el sistema.'}
             </p>
           )}

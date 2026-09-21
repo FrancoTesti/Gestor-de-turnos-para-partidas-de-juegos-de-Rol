@@ -151,7 +151,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
                   fontSize: '0.85rem',
                 }}
               >
-                <div style={{ fontWeight: 600, color: '#718096', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                <div style={{ fontWeight: 600, color: '#4a5568', fontSize: '0.75rem' }}>Casillero #{idx}</div>
                 {item ? (
                   <div style={{ marginTop: '0.2rem' }}>
                     <strong>{label(item)}</strong>
