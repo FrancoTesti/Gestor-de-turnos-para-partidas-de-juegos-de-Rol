@@ -26,6 +26,7 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | Documento | Para qué |
 | --- | --- |
 | [pruebas_manuales.md](pruebas_manuales.md) | Checklist manual y qué cubre cada suite automática |
+| [evidencia_calidad_visual.md](evidencia_calidad_visual.md) | Revisión responsive y de accesibilidad, con hallazgos y correcciones |
 | [demo.md](demo.md) | Guion de la demostración e instrucciones para grabar el video |
 | [entrega.md](entrega.md) | Estado de la entrega, evidencias de build/tests y enlaces a los PR |
 | [verificacion_renzo.md](verificacion_renzo.md) | Verificación del módulo de usuarios y autenticación |

@@ -187,3 +187,29 @@ Pruebas nuevas incorporadas en esta tanda:
 necesitan un MySQL local, que acá no está instalado. La última corrida verde de ambos es la de
 Actions citada más abajo. Antes de la entrega hay que volver a ejecutarlos, porque el recorrido E2E
 de registro se actualizó para completar el campo «Repetir contraseña» que ahora pide la pantalla.
+
+## Semana del 17 al 23 de septiembre (Renzo Scollo)
+
+Trabajo transversal de calidad. Todo lo de esta sección se ejecutó contra MySQL real y quedó en la
+rama `renzo/semana-17-23`.
+
+| Tarea | Resultado |
+| --- | --- |
+| Recorrido responsive en 375, 768 y 1280 px | `e2e/responsive.spec.ts`: 12 pantallas privadas × 3 anchos + login y registro en 375, con 38 capturas |
+| Revisión de accesibilidad | `e2e/accesibilidad.spec.ts`: axe-core con WCAG 2.0 A/AA en 13 pantallas, sin violaciones graves |
+| Recorridos negativos | `e2e/rechazos.spec.ts`: reparto con suma incorrecta, segunda sesión en curso, misión repetida, autocalificación y doble calificación |
+| Plantilla de PR | `.github/pull_request_template.md` con la lista de verificación que incluye el run de Actions en verde |
+| Cobertura de pruebas | `npm run test:coverage` en backend y frontend, con umbrales publicados como artefacto en Actions |
+| Verificador de enlaces | `npm run docs:check` recorre los `.md` y falla si un enlace relativo quedó roto |
+| Mensajes de error | Se eliminaron dos `catch` que solo escribían en consola (`PartidaFormulario`, `PersonajeFormulario`) |
+
+Los cuatro defectos de presentación corregidos y sus causas están en
+[evidencia_calidad_visual.md](evidencia_calidad_visual.md): la grilla del dashboard, las tablas
+anchas de tiendas, sesiones y misiones, el ancho de los formularios de juego y varios contrastes que
+no llegaban a 4.5:1. En accesibilidad se corrigió un `select` sin nombre y una tarjeta de clase con
+controles anidados.
+
+Los umbrales de cobertura arrancan en el valor real medido el 21/9/2026 (backend: 30 % de líneas,
+35 % de funciones; frontend: 47 % de líneas, 36 % de funciones). Son un freno contra regresiones, no
+un objetivo de calidad: las pruebas de integración cubren buena parte del backend y todavía no
+reportan cobertura. Subirlos es trabajo pendiente del grupo.
