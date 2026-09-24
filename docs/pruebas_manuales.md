@@ -27,15 +27,15 @@ Las pruebas de frontend verifican llamadas a la API al crear, editar y eliminar 
 
 Usar una base de desarrollo descartable, nunca los datos de una entrega. Estas casillas quedan para que el equipo registre su propia ejecución; no son una afirmación de que todas las combinaciones visuales estén verificadas.
 
-- [ ] Registrar anfitrión y jugador; entrar con ambos en navegadores separados.
-- [ ] Recargar la página: la sesión permanece. Cerrar sesión: una ruta protegida vuelve al login.
-- [ ] Editar el perfil propio y comprobar persistencia tras recargar; provocar nickname duplicado y ver el error.
-- [ ] Registrarse repitiendo mal la contraseña: la pantalla avisa y no llama al servidor.
-- [ ] Registrarse con un nickname ya usado: el mensaje dice que está en uso, no «Ese registro ya existe».
-- [ ] Entrar con contraseña incorrecta y con un nickname inexistente: el mensaje es el mismo en los dos casos.
-- [ ] En «Mis perfiles», sumar el segundo perfil (jugador o anfitrión) y comprobar que aparece en el dashboard.
-- [ ] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona.
-- [ ] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué.
+- [ ] Registrar anfitrión y jugador; entrar con ambos en navegadores separados. — *a cargo de Emanuel Salomón, [prueba C1](#c1)*
+- [ ] Recargar la página: la sesión permanece. Cerrar sesión: una ruta protegida vuelve al login. — *a cargo de Emanuel Salomón, [prueba C2](#c2)*
+- [ ] Editar el perfil propio y comprobar persistencia tras recargar; provocar nickname duplicado y ver el error. — *a cargo de Emanuel Salomón, [prueba C3](#c3)*
+- [ ] Registrarse repitiendo mal la contraseña: la pantalla avisa y no llama al servidor. — *a cargo de Emanuel Salomón, [prueba C4](#c4)*
+- [ ] Registrarse con un nickname ya usado: el mensaje dice que está en uso, no «Ese registro ya existe». — *a cargo de Emanuel Salomón, [prueba C5](#c5)*
+- [ ] Entrar con contraseña incorrecta y con un nickname inexistente: el mensaje es el mismo en los dos casos. — *a cargo de Emanuel Salomón, [prueba C6](#c6)*
+- [ ] En «Mis perfiles», sumar el segundo perfil (jugador o anfitrión) y comprobar que aparece en el dashboard. — *a cargo de Emanuel Salomón, [prueba C7](#c7)*
+- [ ] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
+- [ ] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
 - [ ] Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
 - [ ] Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
 - [ ] Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
@@ -52,6 +52,144 @@ Usar una base de desarrollo descartable, nunca los datos de una entrega. Estas c
 - [x] Franco Testi (18/09) Finalizar sesión y calificar desde jugador; segunda calificación y autocalificación: rechazo.
 - [ ] Probar acceso ajeno desde solicitudes HTTP, no solo ocultando botones.
 - [ ] Revisar escritorio y móvil, tema claro/oscuro, navegación por teclado y errores de conexión.
+
+Al terminar cada casilla, marcarla con el mismo formato que las ya ejecutadas:
+`- [x] Nombre Apellido (DD/MM) texto de la casilla`. Si algo no da lo esperado, dejar la casilla
+sin marcar y anotar el defecto en [seguimiento.md](seguimiento.md).
+
+## Guía paso a paso: cuentas y perfiles (Emanuel Salomón)
+
+Cada prueba dice qué hacer y qué **debería** pasar. La prueba se aprueba solo si pasa exactamente
+eso; si aparece otra cosa (otro mensaje, un error, una pantalla en blanco), es un hallazgo: se anota
+en `seguimiento.md` con lo que se hizo y lo que se vio, aunque parezca menor.
+
+### Preparación (una sola vez)
+
+1. Base de desarrollo descartable, con las tablas creadas (`npm run schema:create` sobre una base
+   vacía, ver [instalacion.md](instalacion.md)).
+2. Backend (`npm run dev`) y frontend (`cd frontend`, `npm run dev`) corriendo.
+3. `npm run demo:datos` para tener `dm_demo` y `jugador_demo` (contraseña `PruebaSegura123`).
+4. Hacer una copia de la base ([respaldo.md](respaldo.md)): después de la prueba C8 conviene
+   restaurarla.
+5. Dos ventanas: una normal y una de incógnito. Cada una tiene su propia cookie, así que en cada
+   una puede haber una cuenta distinta.
+6. Para las pruebas que dicen «sin llamar al servidor»: abrir las herramientas del navegador
+   (`F12`), pestaña **Red** (Network), y dejarla abierta mientras se prueba.
+
+<a id="c1"></a>
+
+### C1. Registrar anfitrión y jugador y entrar con los dos
+
+1. Ventana normal: `/register`, registrar `qa_anfitrion` con tipo **Anfitrión** y una contraseña
+   de 6 caracteres o más, repetida igual.
+2. Ventana de incógnito: `/register`, registrar `qa_jugador` con tipo **Jugador**.
+3. Entrar con cada cuenta en su ventana.
+
+**Esperado:** después de «Registrar» se pasa a la pantalla de login. Las dos cuentas entran y cada
+ventana muestra su propio usuario: entrar en una no cierra la sesión de la otra. En «Perfiles»,
+`qa_anfitrion` tiene perfil de anfitrión y `qa_jugador`, perfil de jugador.
+
+<a id="c2"></a>
+
+### C2. La sesión sobrevive a la recarga y el cierre de sesión protege las rutas
+
+1. Con una cuenta adentro, apretar `F5`.
+2. Apretar **Cerrar Sesión**.
+3. Escribir a mano en la barra de direcciones `http://localhost:5173/profiles`.
+
+**Esperado:** con `F5` se sigue adentro, sin volver a pedir login. Después de cerrar sesión, la
+dirección `/profiles` lleva al login y no muestra datos de la cuenta.
+
+<a id="c3"></a>
+
+### C3. Editar los datos propios y nickname duplicado
+
+1. Entrar como `qa_jugador`. **Perfiles** → **Editar mis datos**.
+2. Cambiar el nombre (por ejemplo, agregar « QA») y dejar la contraseña vacía. **Actualizar**.
+3. Apretar `F5`.
+4. Otra vez **Editar mis datos**, poner de nickname `dm_demo` y **Actualizar**.
+
+**Esperado:** en el paso 2 aparece «Datos de la cuenta actualizados.» y se ve el nombre nuevo. Con
+`F5` el nombre nuevo sigue ahí (quedó guardado en la base, no solo en pantalla). En el paso 4
+aparece un error que dice que el nickname ya está en uso y el nickname no cambia.
+
+<a id="c4"></a>
+
+### C4. Contraseña repetida mal en el registro
+
+1. `/register`, completar todo bien salvo «Repetir contraseña», que va distinta. **Registrar**.
+
+**Esperado:** aparece «Las dos contraseñas no coinciden.» y se sigue en el registro. En la pestaña
+**Red** **no** aparece ninguna solicitud `register`: la pantalla frenó el envío. La cuenta no se
+crea (se puede comprobar intentando entrar con ese nickname: no deja).
+
+<a id="c5"></a>
+
+### C5. Registrarse con un nickname que ya existe
+
+1. `/register` con nickname `dm_demo` y el resto de los datos válidos. **Registrar**.
+
+**Esperado:** aparece «Ese nickname ya está en uso. Elegí otro para poder iniciar sesión.». No debe
+aparecer el texto genérico «Ese registro ya existe».
+
+<a id="c6"></a>
+
+### C6. Mismo mensaje para contraseña incorrecta y usuario inexistente
+
+1. `/login` con `dm_demo` y una contraseña equivocada.
+2. `/login` con un nickname que no existe, por ejemplo `nadie_existe_123`.
+
+**Esperado:** los dos intentos muestran exactamente «Usuario o contraseña incorrecta». El mensaje no
+debe dar pistas de si el usuario existe.
+
+<a id="c7"></a>
+
+### C7. Sumar el segundo perfil
+
+1. Entrar como `qa_jugador`. En el **Dashboard**, anotar el número de «Anfitriones» en
+   Estadísticas.
+2. **Perfiles** → tarjeta Anfitrión → **Crear perfil de anfitrión**.
+3. Volver al **Dashboard**.
+
+**Esperado:** aparece «Perfil de anfitrión creado.» y la tarjeta Anfitrión pasa a mostrar «Karma: 0.
+Partidas activas: 0». En el Dashboard el contador de Anfitriones subió en 1.
+
+**A mirar con atención:** hoy el campo «Rol» del Dashboard muestra un solo perfil (`anfitrion`
+cuando la cuenta tiene los dos). Decidir si eso cumple «aparece en el dashboard»; si no, anotarlo
+en `seguimiento.md` como hallazgo.
+
+<a id="c8"></a>
+
+### C8. Cambiar la contraseña cierra la sesión
+
+1. Entrar como `qa_jugador`. **Perfiles** → **Editar mis datos**, escribir una contraseña nueva y
+   **Actualizar**.
+2. Intentar entrar con la contraseña **vieja**.
+3. Entrar con la contraseña **nueva**.
+
+**Esperado:** en el paso 1 se cierra la sesión y se vuelve al login. La contraseña vieja da «Usuario
+o contraseña incorrecta» y la nueva entra.
+
+<a id="c9"></a>
+
+### C9. No se puede eliminar un perfil con datos relacionados
+
+1. Ventana normal, como `dm_demo`: menú **🎮 Partidas**, crear una partida pública.
+2. Ventana de incógnito, como `jugador_demo`: menú **⚔️ Personajes**, crear un personaje en esa
+   partida.
+3. Como `jugador_demo`: **Perfiles** → **Eliminar perfil de jugador** → aceptar la confirmación.
+4. Como `dm_demo`: **Perfiles** → **Eliminar perfil de anfitrión** → aceptar la confirmación.
+
+**Esperado:** en los dos casos aparece un error que explica que hay datos relacionados («El
+registro tiene datos relacionados. Resolvé esas relaciones antes de eliminarlo.») y el perfil
+**sigue** en la pantalla después de `F5`. Que el perfil desaparezca sería un defecto grave.
+
+### Al terminar
+
+1. Marcar cada casilla aprobada arriba con nombre y fecha.
+2. Anotar cada hallazgo en [seguimiento.md](seguimiento.md), aunque se haya aprobado el resto.
+3. Escribir el resultado en [entrega.md](entrega.md) (cuántas aprobadas y qué hallazgos quedaron).
+4. Restaurar la copia de la base si se va a grabar el video después.
 
 ## Alcance de la verificación local
 

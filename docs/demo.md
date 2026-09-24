@@ -14,6 +14,32 @@ como libreto del video.
 Si algo falla en vivo, mostrar el mensaje de error real: el sistema nunca simula éxito, y eso
 también es parte de lo que se evalúa.
 
+## Datos de demostración
+
+`npm run demo:datos` (desde la raíz, con el backend corriendo) carga a través de la API:
+
+| Qué | Datos |
+| --- | --- |
+| Cuentas | `dm_demo` (anfitrión) y `jugador_demo` (jugador), las dos con `PruebaSegura123` |
+| Clases | Guerrero, Mago |
+| Tiendas | Herrería del Puerto (Armas, clase Guerrero), Torre Arcana (Magia, clase Mago) |
+| Objetos | Espada corta y Escudo de roble en la herrería; Báculo de aprendiz y **Orbe del Archimago** (objeto único ⭐) en la torre |
+
+- Usa los mismos endpoints que la interfaz, así que pasa por las validaciones y los permisos del
+  servidor: no escribe en la base por fuera de la aplicación.
+- Se puede ejecutar varias veces. Lo que ya existe (por nickname o por nombre) no se duplica.
+- No crea partidas, personajes ni sesiones: esa parte es justamente lo que se muestra en el video.
+- Si el backend escucha en otro puerto: `$env:DEMO_API_URL = "http://localhost:3001/api"` antes de
+  ejecutarlo.
+- Si `dm_demo` ya existe con otra contraseña (por ejemplo, después del paso 22 de un ensayo), el
+  script lo avisa y se detiene. Para volver al punto de partida conviene restaurar una copia de la
+  base: [respaldo.md](respaldo.md) explica cómo.
+
+Con los datos cargados, los pasos 1 y 2 se muestran registrando una cuenta nueva (por ejemplo
+`dm_video`) y los pasos 7 y 8 creando una clase, tienda y objeto extra. Así se ve el alta en vivo y
+el catálogo ya tiene con qué comprar. Si se prefiere hacer todo desde cero, no ejecutar el script y
+seguir el guion tal cual.
+
 ## Recorrido
 
 | # | Paso | Dónde | Qué se muestra |
