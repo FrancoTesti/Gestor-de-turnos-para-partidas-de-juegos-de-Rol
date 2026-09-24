@@ -27,15 +27,20 @@ Las pruebas de frontend verifican llamadas a la API al crear, editar y eliminar 
 
 Usar una base de desarrollo descartable, nunca los datos de una entrega. Estas casillas quedan para que el equipo registre su propia ejecución; no son una afirmación de que todas las combinaciones visuales estén verificadas.
 
-- [ ] Registrar anfitrión y jugador; entrar con ambos en navegadores separados. — *a cargo de Emanuel Salomón, [prueba C1](#c1)*
-- [ ] Recargar la página: la sesión permanece. Cerrar sesión: una ruta protegida vuelve al login. — *a cargo de Emanuel Salomón, [prueba C2](#c2)*
-- [ ] Editar el perfil propio y comprobar persistencia tras recargar; provocar nickname duplicado y ver el error. — *a cargo de Emanuel Salomón, [prueba C3](#c3)*
-- [ ] Registrarse repitiendo mal la contraseña: la pantalla avisa y no llama al servidor. — *a cargo de Emanuel Salomón, [prueba C4](#c4)*
-- [ ] Registrarse con un nickname ya usado: el mensaje dice que está en uso, no «Ese registro ya existe». — *a cargo de Emanuel Salomón, [prueba C5](#c5)*
-- [ ] Entrar con contraseña incorrecta y con un nickname inexistente: el mensaje es el mismo en los dos casos. — *a cargo de Emanuel Salomón, [prueba C6](#c6)*
-- [ ] En «Mis perfiles», sumar el segundo perfil (jugador o anfitrión) y comprobar que aparece en el dashboard. — *a cargo de Emanuel Salomón, [prueba C7](#c7)*
-- [ ] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
-- [ ] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
+- [X] Registrar anfitrión y jugador; entrar con ambos en navegadores separados. — *a cargo de Emanuel Salomón, [prueba C1](#c1)*
+**Correcto, enviado al grupo.**
+- [X] Recargar la página: la sesión permanece. Cerrar sesión: una ruta protegida vuelve al login. — *a cargo de Emanuel Salomón, [prueba C2](#c2)*
+**Correcto, adjunto en chat personal.**
+- [X] Editar el perfil propio y comprobar persistencia tras recargar; provocar nickname duplicado y ver el error. — *a cargo de Emanuel Salomón, [prueba C3](#c3)*
+- [X] Registrarse repitiendo mal la contraseña: la pantalla avisa y no llama al servidor. — *a cargo de Emanuel Salomón, [prueba C4](#c4)*
+- [X] Registrarse con un nickname ya usado: el mensaje dice que está en uso, no «Ese registro ya existe». — *a cargo de Emanuel Salomón, [prueba C5](#c5)*
+Se encontró un bug en base a eso, ver C5.1.
+- [ ] Si la cuenta no se crea, entonces que no se renderice el mensaje de "Cuenta creada, ya puedes iniciar sesión". Para desarrollo, luego probar. [prueba C5.1](#c5.1)
+- [X] Entrar con contraseña incorrecta y con un nickname inexistente: el mensaje es el mismo en los dos casos. — *a cargo de Emanuel Salomón, [prueba C6](#c6)*
+- [X] En «Mis perfiles», sumar el segundo perfil (jugador o anfitrión) y comprobar que aparece en el dashboard. — *a cargo de Emanuel Salomón, [prueba C7](#c7)*
+Este lo testeé de antes, y sí, funciona.
+- [X] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
+- [X] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
 - [ ] Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
 - [ ] Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
 - [ ] Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
