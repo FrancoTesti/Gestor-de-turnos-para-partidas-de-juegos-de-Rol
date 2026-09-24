@@ -87,6 +87,8 @@ export function createApp(orm: MikroORM) {
   return app;
 }
 
+export const mensajeCuerpoGrande = 'Los datos enviados superan el límite de 64 KB. Acortá el texto e intentá de nuevo.';
+
 // Traduce los errores conocidos a respuestas HTTP. Se exporta para que las pruebas
 // monten routers sueltos con el mismo tratamiento de errores que la aplicación real.
 export const manejarErrores: ErrorRequestHandler = (err, _req, res, _next) => {
@@ -95,6 +97,8 @@ export const manejarErrores: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
   if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
   if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }
+  // express.json rechaza los cuerpos de más de 64 KB con este tipo; sin este caso terminaba en 500.
+  if (err?.type === 'entity.too.large') { res.status(413).json({ message: mensajeCuerpoGrande }); return; }
   console.error(err);
   res.status(500).json({ message: 'No se pudo completar la operación' });
 };

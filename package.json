@@ -8,6 +8,7 @@
     "test": "vitest run src/tests",
     "test:coverage": "vitest run --coverage",
     "docs:check": "node scripts/verificar-enlaces-docs.mjs",
+    "demo:datos": "node scripts/datos-demo.mjs",
     "test:e2e": "npm run build && playwright test",
     "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
     "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
