@@ -5,7 +5,9 @@ Fecha de la corrida: 24 de septiembre de 2026.
 Commit evaluado: `4bb8ef6` de `main`. La rama que publica este documento no modifica código de
 aplicación: solo agrega documentación y una medición de cobertura.
 
-Ejecución en GitHub Actions: [run 35610631280, verde](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/35610631280).
+Ejecución en GitHub Actions: [run 36076310572, verde](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/36076310572),
+el primero que corre las tres mediciones de cobertura: unitarias del backend, integración
+instrumentada y frontend.
 
 ## Resultado de cada suite
 
