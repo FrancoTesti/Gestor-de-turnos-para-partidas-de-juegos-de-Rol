@@ -39,7 +39,9 @@ async function medir(page: Page): Promise<Medicion> {
     // Un elemento que sobresale pero vive dentro de un contenedor previsto para tablas anchas
     // es aceptable: la tabla se recorre con scroll propio en lugar de arrastrar toda la pantalla.
     // No alcanza con cualquier contenedor: el área principal entera no debe desplazarse.
-    const contenedoresValidos = /tabla-scroll|module-table|table-wrapper/;
+    // .nav-menu es una tira desplazable a propósito en pantalla chica: sus enlaces
+    // siguen accesibles con swipe y no arrastran el resto de la página.
+    const contenedoresValidos = /tabla-scroll|module-table|table-wrapper|nav-menu/;
     const enContenedorDesplazable = (elemento: Element) => {
       let padre = elemento.parentElement;
       while (padre && padre !== document.body) {

@@ -140,3 +140,22 @@
     border-bottom-color: #1976d2;
   }
 }
+
+/* En un teléfono el menú pasa a ser una tira desplazable: ocupaba siete líneas
+   de alto y empujaba el contenido fuera de la primera pantalla. */
+@media (max-width: 600px) {
+  .nav-menu {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: thin;
+  }
+
+  .nav-menu li {
+    flex: 0 0 auto;
+  }
+
+  .nav-menu a {
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+  }
+}

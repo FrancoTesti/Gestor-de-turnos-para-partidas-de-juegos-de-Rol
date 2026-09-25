@@ -137,6 +137,18 @@ table {
   white-space: nowrap;
 }
 
+/* En pantalla chica la tabla se desplaza en horizontal: la primera columna queda fija
+   para no perder de vista a qué registro pertenece cada fila. */
+.app-table th:first-child,
+.app-table td:first-child,
+.module-table th:first-child,
+.module-table td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+
 .app-form label {
   display: block;
   margin-bottom: 0.75rem;
