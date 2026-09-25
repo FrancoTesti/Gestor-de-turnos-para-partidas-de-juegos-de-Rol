@@ -122,6 +122,21 @@ npm run test:integration
 
 El comando genera un nombre `rpg_test_<aleatorio>`, crea la base, ejecuta los casos y elimina solo esa base. No limpia ninguna base preexistente. Si el proceso es interrumpido abruptamente puede quedar una base temporal; identificarla antes de eliminarla manualmente. Para aislamiento máximo, ejecutar las pruebas en otra instancia de MySQL.
 
+### Cobertura
+
+Cada suite mide su propia cobertura, porque miden cosas distintas:
+
+```sh
+npm run test:coverage              # unitarias del backend (Vitest)
+cd frontend && npm run test:coverage   # unitarias del frontend
+cd .. && npm run test:coverage:integration   # integración contra MySQL (c8)
+```
+
+`test:coverage:integration` compila, ejecuta la suite de integración instrumentada con `c8` y falla
+si la cobertura baja de los umbrales declarados en `package.json`. Los informes quedan en
+`coverage/`, que no se versiona. Para verlos en detalle: `coverage/index.html` y
+`coverage/integracion/index.html`.
+
 ### Pruebas de navegador (E2E)
 
 Los recorridos de navegador usan Playwright con Chromium y necesitan el backend compilado, MySQL y un usuario de pruebas. Desde la raíz:

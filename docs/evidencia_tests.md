@@ -16,6 +16,7 @@ Ejecución en GitHub Actions: [run 35610631280, verde](https://github.com/Franco
 | Cobertura del backend | `npm run test:coverage` | 30,79 % de sentencias, 24,58 % de ramas, 37,26 % de funciones, 30,75 % de líneas (umbral: 30 %) |
 | Unitarias del frontend | `cd frontend && npm test` | 19 archivos, **71 pruebas aprobadas** |
 | Cobertura del frontend | `cd frontend && npm run test:coverage` | 45,79 % de sentencias, 42,20 % de ramas, 36,21 % de funciones, 47,39 % de líneas (umbral: 47 %) |
+| Cobertura de la integración | `npm run test:coverage:integration` | 71,96 % de sentencias, 70,59 % de ramas, 69,03 % de funciones, 71,96 % de líneas sobre 56 archivos (umbral: 70 %) |
 | Compilación y lint | `npm run build` y `cd frontend && npm run build && npm run lint` | Sin errores ni advertencias |
 | Recorridos de navegador | `npm run test:e2e` | **9 recorridos aprobados** en Chromium |
 
@@ -39,12 +40,25 @@ expiración de cookie, cierre de sesión, bloqueo de rutas privadas, juego compl
 —recompensas, karma, compra, inventario, movimiento y venta—, caminos rechazados por el servidor,
 auditoría de accesibilidad con axe-core y revisión responsive en 375, 768 y 1280 píxeles.
 
-## Límites de esta evidencia
+Cada suite tiene su propia medición y su propio umbral, y las tres se ejecutan por separado:
 
-La cobertura se mide sobre las capas con lógica del backend y sobre todo el código del frontend. Las
-pruebas de integración cubren buena parte del backend que las unitarias no alcanzan y, hasta que se
-instrumente esa suite con `c8`, no suman al porcentaje. Por eso los umbrales son bajos: funcionan
-como freno contra regresiones, no como medida de calidad.
+- Las unitarias del backend cubren servicios, controladores, validadores y seguridad de forma
+  aislada. Su umbral es bajo porque buena parte del comportamiento se prueba en la integración.
+- La suite de integración se instrumenta con `c8` sobre el código compilado con mapas de origen:
+  recorre el sistema completo contra MySQL y alcanza el 71,96 % de líneas. Su umbral es 70 %.
+- Las unitarias del frontend cubren componentes y servicios con jsdom; su umbral es 47 % de líneas.
+
+Los porcentajes no se suman entre sí porque miden universos distintos. Los umbrales funcionan como
+freno contra regresiones: si una suite pierde cobertura, la integración continua falla.
+
+## Verificación de los umbrales
+
+Se comprobó que los umbrales se evalúan de verdad: ejecutar la suite de integración con `--lines 99`
+termina con error y con el mensaje real de `c8`:
+
+```text
+ERROR: Coverage for lines (71.96%) does not meet global threshold (99%)
+```
 
 ## Cómo reproducirlo
 
@@ -64,6 +78,7 @@ npm run build
 npm test
 npm run test:integration
 npm run test:coverage
+npm run test:coverage:integration
 
 # Frontend
 cd frontend
