@@ -34,6 +34,7 @@ migración explicada en la guía antes de iniciar sesión.
 | `npm run schema:create` | Crea las tablas en la base configurada a partir de las entidades |
 | `npm run schema:dump` | Muestra el SQL que generarían las entidades, sin conectarse |
 | `npm run passwords:migrate` | Convierte a hash las contraseñas antiguas guardadas en texto plano |
+| `npm run demo:datos` | Con el backend corriendo, carga `dm_demo`, `jugador_demo` y un catálogo mínimo para la demostración ([docs/demo.md](docs/demo.md#datos-de-demostración)) |
 
 ### Frontend (`cd frontend`)
 

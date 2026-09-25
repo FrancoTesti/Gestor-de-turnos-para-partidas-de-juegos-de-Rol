@@ -29,8 +29,11 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | [evidencia_tests.md](evidencia_tests.md) | Resultado real de cada suite automática y cómo reproducirla |
 | [evidencia_calidad_visual.md](evidencia_calidad_visual.md) | Revisión responsive y de accesibilidad, con hallazgos y correcciones |
 | [evidencia_responsive_revision.md](evidencia_responsive_revision.md) | Revisión humana de las capturas en los tres tamaños |
-| [demo.md](demo.md) | Guion de la demostración e instrucciones para grabar el video |
+| [demo.md](demo.md) | Guion de la demostración, datos de demo (`npm run demo:datos`) e instrucciones para grabar el video |
+| [respaldo.md](respaldo.md) | Copia de seguridad y restauración de la base antes de una demo o un ensayo |
 | [entrega.md](entrega.md) | Estado de la entrega, evidencias de build/tests y enlaces a los PR |
+| [seguimiento.md](seguimiento.md) | Estado por módulo y registro de defectos con el PR que los resuelve |
+| [minutas.md](minutas.md) | Minutas de reunión: fecha, participantes, decisiones y asignaciones |
 | [verificacion_renzo.md](verificacion_renzo.md) | Verificación del módulo de usuarios y autenticación |
 
 ## Diagramas

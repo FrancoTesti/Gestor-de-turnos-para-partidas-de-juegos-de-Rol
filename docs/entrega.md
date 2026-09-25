@@ -72,6 +72,31 @@ respalda. «E2E» se refiere a `e2e/autenticacion.spec.ts`; «integración», a
   `docs/modelo.md`, guion de demostración `docs/demo.md` y despliegue `docs/despliegue.md`.
   `proposal.md` y `README.md` quedaron con enlaces reales y la lista completa de comandos.
 
+### Semana del 17 al 23 de septiembre
+
+Hecho (rama `ramaEmaIteracion4`):
+
+- Datos de demostración reproducibles: `npm run demo:datos` crea `dm_demo`, `jugador_demo`, dos
+  clases, dos tiendas y cuatro objetos (uno único) a través de la API. Probado contra una base
+  MySQL descartable: la primera ejecución crea todo, la segunda no duplica nada y con el backend
+  apagado falla con un mensaje claro. Documentado en [demo.md](demo.md#datos-de-demostración).
+- Copia de seguridad y restauración con `mysqldump`/`mysql`: [respaldo.md](respaldo.md). Probado
+  contra bases descartables: volcado, restauración en otra base y restauración encima de una base
+  modificada, con login de `dm_demo` sobre la base restaurada.
+- `docs/api.md` contrastado contra `src/routes/`, controladores, servicios y validadores: se
+  corrigieron 12 diferencias y se agregaron los códigos que faltaban. El detalle está en
+  [seguimiento.md](seguimiento.md).
+- Defecto corregido: un cuerpo de más de 64 KB respondía 500; ahora responde 413 con un mensaje
+  que la pantalla muestra tal cual. Prueba en `src/tests/errores.test.ts`.
+- Nuevos [seguimiento.md](seguimiento.md) (funcionalidades y defectos) y [minutas.md](minutas.md)
+  (plantilla; las minutas las carga el grupo).
+
+Pendiente, a cargo de una persona:
+
+- Checklist manual de cuentas y perfiles en [pruebas_manuales.md](pruebas_manuales.md).
+- Grabar el video siguiendo [demo.md](demo.md) y pegar el enlace acá.
+- Registrar las minutas de las reuniones de la semana.
+
 ## Enlaces a los PR del grupo
 
 | PR | Autor | Contenido |
