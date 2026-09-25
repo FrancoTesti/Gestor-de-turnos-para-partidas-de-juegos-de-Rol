@@ -13,12 +13,12 @@ instrumentada y frontend.
 
 | Suite | Comando | Resultado |
 | --- | --- | --- |
-| Unitarias del backend | `npm test` | 13 archivos, **102 pruebas aprobadas** |
+| Unitarias del backend | `npm test` | 14 archivos, **104 pruebas aprobadas** |
 | Integración con MySQL | `npm run test:integration` | **22 pruebas aprobadas** |
 | Cobertura del backend | `npm run test:coverage` | 30,79 % de sentencias, 24,58 % de ramas, 37,26 % de funciones, 30,75 % de líneas (umbral: 30 %) |
 | Unitarias del frontend | `cd frontend && npm test` | 19 archivos, **71 pruebas aprobadas** |
 | Cobertura del frontend | `cd frontend && npm run test:coverage` | 45,79 % de sentencias, 42,20 % de ramas, 36,21 % de funciones, 47,39 % de líneas (umbral: 47 %) |
-| Cobertura de la integración | `npm run test:coverage:integration` | 71,96 % de sentencias, 70,59 % de ramas, 69,03 % de funciones, 71,96 % de líneas sobre 56 archivos (umbral: 70 %) |
+| Cobertura de la integración | `npm run test:coverage:integration` | 71,97 % de sentencias, 70,48 % de ramas, 69,03 % de funciones, 71,97 % de líneas sobre 56 archivos (umbral: 70 %) |
 | Compilación y lint | `npm run build` y `cd frontend && npm run build && npm run lint` | Sin errores ni advertencias |
 | Recorridos de navegador | `npm run test:e2e` | **9 recorridos aprobados** en Chromium |
 
@@ -47,7 +47,7 @@ Cada suite tiene su propia medición y su propio umbral, y las tres se ejecutan 
 - Las unitarias del backend cubren servicios, controladores, validadores y seguridad de forma
   aislada. Su umbral es bajo porque buena parte del comportamiento se prueba en la integración.
 - La suite de integración se instrumenta con `c8` sobre el código compilado con mapas de origen:
-  recorre el sistema completo contra MySQL y alcanza el 71,96 % de líneas. Su umbral es 70 %.
+  recorre el sistema completo contra MySQL y alcanza el 71,97 % de líneas. Su umbral es 70 %.
 - Las unitarias del frontend cubren componentes y servicios con jsdom; su umbral es 47 % de líneas.
 
 Los porcentajes no se suman entre sí porque miden universos distintos. Los umbrales funcionan como
