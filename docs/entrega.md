@@ -52,7 +52,7 @@ respalda. «E2E» se refiere a `e2e/autenticacion.spec.ts`; «integración», a
 | Transacciones y concurrencia en MySQL | Cerrado | `src/integration/juego.test.ts`, `objeto.compra.test.ts` |
 | Integración continua con build, lint y pruebas | Cerrado | `.github/workflows/verificacion.yml` |
 | Documentación de instalación, API, modelo y demo | Cerrado | `docs/README.md` y los documentos que enlaza |
-| Revisión responsive y de accesibilidad completa | Parcial | Revisadas las pantallas de cuentas, perfiles, clases, tiendas y personajes; falta recorrer el resto en pantalla chica |
+| Revisión responsive y de accesibilidad completa | Cerrado | `e2e/responsive.spec.ts` recorre 12 pantallas × 3 anchos y `e2e/accesibilidad.spec.ts` corre axe-core sin violaciones graves. La revisión humana de las capturas está en `evidencia_responsive_revision.md` |
 | Alcance adicional voluntario | No iniciado | Decisión del grupo: se priorizó cerrar el alcance de aprobación |
 
 ## Cuentas, perfiles y documentación (Emanuel Salomón)

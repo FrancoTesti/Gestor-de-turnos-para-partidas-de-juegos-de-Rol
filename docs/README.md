@@ -26,7 +26,9 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | Documento | Para qué |
 | --- | --- |
 | [pruebas_manuales.md](pruebas_manuales.md) | Checklist manual y qué cubre cada suite automática |
+| [evidencia_tests.md](evidencia_tests.md) | Resultado real de cada suite automática y cómo reproducirla |
 | [evidencia_calidad_visual.md](evidencia_calidad_visual.md) | Revisión responsive y de accesibilidad, con hallazgos y correcciones |
+| [evidencia_responsive_revision.md](evidencia_responsive_revision.md) | Revisión humana de las capturas en los tres tamaños |
 | [demo.md](demo.md) | Guion de la demostración, datos de demo (`npm run demo:datos`) e instrucciones para grabar el video |
 | [respaldo.md](respaldo.md) | Copia de seguridad y restauración de la base antes de una demo o un ensayo |
 | [entrega.md](entrega.md) | Estado de la entrega, evidencias de build/tests y enlaces a los PR |
