@@ -51,6 +51,10 @@ Cada suite tiene su propia medición y su propio umbral, y las tres se ejecutan 
 Los porcentajes no se suman entre sí porque miden universos distintos. Los umbrales funcionan como
 freno contra regresiones: si una suite pierde cobertura, la integración continua falla.
 
+La integración continua ejecuta las tres mediciones —cobertura del backend, cobertura de la
+integración y cobertura del frontend— y sube los informes como artefactos `cobertura-backend` y
+`cobertura-frontend`. Si cualquiera baja del umbral, el trabajo queda en rojo y el PR no se fusiona.
+
 ## Verificación de los umbrales
 
 Se comprobó que los umbrales se evalúan de verdad: ejecutar la suite de integración con `--lines 99`

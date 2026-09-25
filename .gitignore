@@ -8,6 +8,9 @@ playwright-report/
 test-results/
 coverage/
 
+# Grafo de conocimiento generado por graphify (se reconstruye con /graphify)
+graphify-out/
+
 # TypeScript
 *.tsbuildinfo
 

@@ -73,13 +73,13 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test:coverage
+      - run: npm run test:coverage:integration
       - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: cobertura-backend
           path: coverage/
           retention-days: 7
-      - run: npm run test:integration
       - run: npm --prefix frontend ci
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
