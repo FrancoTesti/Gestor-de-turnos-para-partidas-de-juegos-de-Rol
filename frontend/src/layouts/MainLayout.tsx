@@ -49,36 +49,38 @@ export default function MainLayout() {
       <div className="layout-container">
         <aside className="sidebar">
           <ul className="nav-menu">
-            {[['/classes', 'Clases'], ['/stores', 'Tiendas'], ['/sessions', 'Sesiones'], ['/missions', 'Misiones'], ['/inventory', 'Inventarios'], ['/profiles', 'Perfiles']].map(([path, label]) => <li key={path}><Link to={path}>{label}</Link></li>)}
+            {[['/classes', '🛡️ Clases'], ['/stores', '🏪 Tiendas'], ['/sessions', '📅 Sesiones'], ['/missions', '📜 Misiones'], ['/inventory', '📦 Inventarios'], ['/profiles', '👤 Perfiles']].map(([path, label]) => (
+              <li
+                key={path}
+                className={location.pathname === path ? 'active' : ''}
+              >
+                <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to={path}>{label}</Link>
+              </li>
+            ))}
             <li
-              onClick={() => navigate('/dashboard')}
               className={location.pathname === '/dashboard' ? 'active' : ''}
             >
-              📊 Dashboard
+              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/dashboard">📊 Dashboard</Link>
             </li>
             <li
-              onClick={() => navigate('/users')}
               className={location.pathname === '/users' ? 'active' : ''}
             >
-              👥 Usuarios
+              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/users">👥 Usuarios</Link>
             </li>
             <li
-              onClick={() => navigate('/games')}
               className={location.pathname === '/games' ? 'active' : ''}
             >
-              🎮 Partidas
+              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/games">🎮 Partidas</Link>
             </li>
             <li
-              onClick={() => navigate('/objects')}
               className={location.pathname === '/objects' ? 'active' : ''}
             >
-              🎒 Objetos
+              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/objects">🎒 Objetos</Link>
             </li>
             <li
-              onClick={() => navigate('/characters')}
               className={location.pathname === '/characters' ? 'active' : ''}
             >
-              ⚔️ Personajes
+              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/characters">⚔️ Personajes</Link>
             </li>
           </ul>
         </aside>
