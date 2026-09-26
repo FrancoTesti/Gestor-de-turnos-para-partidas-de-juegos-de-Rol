@@ -14,7 +14,7 @@ Estados: **Abierto** (sin corrección), **En curso** (rama o PR abierto), **Resu
 | --- | --- | --- | --- |
 | Cuentas y perfiles | Emanuel Salomón | Sí | Pendiente |
 | Clases, personajes y acceso a partidas | Alejandro Mario Ciesco | Sí | Pendiente |
-| Objetos, tiendas, inventarios, compra y venta | Octavio Alejandro Gudiño | Sí | Pendiente |
+| Objetos, tiendas, inventarios, compra y venta | Octavio Alejandro Gudiño | Sí | 7 casillas ejecutadas el 25/09 |
 | Partidas, sesiones, misiones y calificación | Franco Testi | Sí | 4 casillas ejecutadas el 18/09 |
 | Transversal: responsive, accesibilidad, E2E, CI | Renzo Scollo | Sí | Pendiente |
 
