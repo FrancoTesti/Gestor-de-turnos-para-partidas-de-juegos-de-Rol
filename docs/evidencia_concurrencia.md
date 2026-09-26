@@ -1,9 +1,13 @@
 # Evidencia de Prueba de Concurrencia (Compra y Venta de Objeto Único)
 
 **Responsable:** Octavio Alejandro Gudiño  
-**Fecha de verificación:** 24 de septiembre de 2026  
-**Commit evaluado:** `4bb8ef6` de `main`  
+**Fecha de verificación inicial:** 24 de septiembre de 2026  
+**Última re-verificación:** 26 de septiembre de 2026  
+**Commit evaluado:** `5ccac3a` de `main`  
 **Ejecución en GitHub Actions (verificable):** [run 36076310572, verde](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/36076310572) (también respaldado en [Actions 35610631280](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/35610631280)).
+
+> [!NOTE]
+> **Confirmación de integridad:** Se re-ejecutó la suite completa de integración (`npm run test:integration`) sobre `main` en la última fecha sin regresiones detectadas en las transacciones de compra/venta pesimistas.
 
 ## Descripción de la Prueba
 Esta prueba de integración valida la concurrencia de compra y venta de un objeto único (`esUnico: true`) conectándose a una instancia real de **MySQL** mediante la suite [src/integration/juego.test.ts](../src/integration/juego.test.ts).
