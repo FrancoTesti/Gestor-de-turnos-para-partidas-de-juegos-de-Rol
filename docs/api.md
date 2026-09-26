@@ -96,16 +96,18 @@ Recupera la sesión al recargar la página. **200** con `{ usuario, roles }`, **
 
 ## Catálogo: clases, tiendas y objetos
 
-Altas, bajas y modificaciones **solo para anfitriones**; las lecturas, para cualquier sesión.
+Altas, bajas y modificaciones **solo para anfitriones** (**403** si la cuenta no es anfitrión); las lecturas (`GET`), para cualquier sesión autenticada.
 
 - `/clases` — `{ nombreClase, descripcionClase }`.
 - `/tiendas` — `{ nombre, claseTienda, idClase? }`.
+  - `POST /tiendas`: **201** `{ idTienda, nombre, claseTienda, idClase }`. **400** si los campos son inválidos o `idClase` no existe.
+  - `PUT /tiendas/:id`: **200** `{ idTienda, nombre, claseTienda, idClase }`. **404** si la tienda no existe; **400** si `idClase` no existe.
+  - `DELETE /tiendas/:id`: **204**; **409** si la tienda tiene objetos o datos asociados.
 - `/objetos` — `{ nombre, descripcion, tipoObjeto, valor, nivelObjeto, esUnico?, idTienda?, posicion? }`.
-  **409** al editar o eliminar un objeto que ya está en un inventario: se mueve o se vende.
-- `GET /objetos/sugeridos/:idPersonaje` — objetos a la venta en tiendas de la clase de ese
-  personaje (los que no están en ningún inventario), con el mismo formato que `GET /objetos`. El
-  personaje debe ser propio (**403**; **404** si no existe).
-- `GET /objetos/sugeridos/clase/:idClase` — el mismo listado partiendo de la clase.
+  - `POST /objetos`: **201** `{ idObjeto, nombre, descripcion, tipoObjeto, valor, nivelObjeto, esUnico, idTienda, idPersonaje, numInventario, posicion }`.
+  - `PUT`/`DELETE /objetos/:id`: **409** (`Un objeto adquirido solo puede moverse mediante el inventario o una venta`) si el objeto pertenece a un inventario; **404** si el objeto no existe.
+- `GET /objetos/sugeridos/:idPersonaje` — objetos a la venta en tiendas de la clase de ese personaje (los que no están en ningún inventario), con el mismo formato que `GET /objetos`. El personaje debe ser propio (**403**; **404** si no existe).
+- `GET /objetos/sugeridos/clase/:idClase` — el mismo listado partiendo del ID de la clase.
 
 ## Partidas `/partidas`
 
@@ -174,27 +176,16 @@ Altas, bajas y modificaciones **solo para anfitriones**; las lecturas, para cual
 
 ## Inventarios y comercio
 
-- `GET /inventarios` — solo los inventarios de los personajes del usuario logueado.
-- `GET /inventarios/:idPersonaje/:numInventario` — agrega los objetos con su `posicion`, `valor` y
-  el rango de venta (`minimo`, `maximo`).
-- `POST /inventarios` — `{ idPersonaje, numInventario, cantidadEspacio }` (1 a 1000). **201**;
-  **403** si el personaje no es propio; **409** si ese inventario ya existe.
-- `PUT`/`DELETE /inventarios/:idPersonaje/:numInventario` — **409** si al reducir la capacidad o
-  eliminar quedan objetos guardados.
-- `POST /inventarios/:idPersonaje/:numInventario/mover` — `{ idObjeto, posicion }`; entre
-  inventarios del mismo personaje. El inventario de la URL es el destino. **403** si el objeto no
-  es de ese personaje; **409** si la posición está fuera de rango u ocupada. Responde
-  `{ idObjeto, idPersonaje, numInventario, cantidadEspacio, posicion }`.
-- `POST /objetos/:id/comprar` — `{ idPersonaje, numInventario, posicion }`. Descuenta el dinero,
-  con bloqueo pesimista en MySQL para que dos compras simultáneas no dupliquen el objeto.
-  **200** `{ objeto, idPersonaje, numInventario, dineroRestante }`. **409** si el objeto no está a
-  la venta, falta saldo, el inventario está lleno o la posición está ocupada; **400** si la
-  posición supera la capacidad o el objeto único ya pertenece a otro personaje de la partida;
-  **404** si el inventario no es de ese personaje; **403** si el personaje no es propio.
-- `POST /objetos/:id/vender` — `{ idPersonaje, idTienda, precio }`. El precio debe caer entre el
-  70 % y el 100 % del valor del objeto (`docs/funcionalidad.md` explica el redondeo).
-  **200** `{ idObjeto, idPersonaje, dineroRestante, precio }`. **409** si el objeto no está en tu
-  inventario, la tienda es de otra clase o el precio está fuera de rango.
+- `GET /inventarios` — solo los inventarios de los personajes pertenecientes al usuario logueado (`[{ idPersonaje, numInventario, cantidadEspacio }]`).
+- `GET /inventarios/:idPersonaje/:numInventario` — agrega `objetos` con su `posicion`, `valor` y el rango de precio de venta permitido (`minimo`, `maximo`, calculados del 70 % al 100 % del valor base con `Math.ceil` y `Math.floor`). **403** si el personaje pertenece a otro jugador; **404** si el inventario no existe.
+- `POST /inventarios` — `{ idPersonaje, numInventario, cantidadEspacio }` (1 a 1000). **201** `{ idPersonaje, numInventario, cantidadEspacio }`; **403** si el personaje no es propio; **409** si ese inventario ya existe para el personaje.
+- `PUT /inventarios/:idPersonaje/:numInventario` — `{ cantidadEspacio }`. **200**; **403** si el personaje no es propio; **404** si el inventario no existe; **409** si al reducir la capacidad existen objetos guardados en posiciones mayores o iguales a la nueva `cantidadEspacio`.
+- `DELETE /inventarios/:idPersonaje/:numInventario` — **204**; **403** si el personaje no es propio; **404** si el inventario no existe; **409** si el inventario contiene objetos.
+- `POST /inventarios/:idPersonaje/:numInventario/mover` — `{ idObjeto, posicion }`; entre inventarios del mismo personaje. El inventario de la URL es el destino. **200** `{ idObjeto, idPersonaje, numInventario, cantidadEspacio, posicion }`. **403** si el objeto o personaje no pertenece al usuario logueado; **404** si el objeto o inventario no existe; **409** si la posición supera la capacidad o la casilla de destino ya está ocupada.
+- `POST /objetos/:id/comprar` — `{ idPersonaje, numInventario, posicion }`. Descuenta el dinero con bloqueo pesimista en MySQL (`FOR UPDATE`) para asegurar concurrencia sin duplicados.
+  **200** `{ objeto, idPersonaje, numInventario, dineroRestante }`. **403** si el personaje no es propio; **404** si el objeto, personaje o inventario no existe; **409** si el objeto no está a la venta, falta saldo, el inventario está lleno o la posición está ocupada; **400** si la posición supera la capacidad o el objeto único ya pertenece a otro personaje de la misma partida.
+- `POST /objetos/:id/vender` — `{ idPersonaje, idTienda, precio }`. El precio debe caer entre el 70 % y el 100 % del valor del objeto (`docs/funcionalidad.md` y `src/services/venta.rules.ts` explican el redondeo).
+  **200** `{ idObjeto, idPersonaje, dineroRestante, precio }`. **403** si el personaje no es propio; **404** si el objeto o la tienda no existe; **409** si el objeto no está en tu inventario, la tienda es de otra clase, el precio está fuera de rango o el saldo superaría el entero máximo.
 
 ## Probar a mano con curl
 

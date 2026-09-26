@@ -41,16 +41,16 @@ Se encontró un bug en base a eso, ver C5.1.
 Este lo testeé de antes, y sí, funciona.
 - [X] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
 - [X] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
-- [ ] Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
+- [x] Octavio Gudiño (25/09) Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
 - [ ] Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
 - [ ] Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
 - [ ] Filtrar personajes por clase y partidas activas. Ver nombre del anfitrión en partidas.
-- [ ] Ver sugeridos por clase y aplicar filtros avanzados por tipo, nivel y valor máximo.
-- [ ] Comprobar visibilidad del indicador ⭐ Único en el catálogo del anfitrión, en el detalle del objeto y en los sugeridos por clase.
-- [ ] Comprar objeto y confirmar saldo/ubicación al recargar; verificar rechazo de compra del mismo objeto único si ya pertenece a otro personaje en la partida.
-- [ ] Comprar con saldo insuficiente o en posición ocupada: rechazo con mensaje claro y sin débito.
-- [ ] Crear otro inventario y mover objeto; probar mover a posición ocupada, reducir capacidad con objeto al límite o borrar ocupado: rechazo.
-- [ ] Vender a 70 % y a 100 % comprobando saldo inicial y final antes de confirmar; intentar vender a tienda de otra clase, fuera de rango o repetir venta: rechazo.
+- [x] Octavio Gudiño (25/09) Ver sugeridos por clase y aplicar filtros avanzados por tipo, nivel y valor máximo.
+- [x] Octavio Gudiño (25/09) Comprobar visibilidad del indicador ⭐ Único en el catálogo del anfitrión, en el detalle del objeto y en los sugeridos por clase.
+- [x] Octavio Gudiño (25/09) Comprar objeto y confirmar saldo/ubicación al recargar; verificar rechazo de compra del mismo objeto único si ya pertenece a otro personaje en la partida.
+- [x] Octavio Gudiño (25/09) Comprar con saldo insuficiente o en posición ocupada: rechazo con mensaje claro y sin débito.
+- [x] Octavio Gudiño (25/09) Crear otro inventario y mover objeto; probar mover a posición ocupada, reducir capacidad con objeto al límite o borrar ocupado: rechazo.
+- [x] Octavio Gudiño (25/09) Vender a 70 % y a 100 % comprobando saldo inicial y final antes de confirmar; intentar vender a tienda de otra clase, fuera de rango o repetir venta: rechazo.
 - [x] Franco Testi (18/09) Crear sesión y misión; iniciar con personajes de la partida.
 - [x] Franco Testi (18/09) Completar misión con suma incorrecta: rechazo; con suma correcta: crédito persistente.
 - [x] Franco Testi (18/09) Repetir finalización de misión: rechazo sin recompensa duplicada.
