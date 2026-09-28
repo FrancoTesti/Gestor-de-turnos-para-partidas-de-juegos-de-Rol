@@ -42,9 +42,9 @@ Este lo testeé de antes, y sí, funciona.
 - [X] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
 - [X] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
 - [x] Octavio Gudiño (25/09) Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
-- [ ] Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
-- [ ] Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
-- [ ] Filtrar personajes por clase y partidas activas. Ver nombre del anfitrión en partidas.
+- [x] Alejandro Ciesco (28/09) Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
+- [x] Alejandro Ciesco (28/09) Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
+- [x] Alejandro Ciesco (28/09) Filtrar personajes por clase y partidas activas. Ver nombre del anfitrión en partidas.
 - [x] Octavio Gudiño (25/09) Ver sugeridos por clase y aplicar filtros avanzados por tipo, nivel y valor máximo.
 - [x] Octavio Gudiño (25/09) Comprobar visibilidad del indicador ⭐ Único en el catálogo del anfitrión, en el detalle del objeto y en los sugeridos por clase.
 - [x] Octavio Gudiño (25/09) Comprar objeto y confirmar saldo/ubicación al recargar; verificar rechazo de compra del mismo objeto único si ya pertenece a otro personaje en la partida.
@@ -195,6 +195,42 @@ registro tiene datos relacionados. Resolvé esas relaciones antes de eliminarlo.
 2. Anotar cada hallazgo en [seguimiento.md](seguimiento.md), aunque se haya aprobado el resto.
 3. Escribir el resultado en [entrega.md](entrega.md) (cuántas aprobadas y qué hallazgos quedaron).
 4. Restaurar la copia de la base si se va a grabar el video después.
+
+## Guía paso a paso: clases, personajes y partidas (Alejandro Ciesco)
+
+<a id="p1"></a>
+
+### P1. Crear partida pública y luego privada; contraseña requerida y vuelta a pública
+
+1. Entrar con cuenta de anfitrión (`dm_demo`). Ir a **🎮 Partidas** → **+ Nueva Partida**.
+2. Crear partida pública «Campaña Abierta» con límite de 4 jugadores. Guardar.
+3. Crear partida privada «Campaña Secreta» marcando «Es privada» e ingresando contraseña `ClavePartida123`. Guardar.
+4. Intentar crear una partida privada dejando la contraseña vacía: el formulario y la API impiden la creación exigiendo la clave.
+5. Editar la partida «Campaña Secreta», desmarcar «Es privada» y guardar: pasa a pública y no requiere clave.
+
+**Esperado:** ambas partidas se crean correctamente con estado activa y su indicador de privacidad. La partida privada exige contraseña al crearse; al editarse a pública se actualiza sin requerir clave.
+
+<a id="p2"></a>
+
+### P2. Crear personaje propio en la partida; inicialización y control de cupo
+
+1. Entrar con cuenta de jugador (`jugador_demo`). Ir a **⚔️ Personajes** → **+ Nuevo Personaje**.
+2. Seleccionar una clase (ej. Guerrero), la partida pública creada y completar nombre «Thorin» y raza «Enano». Guardar.
+3. Verificar en el listado y detalle que el personaje inicia con `dinero: 100`, `xp: 0`, `nivel: 1` e inventario número 1 con capacidad de 10 casillas.
+4. Intentar crear un segundo personaje con el mismo jugador en la misma partida: se rechaza con error («Ya tenés un personaje en esta partida»).
+5. Intentar unirse a una partida con cupo lleno: se rechaza con error indicando que no hay cupos disponibles.
+
+**Esperado:** el personaje se crea y se asocia al jugador autenticado con sus valores iniciales correctos e inventario base. Se aplican las restricciones de un personaje por jugador por partida y límite de cupos.
+
+<a id="p3"></a>
+
+### P3. Filtrar personajes por clase y partidas activas
+
+1. En **⚔️ Personajes**, seleccionar el filtro por clase en el desplegable (ej. Guerrero, Mago).
+2. Comprobar que la lista se actualiza mostrando únicamente los personajes de esa clase y que el botón «Quitar filtro» restablece el listado completo.
+3. Ir al listado de **Partidas Activas** (o vista de unión a partidas): comprobar que muestra únicamente partidas en estado activo (`estado: true`), con el nombre del anfitrión (`nicknameAnfitrion` / `nombreUsuario`), tipo (pública/privada) y cupos disponibles.
+
+**Esperado:** el filtrado por clase es reactivo y puede limpiarse; el listado de partidas activas muestra datos consistentes y el anfitrión responsable.
 
 ## Alcance de la verificación local
 
