@@ -66,7 +66,19 @@ npm run schema:create
 
 Usar ese comando únicamente en una base nueva y vacía. Si ya hay datos, conservarlos: esta actualización no necesita recrear tablas. `SQL/rpg.sql` es una alternativa histórica que contiene estructura y datos de ejemplo; no ejecutarlo además de `schema:create` ni sobre una base existente.
 
-El catálogo puede cargarse desde la interfaz con una cuenta de anfitrión. Las cuentas nuevas se crean desde Registro.
+El catálogo puede cargarse desde la interfaz con una cuenta de anfitrión, o bien mediante el script de datos de demostración. Las cuentas nuevas también se pueden crear desde Registro.
+
+### Datos iniciales de demostración y prueba
+
+Para poblar la base recién creada con cuentas y catálogo inicial de prueba:
+1. Iniciar el backend con `npm run dev`.
+2. En otra terminal en la raíz, ejecutar:
+
+```sh
+npm run demo:datos
+```
+
+Este script crea los usuarios `dm_demo` (anfitrión) y `jugador_demo` (jugador) con contraseña `PruebaSegura123`, además de dos clases, dos tiendas y objetos de catálogo. Es idempotente: si los datos ya existen, no los duplica. Ver [demo.md](demo.md#datos-de-demostración) para más detalles.
 
 ## Actualizar contraseñas antiguas
 
