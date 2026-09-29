@@ -123,12 +123,21 @@
 
   .nav-menu li {
     flex: 1 1 7rem;
+    /* Con emoji en las etiquetas, el ancho mínimo automático empujaba el último ítem
+       fuera de la pantalla a 768 px. Dejarlos encoger hace que el texto baje de línea. */
+    min-width: 0;
     padding: .5rem;
   }
   .main-content { padding: 1rem; }
   .navbar-user { flex-wrap: wrap; justify-content: center; }
 
   .nav-menu a {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    overflow-wrap: anywhere;
     padding: 0.75rem;
     text-align: center;
     border-left: none;
