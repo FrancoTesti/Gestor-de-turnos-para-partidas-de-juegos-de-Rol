@@ -13,9 +13,9 @@ instrumentada y frontend.
 
 | Suite | Comando | Resultado |
 | --- | --- | --- |
-| Unitarias del backend | `npm test` | 14 archivos, **104 pruebas aprobadas** |
+| Unitarias del backend | `npm test` | 16 archivos, **108 pruebas aprobadas** |
 | Integración con MySQL | `npm run test:integration` | **22 pruebas aprobadas** |
-| Cobertura del backend | `npm run test:coverage` | 30,79 % de sentencias, 24,58 % de ramas, 37,26 % de funciones, 30,75 % de líneas (umbral: 30 %) |
+| Cobertura del backend | `npm run test:coverage` | 32,78 % de sentencias, 25,29 % de ramas, 42,96 % de funciones, 33,09 % de líneas (umbral: 32 %) |
 | Unitarias del frontend | `cd frontend && npm test` | 19 archivos, **71 pruebas aprobadas** |
 | Cobertura del frontend | `cd frontend && npm run test:coverage` | 45,79 % de sentencias, 42,20 % de ramas, 36,21 % de funciones, 47,39 % de líneas (umbral: 47 %) |
 | Cobertura de la integración | `npm run test:coverage:integration` | 71,97 % de sentencias, 70,48 % de ramas, 69,03 % de funciones, 71,97 % de líneas sobre 56 archivos (umbral: 70 %) |
