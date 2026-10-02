@@ -1,25 +1,20 @@
-// mapea las URLs del modulo Partida a los métodos del controller.
 import { EntityManager } from '@mikro-orm/core';
 import { Router } from 'express';
 import { PartidaController } from '../controllers/partida.controller';
 import { PartidaService } from '../services/partida.service';
+import { requireAnfitrionForPartida, requireHostedGameMiddleware } from '../security/authorization';
 
 export function crearPartidaRouter(em: EntityManager): Router {
   const router = Router();
-
-  // Inyección de dependencias
   const service = new PartidaService(em);
   const controller = new PartidaController(service);
 
-  router.get('/', (req, res) => controller.obtenerTodas(req, res));
-
-  // /activas SIEMPRE antes que /:id — si no, Express trata "activas" como un ID
-  router.get('/activas', (req, res) => controller.obtenerActivas(req, res));
-  router.get('/:id', (req, res) => controller.obtenerPorId(req, res));
-
-  router.post('/', (req, res) => controller.crearPartida(req, res));
-  router.put('/:id', (req, res) => controller.actualizarPartida(req, res));
-  router.delete('/:id', (req, res) => controller.eliminarPartida(req, res));
+  router.get('/', (req: any, res: any) => controller.obtenerTodas(req, res));
+  router.get('/:id', (req: any, res: any) => controller.obtenerPorId(req, res));
+  
+  router.post('/', requireAnfitrionForPartida, (req: any, res: any) => controller.crearPartida(req, res));
+  router.put('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.actualizarPartida(req, res));
+  router.delete('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.eliminarPartida(req, res));
 
   return router;
 }
