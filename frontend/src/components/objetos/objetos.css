@@ -265,7 +265,6 @@
   .objetos-layout {
     grid-template-columns: 1fr;
   }
-}
 
 /* Responsive Mobile First */
 .seccion-header,

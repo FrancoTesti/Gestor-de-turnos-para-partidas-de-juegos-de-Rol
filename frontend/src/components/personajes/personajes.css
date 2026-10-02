@@ -172,8 +172,6 @@
   gap: 1rem;
 }
 
-}
-
 /* Responsive Mobile First */
 .form-grid-2 {
   grid-template-columns: 1fr;

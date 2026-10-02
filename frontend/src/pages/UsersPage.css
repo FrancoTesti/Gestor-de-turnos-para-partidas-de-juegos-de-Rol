@@ -242,7 +242,6 @@
   .detail-actions .btn {
     width: 100%;
   }
-}
 
 /* Responsive Mobile First */
 .page-header { flex-direction: column; align-items: stretch; }
