@@ -9,7 +9,7 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | --- | --- |
 | [instalacion.md](instalacion.md) | Requisitos, dependencias, creación de la base, `.env`, arranque y problemas frecuentes |
 | [../README.md](../README.md) | Resumen del proyecto y tabla de comandos |
-| [despliegue.md](despliegue.md) | Variables de entorno y qué haría falta para publicarlo |
+| [despliegue.md](despliegue.md) | Decisión de entrega local, credenciales de demostración, variables de entorno y qué haría falta para publicarlo |
 
 ## Para entender el sistema
 

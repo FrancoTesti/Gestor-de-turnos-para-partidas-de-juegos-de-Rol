@@ -1,8 +1,47 @@
 # Despliegue y variables de entorno
 
-El proyecto se entrega para ejecutarse en local (ver [instalacion.md](instalacion.md)). Esta página
-documenta qué haría falta para publicarlo y qué configuración necesita, **sin incluir ningún valor
-real**: las credenciales se cargan en el `.env` de cada máquina, que no se versiona.
+## Decisión de entrega
+
+**La entrega es local: el sistema no está desplegado en ningún servidor.** Se decidió así porque
+publicarlo exigiría resolver antes las sesiones en memoria, el HTTPS y el proxy de un único dominio
+(ver «Qué hay que resolver antes de publicarlo»), y eso es trabajo de infraestructura fuera del
+alcance acordado. No hay URL pública ni credenciales de ningún servicio externo que la cátedra deba
+conocer. Decisión registrada el 2 de octubre de 2026; si el grupo cambia de criterio, se corrige
+acá y en `proposal.md`.
+
+### Cómo lo levanta el corrector
+
+Requisitos: Node `^20.19.0 || >=22.12.0`, npm y MySQL 8 en ejecución. El detalle y los problemas
+frecuentes están en [instalacion.md](instalacion.md); el resumen es:
+
+1. Clonar el repositorio y, en la raíz **y** en `frontend/`, ejecutar `npm ci` (son dos proyectos).
+2. Crear una base vacía, por ejemplo `CREATE DATABASE rpg_desarrollo CHARACTER SET utf8mb4;`.
+3. Copiar `.env.example` a `.env` y completar `DB_USER`, `DB_PASSWORD` y `DB_NAME` con **los datos
+   de su propio MySQL**. Las credenciales de la base las pone quien corre el proyecto: el grupo no
+   entrega ni comparte ninguna.
+4. Desde la raíz, `npm run schema:create` (solo sobre la base vacía).
+5. Terminal 1, raíz: `npm run dev`. Terminal 2, `frontend/`: `npm run dev`.
+6. Abrir `http://localhost:5173`.
+
+### Credenciales de demostración
+
+Son cuentas de la aplicación (no de MySQL) y se crean en la base propia del corrector; no existen en
+ningún otro lado. Con el backend corriendo, `npm run demo:datos` las crea junto con el catálogo:
+
+| Cuenta | Rol | Contraseña |
+| --- | --- | --- |
+| `dm_demo` | Anfitrión | `PruebaSegura123` |
+| `jugador_demo` | Jugador | `PruebaSegura123` |
+
+Alternativamente se pueden registrar cuentas propias desde `/register`. Hacen falta **dos
+navegadores o una ventana de incógnito** para usar los dos roles a la vez, porque la sesión es una
+cookie por navegador. El recorrido completo está en [demo.md](demo.md). Reiniciar el backend cierra
+todas las sesiones y obliga a volver a iniciar sesión.
+
+## Si más adelante se publica
+
+Esta sección documenta qué haría falta para publicarlo y qué configuración necesita, **sin incluir
+ningún valor real**: las credenciales se cargan en el `.env` de cada máquina, que no se versiona.
 
 ## Variables
 

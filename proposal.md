@@ -8,6 +8,9 @@
 54307 - Testi, Franco  <br> 
 54342 - Ciesco, Alejandro Mario <br>
 
+### Contacto para coordinar la defensa
+Emanuel Salomón (54241): salomonemanuelutn@gmail.com
+
 ### Repositorios
 Backend y frontend viven en el mismo repositorio:
 
