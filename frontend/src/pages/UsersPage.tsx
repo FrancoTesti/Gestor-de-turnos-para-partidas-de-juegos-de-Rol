@@ -31,7 +31,7 @@ export default function UsersPage() {
   return <section className="users-page">
     <h1>Gestión de Usuarios</h1>
     {error && <p role="alert">{error}</p>}
-    {usuarioLogueado && rolDe(usuarioLogueado.idUsuario) === 'anfitrion' && !editing && <button className="btn-primary" onClick={() => { setSelected(undefined); setEditing(true); }}>Nuevo usuario</button>}
+    {usuarioLogueado && rolDe(usuarioLogueado.idUsuario) === 'anfitrion' && !editing && <button onClick={() => { setSelected(undefined); setEditing(true); }}>Nuevo usuario</button>}
     {editing ? <UsuarioFormulario usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} /> : <>
       <UsuarioLista usuarios={usuarios} onSeleccionar={setSelected} cargando={busy} usuarioSeleccionadoId={selected?.idUsuario} />
       <UsuarioDetalle usuario={selected} onCerrar={() => setSelected(undefined)} onEditar={own ? () => setEditing(true) : undefined} onEliminar={own ? remove : undefined} />

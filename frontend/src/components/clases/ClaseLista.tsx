@@ -36,7 +36,7 @@ export default function ClaseLista({
   if (cargando) {
     return (
       <section className="clase-container">
-        <div className="clase-header" style={{ borderBottom: "none", paddingBottom: "0", marginBottom: "1.5rem" }}>
+        <div className="clase-header">
           <h2>Clases de Personaje</h2>
         </div>
         <div style={{ textAlign: 'center', padding: '2rem' }}>
@@ -49,7 +49,7 @@ export default function ClaseLista({
   return (
     <section className="clase-container">
       <header className="clase-header">
-        <h3 style={{ color: "var(--text)", fontSize: "1rem", margin: 0 }}>Mostrando {clases.length} clase{clases.length !== 1 ? "s" : ""}</h3>
+        <h2>Clases de Personaje ({clases.length})</h2>
         {onNuevo && (
           <button type="button" className="btn-primary" onClick={onNuevo}>
             + Nueva Clase
@@ -58,7 +58,7 @@ export default function ClaseLista({
       </header>
 
       {clases.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem', background: 'var(--social-bg)', borderRadius: '8px' }}>
+        <div style={{ textAlign: 'center', padding: '2rem', background: '#f7fafc', borderRadius: '8px' }}>
           <p>No hay clases registradas aún en el sistema.</p>
         </div>
       ) : (

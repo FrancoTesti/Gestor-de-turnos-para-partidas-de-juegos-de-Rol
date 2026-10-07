@@ -20,7 +20,7 @@ export default function RegisterPage() {
   const [contrasena, setContrasena] = useState('');
   const [repetida, setRepetida] = useState('');
   const [tipo, setTipo] = useState<'jugador' | 'anfitrion'>('jugador');
-  const { registrarUsuario, mensaje, limpiarMensaje } = useUser();
+  const { registrarUsuario, mensaje } = useUser();
   const navigate = useNavigate();
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -41,7 +41,7 @@ export default function RegisterPage() {
       <h2>Registrarse</h2>
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-      {mensaje && <Alert type="success" message={mensaje} onClose={limpiarMensaje} />}
+      {mensaje && <p className="auth-mensaje">{mensaje}</p>}
 
       <form className="auth-form" onSubmit={handleRegister} noValidate>
         <div className="auth-campo">

@@ -107,12 +107,12 @@ export default function ClasesPage() {
 
   return (
     <section style={{ padding: '1.5rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text)', textTransform: 'uppercase', margin: '0 0 1.5rem 0', fontWeight: 'bold', letterSpacing: '0.05em' }}>
+          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
             Catálogo del sistema
           </p>
-          <h1 style={{ margin: '0 0 2.5rem 0', fontSize: '2.5rem' }}>Clases de Personaje</h1>
+          <h1 style={{ margin: 0 }}>Clases de Personaje</h1>
         </div>
         {vista === 'listado' && esAnfitrion && (
           <button
@@ -134,7 +134,7 @@ export default function ClasesPage() {
         <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>⚠️ {error}</span>
           {vista === 'listado' && (
-            <button type="button" className="btn-secondary" onClick={recargar} style={{ marginLeft: '1rem' }}>
+            <button type="button" onClick={recargar} style={{ marginLeft: '1rem' }}>
               Reintentar
             </button>
           )}
@@ -152,27 +152,27 @@ export default function ClasesPage() {
         </div>
       ) : (
         <>
-          <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}>
-            <label htmlFor="buscarClase" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0 }}>
-          Buscar:
-          <input
+          <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+            <label htmlFor="buscarClase">
+              🔍 Buscar:{' '}
+              <input
                 id="buscarClase"
                 type="search"
                 placeholder="Nombre o descripción"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}
+                style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
               />
             </label>
             {busqueda && (
-              <button type="button" className="btn-secondary" onClick={() => setBusqueda('')}>
+              <button type="button" onClick={() => setBusqueda('')}>
                 Quitar filtro
               </button>
             )}
           </div>
 
           {!cargando && !error && clasesFiltradas.length === 0 && (
-            <p style={{ color: 'var(--text)', fontStyle: 'italic' }}>
+            <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
               {busqueda ? 'No hay clases que coincidan con la búsqueda.' : 'No hay clases registradas en el sistema.'}
             </p>
           )}
@@ -187,11 +187,10 @@ export default function ClasesPage() {
           />
 
           {seleccionada && (
-            <aside style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--social-bg)', borderRadius: '8px', maxWidth: '480px' }}>
+            <aside style={{ marginTop: '1.5rem', padding: '1rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '480px' }}>
               <ClaseDetalle clase={seleccionada} />
               <button
                 type="button"
-                className="btn-secondary"
                 style={{ marginTop: '0.75rem' }}
                 onClick={() => setSeleccionada(null)}
               >
