@@ -27,8 +27,9 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  @media (max-width: 1024px) {
-    font-size: 16px;
+  font-size: 16px;
+  @media (min-width: 1024px) {
+    font-size: 18px;
   }
 }
 
@@ -69,21 +70,21 @@ h2 {
 }
 
 h1 {
-  font-size: 56px;
+  font-size: 36px;
   letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
+  margin: 20px 0;
+  @media (min-width: 1024px) {
+    font-size: 56px;
+    margin: 32px 0;
   }
 }
 h2 {
-  font-size: 24px;
+  font-size: 20px;
   line-height: 118%;
   letter-spacing: -0.24px;
   margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
+  @media (min-width: 1024px) {
+    font-size: 24px;
   }
 }
 p {
@@ -131,10 +132,19 @@ table {
 
 .app-table th,
 .app-table td {
-  padding: 0.6rem 0.75rem;
+  padding: 0.5rem;
+  font-size: 0.85rem;
   text-align: left;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .app-table th,
+  .app-table td {
+    padding: 0.6rem 0.75rem;
+    font-size: 0.95rem;
+  }
 }
 
 /* En pantalla chica la tabla se desplaza en horizontal: la primera columna queda fija
@@ -162,12 +172,4 @@ table {
   margin-top: 0.25rem;
   padding: 0.5rem;
   box-sizing: border-box;
-}
-
-@media (max-width: 600px) {
-  .app-table th,
-  .app-table td {
-    padding: 0.5rem;
-    font-size: 0.85rem;
-  }
 }

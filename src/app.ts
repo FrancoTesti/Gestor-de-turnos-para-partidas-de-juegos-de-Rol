@@ -14,7 +14,7 @@ import { crearAnfitrionRouter } from './routes/anfitrion.routes';
 import { crearPartidaRouter } from './routes/partida.routes';
 import { crearPersonajeRouter } from './routes/personaje.routes';
 import { createAuth } from './security/auth';
-import { authorizeCrud, HttpError } from './security/authorization';
+import { HttpError } from './security/authorization';
 import { crearJuegoRouter } from './routes/juego.routes';
 
 import { existsSync } from 'node:fs';
@@ -79,15 +79,15 @@ export function createApp(orm: MikroORM) {
   // Rutas de la API
   const auth = createAuth(orm.em);
   app.use('/api/auth', auth.router);
-  app.use('/api', auth.requireAuth, authorizeCrud(orm.em), crearJuegoRouter(orm.em));
-  app.use('/api/usuarios', crearUsuarioRouter(orm.em));
-  app.use('/api/clases', crearClaseRouter(orm.em));
-  app.use('/api/objetos', crearObjetoRouter(orm.em));
-  app.use('/api/tiendas', crearTiendaRouter(orm.em));
-  app.use('/api/jugadores', crearJugadorRouter(orm.em));
-  app.use('/api/anfitriones', crearAnfitrionRouter(orm.em));
-  app.use('/api/partidas', crearPartidaRouter(orm.em));
-  app.use('/api/personajes', crearPersonajeRouter(orm.em));
+  app.use('/api', auth.requireAuth, crearJuegoRouter(orm.em));
+  app.use('/api/usuarios', auth.requireAuth, crearUsuarioRouter(orm.em));
+  app.use('/api/clases', auth.requireAuth, crearClaseRouter(orm.em));
+  app.use('/api/objetos', auth.requireAuth, crearObjetoRouter(orm.em));
+  app.use('/api/tiendas', auth.requireAuth, crearTiendaRouter(orm.em));
+  app.use('/api/jugadores', auth.requireAuth, crearJugadorRouter(orm.em));
+  app.use('/api/anfitriones', auth.requireAuth, crearAnfitrionRouter(orm.em));
+  app.use('/api/partidas', auth.requireAuth, crearPartidaRouter(orm.em));
+  app.use('/api/personajes', auth.requireAuth, crearPersonajeRouter(orm.em));
 
   // Frontend compilado (frontend/dist): se sirve desde el mismo origen que la API, porque la cookie
   // de sesión es SameSite=Strict. En desarrollo no existe esa carpeta y Vite atiende el frontend.
