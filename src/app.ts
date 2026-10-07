@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import express, { type ErrorRequestHandler } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/mysql';
+import { MikroORM, RequestContext } from '@mikro-orm/postgresql';
 import config from './mikro-orm.config';
 import { crearUsuarioRouter } from './routes/usuario.routes';
 import { crearClaseRouter } from './routes/clase.routes';
@@ -17,11 +17,18 @@ import { createAuth } from './security/auth';
 import { authorizeCrud, HttpError } from './security/authorization';
 import { crearJuegoRouter } from './routes/juego.routes';
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { ZodError } from 'zod';
 import { ForeignKeyConstraintViolationException, UniqueConstraintViolationException } from '@mikro-orm/core';
 
 export function createApp(orm: MikroORM) {
   const app = express();
+
+  // Detrás del proxy del proveedor (Render, Railway...) la IP real llega en X-Forwarded-For. Sin esto
+  // todos los usuarios compartirían la misma IP y el mismo límite de intentos de login.
+  // Solo en producción: sin proxy delante, confiar en ese encabezado permitiría falsificar la IP.
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
   // Middleware CORS para permitir peticiones desde el frontend
   const allowedOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
@@ -77,6 +84,24 @@ export function createApp(orm: MikroORM) {
   app.use('/api/anfitriones', crearAnfitrionRouter(orm.em));
   app.use('/api/partidas', crearPartidaRouter(orm.em));
   app.use('/api/personajes', crearPersonajeRouter(orm.em));
+
+  // Frontend compilado (frontend/dist): se sirve desde el mismo origen que la API, porque la cookie
+  // de sesión es SameSite=Strict. En desarrollo no existe esa carpeta y Vite atiende el frontend.
+  const frontendDist = path.resolve(__dirname, '../frontend/dist');
+  if (existsSync(path.join(frontendDist, 'index.html'))) {
+    app.use(express.static(frontendDist, {
+      index: false,
+      setHeaders: (res, archivo) => {
+        // Los archivos de Vite llevan hash en el nombre; el HTML debe revalidarse siempre.
+        res.setHeader('Cache-Control', archivo.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
+      },
+    }));
+    // Fallback para las rutas de React (/dashboard, /profiles...) al recargar la página.
+    app.get(/^\/(?!api(\/|$)).*/, (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+  }
 
   // 404
   app.use((req, res) => {

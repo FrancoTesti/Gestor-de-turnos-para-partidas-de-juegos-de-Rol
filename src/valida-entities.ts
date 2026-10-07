@@ -1,7 +1,7 @@
 // Muestra el SQL que MikroORM generaria para crear TODAS las tablas,
 // sin conectarse ni tocar la base. Uso: npm run schema:dump
 import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/postgresql';
 import config from './mikro-orm.config';
 
 async function main() {
