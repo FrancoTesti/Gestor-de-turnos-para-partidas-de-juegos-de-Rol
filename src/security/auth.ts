@@ -22,11 +22,14 @@ export function createAuth(em: EntityManager) {
   const attempts = new Map<string, { count: number; expires: number }>();
   const cookie = { httpOnly: true, sameSite: 'strict' as const, secure: process.env.NODE_ENV === 'production', path: '/api' };
   const tokenFrom = (req: Request) => req.headers.cookie?.split(';').map(s => s.trim()).find(s => s.startsWith(`${cookieName}=`))?.slice(cookieName.length + 1);
-  const identity = async (u: Usuario): Promise<Identity> => ({
-    idUsuario: u.idUsuario,
-    anfitrion: !!await em.findOne(Anfitrion, { usuario: { idUsuario: u.idUsuario } }),
-    jugador: !!await em.findOne(Jugador, { usuario: { idUsuario: u.idUsuario } }),
-  });
+  // Las dos consultas son independientes: en paralelo cuestan un viaje a la base en vez de dos.
+  const identity = async (idUsuario: number): Promise<Identity> => {
+    const [anfitrion, jugador] = await Promise.all([
+      em.findOne(Anfitrion, { usuario: { idUsuario } }),
+      em.findOne(Jugador, { usuario: { idUsuario } }),
+    ]);
+    return { idUsuario, anfitrion: !!anfitrion, jugador: !!jugador };
+  };
   const requireAuth: RequestHandler = async (req, res, next) => {
     const token = tokenFrom(req);
     const key = token ? digest(token) : '';
@@ -35,11 +38,12 @@ export function createAuth(em: EntityManager) {
       sessions.delete(key);
       res.status(401).json({ message: 'Iniciá sesión para continuar' }); return;
     }
-    const user = await em.findOne(Usuario, { idUsuario: session.id });
+    // Usuario y roles se piden a la vez (un solo viaje a la base por request).
+    const [user, roles] = await Promise.all([em.findOne(Usuario, { idUsuario: session.id }), identity(session.id)]);
     if (!user || user.contrasena !== session.password) {
       sessions.delete(key); res.status(401).json({ message: 'La sesión expiró' }); return;
     }
-    req.identity = await identity(user);
+    req.identity = roles;
     next();
   };
   const router = Router();
@@ -83,7 +87,7 @@ export function createAuth(em: EntityManager) {
     if (sessions.size >= 5000) { res.status(503).json({ message: 'Servidor ocupado. Intentá más tarde.' }); return; }
     const token = randomBytes(32).toString('hex');
     sessions.set(digest(token), { id: u.idUsuario, password: u.contrasena, expires: Date.now() + sessionDuration });
-    res.cookie(cookieName, token, { ...cookie, maxAge: sessionDuration }).json({ usuario: publicUser(u), roles: await identity(u) });
+    res.cookie(cookieName, token, { ...cookie, maxAge: sessionDuration }).json({ usuario: publicUser(u), roles: await identity(u.idUsuario) });
   });
   router.get('/me', requireAuth, async (req, res) => {
     const u = await em.findOneOrFail(Usuario, { idUsuario: req.identity!.idUsuario });
