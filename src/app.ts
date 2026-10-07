@@ -50,7 +50,11 @@ export function createApp(orm: MikroORM) {
   // Parsea el body JSON de los POST/PUT
   app.use(express.json({ limit: '64kb' }));
   app.use((req, res, next) => {
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== allowedOrigin) {
+    // Defensa CSRF: un POST/PUT/DELETE solo se acepta desde el frontend autorizado (CORS_ORIGIN) o desde
+    // el propio servidor, que es el caso de la app publicada con el frontend servido por la API.
+    // Un sitio ajeno manda su propio Origin, que no coincide con ninguno de los dos.
+    const origenPropio = `${req.protocol}://${req.get('host')}`;
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== allowedOrigin && req.headers.origin !== origenPropio) {
       res.status(403).json({ message: 'Origen no permitido' }); return;
     }
     next();
