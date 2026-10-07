@@ -156,10 +156,10 @@ export default function TiendasPage() {
     <section style={{ padding: '1.5rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text)', textTransform: 'uppercase', margin: '0 0 1.5rem 0', fontWeight: 'bold', letterSpacing: '0.05em' }}>
             Comercio del sistema
           </p>
-          <h1 style={{ margin: 0 }}>Tiendas</h1>
+          <h1 style={{ margin: '0 0 2.5rem 0', fontSize: '2.5rem' }}>Tiendas</h1>
         </div>
         {!mostrarFormulario && esAnfitrion && (
           <button type="button" className="btn-primary" onClick={abrirFormularioCrear}>
@@ -176,12 +176,12 @@ export default function TiendasPage() {
       {error && (
         <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>⚠️ {error}</span>
-          <button type="button" onClick={cargar}>Reintentar</button>
+          <button type="button" className="btn-secondary" onClick={cargar}>Reintentar</button>
         </div>
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: '#f7fafc', padding: '1.5rem', borderRadius: '8px', maxWidth: '560px', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--social-bg)', padding: '1.5rem', borderRadius: '8px', maxWidth: '560px', marginBottom: '1.5rem' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Tienda' : 'Nueva Tienda'}</h2>
           {errorForm && (
             <p role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
@@ -247,23 +247,23 @@ export default function TiendasPage() {
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label>
-          🔍 Buscar:{' '}
+      <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1rem', alignItems: 'center', background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+          Buscar:
           <input
             type="search"
             placeholder="Nombre o tipo"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+            style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}
           />
         </label>
-        <label>
-          Tipo:{' '}
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+          Tipo:
           <select
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+            style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}
           >
             <option value="">Todos los tipos</option>
             {tiposTienda.map((t) => (
@@ -272,7 +272,7 @@ export default function TiendasPage() {
           </select>
         </label>
         {(busqueda || filtroTipo) && (
-          <button type="button" onClick={() => { setBusqueda(''); setFiltroTipo(''); }}>
+          <button type="button" className="btn-secondary" onClick={() => { setBusqueda(''); setFiltroTipo(''); }}>
             Quitar filtros
           </button>
         )}
@@ -281,7 +281,7 @@ export default function TiendasPage() {
       {cargando && <p role="status">⏳ Cargando tiendas…</p>}
 
       {!cargando && !error && tiendasFiltradas.length === 0 && (
-        <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
+        <p style={{ color: 'var(--text)', fontStyle: 'italic' }}>
           {busqueda || filtroTipo
             ? 'No hay tiendas que coincidan con los filtros.'
             : 'No hay tiendas registradas en el sistema.'}
@@ -312,14 +312,14 @@ export default function TiendasPage() {
                   }}
                   onClick={() => setSeleccionada(t)}
                 >
-                  <td style={{ padding: '0.6rem 1rem', color: '#4a5568' }}>#{t.idTienda}</td>
+                  <td style={{ padding: '0.6rem 1rem', color: 'var(--text)' }}>#{t.idTienda}</td>
                   <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>🏪 {t.nombre}</td>
                   <td style={{ padding: '0.6rem 1rem' }}>
                     <span style={{ background: '#bee3f8', color: '#2c5282', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.85rem' }}>
                       {t.claseTienda}
                     </span>
                   </td>
-                  <td style={{ padding: '0.6rem 1rem', color: '#4a5568' }}>{nombreClase(t.idClase)}</td>
+                  <td style={{ padding: '0.6rem 1rem', color: 'var(--text)' }}>{nombreClase(t.idClase)}</td>
                   <td style={{ padding: '0.6rem 1rem' }}>
                     <button
                       type="button"
@@ -357,20 +357,20 @@ export default function TiendasPage() {
 
       {/* Panel de detalle */}
       {seleccionada && (
-        <aside style={{ marginTop: '1.5rem', padding: '1.25rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '480px', border: '1px solid #e2e8f0' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.25rem', background: 'var(--social-bg)', borderRadius: '8px', maxWidth: '480px', border: '1px solid var(--border)' }}>
           <h3 style={{ marginTop: 0 }}>Detalle de tienda #{seleccionada.idTienda}</h3>
           <dl style={{ display: 'grid', gap: '0.5rem' }}>
-            <div><dt style={{ fontWeight: 600, color: '#4a5568' }}>Nombre</dt><dd style={{ margin: 0 }}>{seleccionada.nombre}</dd></div>
-            <div><dt style={{ fontWeight: 600, color: '#4a5568' }}>Tipo de tienda</dt><dd style={{ margin: 0 }}>{seleccionada.claseTienda}</dd></div>
+            <div><dt style={{ fontWeight: 600, color: 'var(--text)' }}>Nombre</dt><dd style={{ margin: 0 }}>{seleccionada.nombre}</dd></div>
+            <div><dt style={{ fontWeight: 600, color: 'var(--text)' }}>Tipo de tienda</dt><dd style={{ margin: 0 }}>{seleccionada.claseTienda}</dd></div>
             <div>
-              <dt style={{ fontWeight: 600, color: '#4a5568' }}>Clase vinculada</dt>
+              <dt style={{ fontWeight: 600, color: 'var(--text)' }}>Clase vinculada</dt>
               <dd style={{ margin: 0 }}>{nombreClase(seleccionada.idClase)}</dd>
             </div>
           </dl>
-          <p style={{ fontSize: '0.85rem', color: '#4a5568', marginTop: '0.75rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text)', marginTop: '0.75rem' }}>
             Los objetos de esta tienda aparecerán como sugeridos para personajes de la clase vinculada.
           </p>
-          <button type="button" style={{ marginTop: '0.5rem' }} onClick={() => setSeleccionada(null)}>
+          <button type="button" className="btn-secondary" style={{ marginTop: '0.5rem' }} onClick={() => setSeleccionada(null)}>
             Cerrar detalle
           </button>
         </aside>

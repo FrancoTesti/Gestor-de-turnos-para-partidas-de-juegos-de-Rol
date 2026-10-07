@@ -177,10 +177,10 @@ export default function PersonajesPage() {
     <section style={{ padding: '1.5rem' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text)', textTransform: 'uppercase', margin: '0 0 1.5rem 0', fontWeight: 'bold', letterSpacing: '0.05em' }}>
             Juego de Rol
           </p>
-          <h1 style={{ margin: 0 }}>Personajes</h1>
+          <h1 style={{ margin: '0 0 2.5rem 0', fontSize: '2.5rem' }}>Personajes</h1>
         </div>
         {!mostrarFormulario && esJugador && (
           <button type="button" className="btn-purple" onClick={abrirFormularioCrear}>
@@ -197,12 +197,12 @@ export default function PersonajesPage() {
       {error && (
         <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span>⚠️ {error}</span>
-          <button type="button" onClick={cargar}>Reintentar</button>
+          <button type="button" className="btn-secondary" onClick={cargar}>Reintentar</button>
         </div>
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: '#f7fafc', padding: '1.5rem', borderRadius: '8px', maxWidth: '640px', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--social-bg)', padding: '1.5rem', borderRadius: '8px', maxWidth: '640px', marginBottom: '1.5rem' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje'}</h2>
           {errorForm && (
             <p role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
@@ -339,7 +339,7 @@ export default function PersonajesPage() {
       />
 
       {seleccionado && (
-        <aside style={{ marginTop: '1.5rem', padding: '1rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '520px' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1rem', background: 'var(--social-bg)', borderRadius: '8px', maxWidth: '520px' }}>
           <PersonajeDetalle personaje={seleccionado} clases={clases} onVolver={() => setSeleccionado(null)} />
         </aside>
       )}

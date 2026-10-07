@@ -76,7 +76,7 @@ export default function ProfilesPage() {
             <p className="perfil-nota">
               Si cambiás la contraseña se cierra la sesión y hay que volver a iniciarla.
             </p>
-            <button type="button" disabled={busy} onClick={() => { setError(''); setAviso(''); setEditando(true); }}>
+            <button type="button" className="btn-secondary" disabled={busy} onClick={() => { setError(''); setAviso(''); setEditando(true); }}>
               Editar mis datos
             </button>
           </>
@@ -94,6 +94,7 @@ export default function ProfilesPage() {
             <div className="perfil-acciones">
               <button
                 type="button"
+                className="btn-secondary"
                 disabled={busy}
                 onClick={() => void ejecutar(
                   () => actualizarJugador(id, { estado: !jugador.estado }),
@@ -104,6 +105,7 @@ export default function ProfilesPage() {
               </button>
               <button
                 type="button"
+                className="btn-danger"
                 disabled={busy}
                 onClick={() => {
                   if (confirmarBaja('¿Eliminar el perfil de jugador? No se puede si tenés personajes creados.')) {
@@ -120,6 +122,7 @@ export default function ProfilesPage() {
             <p>Todavía no tenés perfil de jugador.</p>
             <button
               type="button"
+              className="btn-primary"
               disabled={busy}
               onClick={() => void ejecutar(() => crearJugador({ idUsuario: id, estado: true }), 'Perfil de jugador creado.')}
             >
@@ -140,6 +143,7 @@ export default function ProfilesPage() {
             </p>
             <button
               type="button"
+              className="btn-danger"
               disabled={busy}
               onClick={() => {
                 if (confirmarBaja('¿Eliminar el perfil de anfitrión? No se puede si tenés partidas creadas.')) {
@@ -155,6 +159,7 @@ export default function ProfilesPage() {
             <p>Todavía no tenés perfil de anfitrión.</p>
             <button
               type="button"
+              className="btn-primary"
               disabled={busy}
               onClick={() => void ejecutar(() => crearAnfitrion({ idUsuario: id }), 'Perfil de anfitrión creado.')}
             >

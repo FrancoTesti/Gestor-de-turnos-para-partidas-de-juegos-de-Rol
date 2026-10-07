@@ -216,8 +216,8 @@ export default function MisionesPage() {
                 <label>XP Total: <input type="number" min="0" required value={nuevaMision.xpTotal} onChange={e => setNuevaMision({ ...nuevaMision, xpTotal: Number(e.target.value) })} /></label>
               </div>
               <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn">{editando ? 'Guardar Cambios' : 'Crear Misión'}</button>
-                {editando && <button type="button" className="btn" onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); }}>Cancelar</button>}
+                <button type="submit" className="btn-primary">{editando ? 'Guardar Cambios' : 'Crear Misión'}</button>
+                {editando && <button type="button" className="btn-primary" onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); }}>Cancelar</button>}
               </div>
             </form>
           )}
@@ -245,7 +245,7 @@ export default function MisionesPage() {
               {!esCorrecto && <p style={{ color: 'red', margin: 0 }}>⚠️ El reparto debe coincidir **exactamente** con los totales de la misión.</p>}
             </div>
 
-            <button className="btn" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%', opacity: esCorrecto ? 1 : 0.5 }}>
+            <button className="btn-primary" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%', opacity: esCorrecto ? 1 : 0.5 }}>
               Confirmar y Completar Misión
             </button>
           </div>
