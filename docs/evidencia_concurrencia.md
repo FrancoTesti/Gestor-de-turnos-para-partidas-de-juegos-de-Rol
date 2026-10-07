@@ -9,8 +9,22 @@
 > [!NOTE]
 > **Confirmación de integridad:** Se re-ejecutó la suite completa de integración (`npm run test:integration`) sobre `main` en la última fecha sin regresiones detectadas en las transacciones de compra/venta pesimistas.
 
+> [!IMPORTANT]
+> **Re-verificación en PostgreSQL (7 de octubre de 2026, rama `ImplementacionSupabase`).** La base pasó de
+> MySQL a PostgreSQL en Supabase y la suite de integración se volvió a ejecutar completa: **22 de 22
+> pruebas aprobadas**, incluidas las tres de concurrencia de abajo. La verificación de septiembre (MySQL) y
+> el run de Actions citado arriba corresponden a la base anterior.
+>
+> La migración mostró una diferencia real: PostgreSQL rechaza `SELECT ... FOR UPDATE` sobre el lado opcional
+> de un `LEFT JOIN` («FOR UPDATE cannot be applied to the nullable side of an outer join»), y MySQL no.
+> Las consultas con bloqueo que cargaban `Objeto.tienda` y `Objeto.inventario` en el mismo `SELECT` fallaban
+> con 500 en las operaciones de compra, venta y movimiento de objetos. Se resolvió cargando esas relaciones en consultas aparte
+> (`strategy: 'select-in'`); el bloqueo sigue sobre la fila del objeto, que es la que serializa las
+> operaciones concurrentes, y el personaje se bloquea de forma explícita a continuación. Ver
+> `src/services/objeto.service.ts` y `src/services/juego.service.ts`.
+
 ## Descripción de la Prueba
-Esta prueba de integración valida la concurrencia de compra y venta de un objeto único (`esUnico: true`) conectándose a una instancia real de **MySQL** mediante la suite [src/integration/juego.test.ts](../src/integration/juego.test.ts).
+Esta prueba de integración valida la concurrencia de compra y venta de un objeto único (`esUnico: true`) conectándose a una instancia real de **PostgreSQL** (hasta septiembre, MySQL) mediante la suite [src/integration/juego.test.ts](../src/integration/juego.test.ts).
 
 ### Casos de Concurrencia Verificados
 
@@ -29,10 +43,7 @@ Esta prueba de integración valida la concurrencia de compra y venta de un objet
 
 Command:
 ```powershell
-$env:TEST_DB_HOST = '127.0.0.1'
-$env:TEST_DB_PORT = '3306'
-$env:TEST_DB_USER = 'root'
-$env:TEST_DB_PASSWORD = '***'
+$env:TEST_DB_URL = 'postgresql://postgres.<codigo>:***@aws-0-<region>.pooler.supabase.com:5432/postgres'
 npm run test:integration
 ```
 

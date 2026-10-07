@@ -77,7 +77,7 @@ seguir el guion tal cual.
   inventario ocurren en la misma transacción.
 - **Sesión y misión (13–20):** los dos casos de uso principales, con validación de participantes,
   sumas de recompensas y voto único.
-- **Comercio (21):** bloqueo pesimista en MySQL para que dos compras simultáneas no dupliquen el objeto.
+- **Comercio (21):** bloqueo pesimista en PostgreSQL para que dos compras simultáneas no dupliquen el objeto.
 - **Seguridad (22–24):** qué pasa cuando alguien intenta operar fuera de su cuenta.
 
 ## Grabar el video

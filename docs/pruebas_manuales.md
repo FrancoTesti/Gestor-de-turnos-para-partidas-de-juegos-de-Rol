@@ -2,7 +2,7 @@
 
 ## Automatizada
 
-Ejecutar los comandos de [instalación](instalacion.md). Las pruebas MySQL son independientes de las unitarias.
+Ejecutar los comandos de [instalación](instalacion.md). Las pruebas de integración con PostgreSQL son independientes de las unitarias.
 
 Cobertura de integración:
 
@@ -14,7 +14,7 @@ Cobertura de integración:
 - Partida pública/privada, contraseña, límite y propietario.
 - Creación de personaje e inventario; rechazo de saldo elegido por cliente.
 - Compra con enteros estrictos, posición válida y propiedad.
-- Error inyectado después de escribir en MySQL: dinero y ubicación se recuperan mediante rollback real.
+- Error inyectado después de escribir en la base: dinero y ubicación se recuperan mediante rollback real.
 - Dos compras simultáneas del mismo objeto y dos compras a la misma posición: una sola tiene éxito.
 - Venta dentro y fuera del rango 70–100 %, propiedad y doble venta.
 - Inventarios: listar los propios, mover, reducir capacidad y borrar solo vacíos.
@@ -234,4 +234,4 @@ registro tiene datos relacionados. Resolvé esas relaciones antes de eliminarlo.
 
 ## Alcance de la verificación local
 
-Se ejecutan los builds de ambos proyectos, las suites automatizadas y pruebas en MySQL 8 con instancia y bases temporales. El navegador se usa para comprobar login, recarga y navegación/guardado de formularios. La base real del grupo no se migra ni modifica durante esta verificación.
+Se ejecutan los builds de ambos proyectos, las suites automatizadas y pruebas en PostgreSQL con esquemas temporales (`rpg_test_*`, `rpg_e2e_*`), que se eliminan al terminar. El navegador se usa para comprobar login, recarga y navegación/guardado de formularios. Las suites nunca modifican el esquema `public` de la base real del grupo.

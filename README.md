@@ -1,6 +1,6 @@
 # Gestor de turnos para partidas de juegos de rol
 
-Trabajo práctico de Desarrollo de Software: Node.js, Express, TypeScript, MikroORM, MySQL y React.
+Trabajo práctico de Desarrollo de Software: Node.js, Express, TypeScript, MikroORM, PostgreSQL (Supabase) y React.
 
 Integrantes: Franco Testi, Octavio Gudiño, Renzo Scollo, Alejandro Ciesco y Emanuel Salomón.
 
@@ -11,11 +11,11 @@ Integrantes: Franco Testi, Octavio Gudiño, Renzo Scollo, Alejandro Ciesco y Ema
 El backend está en la raíz; el frontend, en `frontend/`. Son dos proyectos npm distintos: hay que
 instalar dependencias en los dos.
 
-1. Seguir [Instalación y actualización](docs/instalacion.md), incluida la configuración de MySQL y el `.env`.
+1. Seguir [Instalación y actualización](docs/instalacion.md), incluida la base de datos en Supabase y el `.env`.
 2. Iniciar el backend con `npm run dev` y, en otra terminal dentro de `frontend`, ejecutar `npm run dev`.
 3. Abrir `http://localhost:5173`, registrar una cuenta y entrar.
 
-Las cuentas se guardan en MySQL. Si ya tenían usuarios con contraseñas sin hash, deben ejecutar la
+Las cuentas se guardan en PostgreSQL (Supabase). Si ya tenían usuarios con contraseñas sin hash, deben ejecutar la
 migración explicada en la guía antes de iniciar sesión.
 
 ## Comandos
@@ -28,8 +28,8 @@ migración explicada en la guía antes de iniciar sesión.
 | `npm run dev` | Levanta la API con recarga automática (nodemon + ts-node) en `http://localhost:3000` |
 | `npm run build` | Compila TypeScript a `dist/` |
 | `npm start` | Ejecuta la API ya compilada (`dist/app.js`) |
-| `npm test` | Pruebas unitarias con Vitest (`src/tests`). **No necesitan MySQL** |
-| `npm run test:integration` | Pruebas contra MySQL real; crean y borran una base descartable |
+| `npm test` | Pruebas unitarias con Vitest (`src/tests`). **No necesitan base de datos** |
+| `npm run test:integration` | Pruebas contra PostgreSQL real; crean y borran un esquema temporal (`rpg_test_*`) |
 | `npm run test:e2e` | Recorridos de navegador con Playwright (levanta API y Vite propios) |
 | `npm run schema:create` | Crea las tablas en la base configurada a partir de las entidades |
 | `npm run schema:dump` | Muestra el SQL que generarían las entidades, sin conectarse |
@@ -61,8 +61,8 @@ npm run lint
 npm test
 ```
 
-Las pruebas de MySQL y los E2E se ejecutan aparte y solo contra una base temporal con nombre
-aleatorio, nunca contra `DB_NAME`. Su configuración está en la [guía de instalación](docs/instalacion.md).
+Las pruebas de integración y los E2E se ejecutan aparte y solo contra un esquema temporal con nombre
+aleatorio dentro de `TEST_DB_URL`, nunca contra el esquema `public` de la aplicación. Su configuración está en la [guía de instalación](docs/instalacion.md).
 
 ## Funciones
 

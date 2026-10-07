@@ -10,7 +10,7 @@ Cada módulo CRUD debe estructurarse en las siguientes capas desacopladas:
 
 ```
 src/
-├── entities/            # Entidades ORM (MikroORM) que representan las tablas de MySQL.
+├── entities/            # Entidades ORM (MikroORM) que representan las tablas de PostgreSQL.
 │   └── Usuario.entity.ts
 ├── types/               # DTOs e Interfaces TypeScript para transporte de datos.
 │   └── usuario.dto.ts
@@ -35,7 +35,7 @@ src/
 ## 2. Responsabilidades por Capa
 
 ### 2.1 Entidad (`src/entities/Entidad.entity.ts`)
-- Mapea la tabla correspondiente en MySQL utilizando `@Entity()` y decoradores de `@mikro-orm/core`.
+- Mapea la tabla correspondiente en PostgreSQL utilizando `@Entity()` y decoradores de `@mikro-orm/core`.
 - Debe ubicarse en `src/entities/`. No deben existir archivos de entidad duplicados en la raíz de `src/`.
 
 ### 2.2 DTOs (`src/types/entidad.dto.ts`)
@@ -56,7 +56,7 @@ src/
 ### 2.5 Servicio (`src/services/entidad.service.ts`)
 - Contiene la lógica de negocio pura y aplica las reglas del dominio.
 - Lanza excepciones personalizadas de negocio (ej. `NicknameEnUsoError`).
-- **Manejo de Restricciones MySQL**: Captura `UniqueConstraintViolationException` de `@mikro-orm/core` durante el `flush()` / `guardarCambios()` para convertir errores de base de datos en errores de negocio legibles (ej: HTTP 409 Conflict).
+- **Manejo de Restricciones de la base**: Captura `UniqueConstraintViolationException` de `@mikro-orm/core` durante el `flush()` / `guardarCambios()` para convertir errores de base de datos en errores de negocio legibles (ej: HTTP 409 Conflict).
 
 ### 2.6 Controlador (`src/controllers/entidad.controller.ts`)
 - Recibe las peticiones HTTP y delega la ejecución al Servicio.

@@ -3,13 +3,19 @@
 Última actualización: 15 de septiembre de 2026, sobre `a3ac59e` (todos los PR del grupo fusionados en `main`).
 Rama de trabajo actual para cuentas, perfiles y documentación: `ramaEmaIteracion2y3`.
 
+> **Migración a PostgreSQL (7 de octubre de 2026).** Las secciones fechadas en septiembre registran
+> corridas hechas contra MySQL, que ocurrieron así y no se reescriben. Desde la rama
+> `ImplementacionSupabase` la base es PostgreSQL en Supabase: la evidencia vigente está en la sección
+> [Migración a PostgreSQL (Supabase)](#migración-a-postgresql-supabase), y las instrucciones de
+> instalación y pruebas de [instalacion.md](instalacion.md) ya reflejan el cambio.
+
 Este archivo registra el cierre de la entrega. Una tarea pendiente no se considera cumplida por la sola presencia de código o por un informe anterior.
 
 ## Matriz de requisitos
 
 Cada fila enlaza el requisito de `proposal.md` con dónde está implementado y con qué prueba lo
 respalda. «E2E» se refiere a `e2e/autenticacion.spec.ts`; «integración», a
-`src/integration/juego.test.ts` (ambos contra MySQL real).
+`src/integration/juego.test.ts` (ambos contra PostgreSQL real; hasta septiembre, contra MySQL).
 
 ### Alcance mínimo
 
@@ -49,7 +55,7 @@ respalda. «E2E» se refiere a `e2e/autenticacion.spec.ts`; «integración», a
 | --- | --- | --- |
 | Autenticación con contraseñas hasheadas y sesión recuperable | Cerrado | `src/tests/auth.cuentas.test.ts`, `seguridad.test.ts`, E2E |
 | Permisos comprobados en el servidor, no ocultando botones | Cerrado | `authorizeCrud`, pruebas de integración por rol |
-| Transacciones y concurrencia en MySQL | Cerrado | `src/integration/juego.test.ts`, `objeto.compra.test.ts` |
+| Transacciones y concurrencia en PostgreSQL | Cerrado | `src/integration/juego.test.ts`, `objeto.compra.test.ts` |
 | Integración continua con build, lint y pruebas | Cerrado | `.github/workflows/verificacion.yml` |
 | Documentación de instalación, API, modelo y demo | Cerrado | `docs/README.md` y los documentos que enlaza |
 | Revisión responsive y de accesibilidad completa | Cerrado | `e2e/responsive.spec.ts` recorre 12 pantallas × 3 anchos y `e2e/accesibilidad.spec.ts` corre axe-core sin violaciones graves. La revisión humana de las capturas está en `evidencia_responsive_revision.md` |
@@ -80,9 +86,10 @@ Hecho (rama `ramaEmaIteracion4`):
   clases, dos tiendas y cuatro objetos (uno único) a través de la API. Probado contra una base
   MySQL descartable: la primera ejecución crea todo, la segunda no duplica nada y con el backend
   apagado falla con un mensaje claro. Documentado en [demo.md](demo.md#datos-de-demostración).
-- Copia de seguridad y restauración con `mysqldump`/`mysql`: [respaldo.md](respaldo.md). Probado
-  contra bases descartables: volcado, restauración en otra base y restauración encima de una base
-  modificada, con login de `dm_demo` sobre la base restaurada.
+- Copia de seguridad y restauración: [respaldo.md](respaldo.md). En septiembre se probó con
+  `mysqldump`/`mysql` contra bases descartables (volcado, restauración en otra base y encima de una base
+  modificada, con login de `dm_demo` sobre la base restaurada). **Tras la migración el procedimiento pasó a
+  `pg_dump`/`psql` y todavía no se verificó**, porque esas herramientas no estaban instaladas.
 - `docs/api.md` contrastado contra `src/routes/`, controladores, servicios y validadores: se
   corrigieron 12 diferencias y se agregaron los códigos que faltaban. El detalle está en
   [seguimiento.md](seguimiento.md).
@@ -115,7 +122,7 @@ Al abrir un PR nuevo hay que sumarlo a esta tabla.
 
 ## Automatización
 
-`.github/workflows/verificacion.yml` ejecuta compilación, tests y lint del frontend, además de compilación, tests unitarios e integración MySQL del backend. La base del servicio CI es efímera; la suite crea y elimina exclusivamente su propia base aleatoria. La contraseña declarada en el workflow pertenece solo a ese servicio de prueba.
+`.github/workflows/verificacion.yml` ejecuta compilación, tests y lint del frontend, además de compilación, tests unitarios e integración del backend contra un servicio PostgreSQL (`postgres:17`, sin SSL, con `DB_SSL=false`; hasta septiembre fue `mysql:8.4`). La base del servicio CI es efímera; la suite crea y elimina exclusivamente su propio esquema aleatorio. **El workflow con PostgreSQL todavía no se ejecutó en GitHub Actions**: hasta la primera corrida verde, la evidencia citada abajo corresponde al workflow anterior. La contraseña declarada en el workflow pertenece solo a ese servicio de prueba.
 
 La ejecución [Actions 34906172625](https://github.com/RenzoScollo/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/actions/runs/34906172625) aprobó los dos trabajos completos: el de frontend compiló, ejecutó lint y las 52 pruebas; el de backend compiló, ejecutó las 76 pruebas unitarias, las 19 de integración MySQL y los recorridos E2E en Chromium. Las acciones del workflow se actualizaron a las versiones con soporte de Node 24, por lo que ya no aparece la deprecación de Node 20.
 
@@ -172,14 +179,11 @@ Para repetirlos desde la raíz:
 npm ci
 npm --prefix frontend ci
 npx playwright install chromium
-$env:TEST_DB_HOST = '127.0.0.1'
-$env:TEST_DB_PORT = '3306'
-$env:TEST_DB_USER = 'usuario_de_pruebas'
-# Definir TEST_DB_PASSWORD en el entorno local, sin subirla al repositorio.
+# Definir TEST_DB_URL en el entorno local (cadena de PostgreSQL), sin subirla al repositorio.
 npm run test:e2e
 ```
 
-El usuario de MySQL necesita permiso para crear y eliminar bases de prueba. La suite exige `TEST_DB_PORT` explícito, crea una base `rpg_e2e_<identificador aleatorio>` y elimina únicamente esa base al finalizar, incluso ante fallos de pruebas. Nunca reutiliza `DB_NAME`. Un corte forzado del proceso puede impedir la limpieza: revisar cualquier base residual antes de eliminarla manualmente.
+La suite exige `TEST_DB_URL` explícito, crea un esquema `rpg_e2e_<identificador aleatorio>` dentro de esa base y elimina únicamente ese esquema al finalizar, incluso ante fallos de pruebas. Nunca toca el esquema `public`. Un corte forzado del proceso puede impedir la limpieza: revisar cualquier esquema residual antes de eliminarlo manualmente.
 
 Los puertos 5174 y 3101 deben estar libres. El preparador E2E levanta Vite dentro del mismo proceso, con la raíz `frontend/`, y redirige `/api` al backend de prueba en `127.0.0.1:3101`; por eso no depende del `webServer` de Playwright ni de `API_PROXY_TARGET`. Al ejecutar la aplicación a mano, Vite conserva su destino habitual `localhost:3000` o el que indique `API_PROXY_TARGET`. Las capturas y trazas de fallos quedan en `test-results/`, excluido de Git.
 
@@ -238,3 +242,56 @@ Los umbrales de cobertura arrancan en el valor real medido el 21/9/2026 (backend
 35 % de funciones; frontend: 47 % de líneas, 36 % de funciones). Son un freno contra regresiones, no
 un objetivo de calidad: las pruebas de integración cubren buena parte del backend y todavía no
 reportan cobertura. Subirlos es trabajo pendiente del grupo.
+
+## Migración a PostgreSQL (Supabase)
+
+Rama `ImplementacionSupabase`, 7 de octubre de 2026. La base pasó de MySQL local a **PostgreSQL en
+Supabase**, un servicio independiente con persistencia en disco, accedido por MikroORM, con concurrencia
+de usuarios y sin necesidad de ejecutarse en local. La evidencia de cada suite está en
+[evidencia_tests.md](evidencia_tests.md).
+
+### Qué cambió
+
+- **Driver y conexión:** `@mikro-orm/postgresql` y `pg` en lugar de `@mikro-orm/mysql` y `mysql2`; una sola
+  variable, `SUPABASE_DB_URL`, con el Session pooler de Supabase (TLS). `.env.example` actualizado.
+- **Bloqueos de concurrencia:** PostgreSQL no admite `FOR UPDATE` sobre el lado opcional de un `LEFT JOIN`;
+  las consultas con bloqueo que cargan `Objeto.tienda` e `Objeto.inventario` ahora usan `select-in`
+  ([detalle](evidencia_concurrencia.md)).
+- **Errores de clave duplicada:** código `23505` en lugar de `ER_DUP_ENTRY`.
+- **Pruebas:** integración y E2E usan un esquema temporal dentro de `TEST_DB_URL` en lugar de crear una
+  base. El CI usa un servicio `postgres:17`.
+- **Seguridad de la base:** Supabase expone `public` por una API REST con una clave pública, así que las
+  12 tablas tienen Row Level Security activada y sin políticas (`npm run db:rls`). El backend se conecta
+  como dueño de las tablas y no se ve afectado.
+- **Rendimiento:** `requireAuth` pide usuario y roles en paralelo: un viaje a la base por request en lugar
+  de tres. Los listados bajaron de ~750 ms a ~370 ms medidos desde otro continente.
+- **Seguridad del servidor:** la defensa CSRF por `Origin` acepta el origen propio del servidor, necesario
+  porque ahora el backend sirve también el frontend compilado (`src/tests/origen.test.ts`).
+
+### Verificado
+
+| Qué | Resultado |
+| --- | --- |
+| Unitarias del backend / frontend | 114 / 71 aprobadas |
+| Integración contra PostgreSQL | 22 de 22 aprobadas, 72,36 % de líneas |
+| Recorridos de navegador | 9 de 9 con `E2E_TIMEOUT_MS=240000`; 6 de 9 con el límite por defecto (60 s) |
+| Tablas creadas en Supabase (`public`) | 12 tablas, 14 claves foráneas, RLS activa en las 12 |
+| Caso de uso completo contra la base real de Supabase, por la API | Login de ambos roles, partida, personaje (dinero 100, xp 0, nivel 1 fijados por el servidor), sesión, misión con reparto, finalización, karma, compra (saldo 120), recompra rechazada (409), venta (saldo 145), permisos (403) y sesión inválida tras logout (401) |
+| Aplicación completa desde un solo servidor | `npm start` sirve la API y el frontend compilado en `http://localhost:3000`, con *fallback* a `index.html` |
+
+### Pendiente y límites
+
+- **GitHub Actions con PostgreSQL:** el workflow nuevo todavía no se ejecutó; no hay run verde con la
+  base nueva.
+- **Copia de seguridad:** [respaldo.md](respaldo.md) pasó a `pg_dump`/`psql` y no se verificó, porque
+  esas herramientas no estaban instaladas.
+- **Despliegue en un proveedor:** la aplicación no está publicada. Corre completa en una máquina contra
+  Supabase; los pasos para publicarla están en [despliegue.md](despliegue.md). La cátedra marca «deploy»
+  como TBD.
+- **Latencia:** los tiempos medidos son desde otro continente hacia la región de la base. Con el backend
+  publicado en una región cercana deberían bajar mucho, pero no está medido.
+- **Datos de prueba:** la base de Supabase contiene, además del catálogo de demostración, restos de la
+  verificación manual de esta migración (una partida, un personaje, dinero y karma modificados). Conviene
+  limpiarlos antes de grabar la demostración.
+- **Documentos históricos:** `plan_final_dsw.md`, `verificacion_renzo.md` y los planes de
+  `docs/superpowers/` conservan menciones a MySQL porque registran corridas de septiembre.

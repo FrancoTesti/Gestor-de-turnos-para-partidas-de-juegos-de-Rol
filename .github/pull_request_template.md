@@ -6,7 +6,7 @@ Describir el objetivo y el alcance. Una rama, un objetivo.
 
 - [ ] Backend: `npm run build` y `npm test`
 - [ ] Frontend: `cd frontend && npm run build && npm run lint && npm test`
-- [ ] Integración MySQL: `npm run test:integration` (si toca datos, permisos o transacciones)
+- [ ] Integración PostgreSQL: `npm run test:integration` (si toca datos, permisos o transacciones)
 - [ ] Recorridos de navegador: `npm run test:e2e` (si toca flujos de pantalla)
 - [ ] Documentación: `npm run docs:check` (si toca archivos `.md`)
 - [ ] Cobertura: `npm run test:coverage` y `cd frontend && npm run test:coverage`
