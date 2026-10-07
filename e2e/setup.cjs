@@ -2,20 +2,15 @@ require('reflect-metadata');
 const { randomBytes } = require('node:crypto');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
-const { createConnection } = require('mysql2/promise');
-const { MikroORM } = require('@mikro-orm/mysql');
+const { Client } = require('pg');
+const { MikroORM } = require('@mikro-orm/postgresql');
 const { createApp } = require('../dist/app');
-const config = require('../dist/mikro-orm.config').default;
+const { default: config, enEsquema, sslDb } = require('../dist/mikro-orm.config');
 
 module.exports = async function setup() {
-  if (!process.env.TEST_DB_PORT) throw new Error('Indicá TEST_DB_PORT para habilitar las pruebas E2E con MySQL.');
-  const database = `rpg_e2e_${randomBytes(12).toString('hex')}`;
-  const settings = {
-    host: process.env.TEST_DB_HOST ?? '127.0.0.1',
-    port: Number(process.env.TEST_DB_PORT),
-    user: process.env.TEST_DB_USER ?? 'root',
-    password: process.env.TEST_DB_PASSWORD ?? '',
-  };
+  if (!process.env.TEST_DB_URL) throw new Error('Indicá TEST_DB_URL para habilitar las pruebas E2E con PostgreSQL.');
+  // Esquema único por ejecución dentro de la base de TEST_DB_URL; nunca se toca public.
+  const schema = `rpg_e2e_${randomBytes(12).toString('hex')}`;
   let connection, orm, server, vite, created = false;
   const previousOrigin = process.env.CORS_ORIGIN;
   const cleanup = async () => {
@@ -40,8 +35,8 @@ module.exports = async function setup() {
           if (orm) await orm.close(true);
         } finally {
           try {
-            // Solo se borra la base aleatoria que esta ejecución creó; nunca DB_NAME.
-            if (created && /^rpg_e2e_[a-f0-9]{24}$/.test(database)) await connection.query(`DROP DATABASE \`${database}\``);
+            // Solo se borra el esquema aleatorio que esta ejecución creó; nunca public.
+            if (created && /^rpg_e2e_[a-f0-9]{24}$/.test(schema)) await connection.query(`DROP SCHEMA "${schema}" CASCADE`);
           } finally {
             if (connection) await connection.end();
             if (previousOrigin === undefined) delete process.env.CORS_ORIGIN;
@@ -52,10 +47,11 @@ module.exports = async function setup() {
     }
   };
   try {
-    connection = await createConnection(settings);
-    await connection.query(`CREATE DATABASE \`${database}\``);
+    connection = new Client({ connectionString: process.env.TEST_DB_URL, ssl: sslDb });
+    await connection.connect();
+    await connection.query(`CREATE SCHEMA "${schema}"`);
     created = true;
-    orm = await MikroORM.init({ ...config, ...settings, dbName: database, debug: false });
+    orm = await MikroORM.init({ ...config, clientUrl: process.env.TEST_DB_URL, ...enEsquema(schema), debug: false });
     await orm.schema.createSchema();
     process.env.CORS_ORIGIN = 'http://127.0.0.1:5174';
     server = createApp(orm).listen(3101, '127.0.0.1');
