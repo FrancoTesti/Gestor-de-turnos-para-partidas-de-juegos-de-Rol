@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { MikroORM } from '@mikro-orm/mysql';
+import { MikroORM } from '@mikro-orm/postgresql';
 import config from '../mikro-orm.config';
 import { Usuario } from '../entities/Usuario.entity';
 import { Partida } from '../entities/Partida.entity';
@@ -13,7 +13,7 @@ async function main() {
     const pending = users.filter(u => !isPasswordHash(u.contrasena));
     const games = await em.find(Partida, {});
     const pendingGames = games.filter(p => p.contrasena && !isPasswordHash(p.contrasena));
-    console.log(`${pending.length} usuarios y ${pendingGames.length} partidas requieren migración. Base: ${config.dbName}`);
+    console.log(`${pending.length} usuarios y ${pendingGames.length} partidas requieren migración. Esquema: ${config.schema ?? 'public'}`);
     if (!process.argv.includes('--apply')) { console.log('Modo diagnóstico. Hacé backup y ejecutá con --apply para migrar.'); return; }
     await em.transactional(async tx => {
       const current = await tx.find(Usuario, {});

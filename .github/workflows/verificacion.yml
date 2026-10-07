@@ -47,23 +47,21 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     services:
-      mysql:
-        image: mysql:8.4
+      postgres:
+        image: postgres:17
         env:
-          MYSQL_ROOT_PASSWORD: prueba-ci
-          MYSQL_ROOT_HOST: '%'
+          POSTGRES_PASSWORD: prueba-ci
         ports:
-          - 3306:3306
+          - 5432:5432
         options: >-
-          --health-cmd="mysqladmin ping -h localhost -pprueba-ci"
+          --health-cmd="pg_isready -U postgres"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=10
     env:
-      TEST_DB_HOST: 127.0.0.1
-      TEST_DB_PORT: 3306
-      TEST_DB_USER: root
-      TEST_DB_PASSWORD: prueba-ci
+      # Base efímera del servicio de CI; las pruebas crean y borran su propio esquema temporal.
+      TEST_DB_URL: postgresql://postgres:prueba-ci@127.0.0.1:5432/postgres
+      DB_SSL: 'false'
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7

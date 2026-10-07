@@ -35,7 +35,7 @@ Para pasar una partida pública a privada se exige una contraseña. Pasarla a p�
 - El catálogo no permite editar ni borrar directamente objetos adquiridos.
 - Los sugeridos se obtienen por la clase asociada a la tienda, comparada con la clase del personaje.
 
-Compra, venta y movimientos usan transacciones y bloqueos de filas. Las pruebas MySQL verifican rollback real y compras concurrentes.
+Compra, venta y movimientos usan transacciones y bloqueos de filas. Las pruebas de integración con PostgreSQL verifican rollback real y compras concurrentes.
 
 ## Sesiones, misiones y karma
 

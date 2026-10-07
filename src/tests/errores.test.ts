@@ -3,7 +3,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
-import type { MikroORM } from '@mikro-orm/mysql';
+import type { MikroORM } from '@mikro-orm/postgresql';
 import { createApp, mensajeCuerpoGrande } from '../app';
 
 let servidor: Server | undefined;
