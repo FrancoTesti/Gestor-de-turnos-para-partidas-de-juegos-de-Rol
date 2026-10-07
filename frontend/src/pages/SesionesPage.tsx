@@ -145,7 +145,7 @@ export default function SesionesPage() {
                     {s.estadoSesion === 2 && <b style={{ color: 'green' }}>Finalizada</b>}
                   </td>
                   <td>
-                    <button className="btn-secondary" style={{ fontSize: "0.85rem", padding: "0.4rem 0.75rem" }} onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}>Ver detalle</button>
+                    <button className="btn btn-small" onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}>Ver detalle</button>
                   </td>
                 </tr>
               ))}
@@ -170,7 +170,7 @@ export default function SesionesPage() {
               <label>Duración (min):
                 <input type="number" min="0" required value={nuevaSesion.duracionSesion} onChange={e => setNuevaSesion({ ...nuevaSesion, duracionSesion: Number(e.target.value) })} />
               </label>
-              <button type="submit" className="btn-primary">Crear Sesión</button>
+              <button type="submit" className="btn">Crear Sesión</button>
             </form>
           )}
         </div>
@@ -198,7 +198,7 @@ export default function SesionesPage() {
                   ))}
                   {personajes.filter(p => p.idPartida === selected.idPartida).length === 0 && <p style={{color:'red'}}>No hay personajes anotados en esta partida.</p>}
                 </div>
-                <button className="btn-primary" onClick={() => void handleIniciar()} style={{ marginTop: "1rem" }}>Comenzar Sesión</button>
+                <button className="btn" onClick={() => void handleIniciar()} style={{ marginTop: '1rem' }}>Comenzar Sesión</button>
               </div>
             )}
 
@@ -212,7 +212,7 @@ export default function SesionesPage() {
                     <p style={{ color: '#d9534f', fontSize: '0.9em', marginTop: '1rem' }}>
                       ⚠️ No podrás finalizar la sesión si hay misiones pendientes.
                     </p>
-                    <button className="btn-danger" onClick={() => void handleFinalizar()}>Finalizar Sesión</button>
+                    <button className="btn" onClick={() => void handleFinalizar()} style={{ background: '#d9534f' }}>Finalizar Sesión</button>
                   </>
                 )}
               </div>
@@ -248,7 +248,7 @@ export default function SesionesPage() {
                         <option value={-1}>Mala experiencia (-1)</option>
                       </select>
                     </label>
-                    <button className="btn-primary" onClick={() => void handleCalificar()}>Enviar Calificación</button>
+                    <button className="btn" onClick={() => void handleCalificar()}>Enviar Calificación</button>
                   </div>
                 )}
               </div>

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { Usuario } from "../../interfaces";
 import "./usuarios.css";
 
@@ -53,20 +52,12 @@ export default function UsuarioDetalle({
     );
   }
 
-  const [isImageOpen, setIsImageOpen] = useState(false);
-
   const avatarUrl = usuario.imagen?.trim()
     ? usuario.imagen
     : `https://api.dicebear.com/7.x/bottts/svg?seed=${usuario.nickname || usuario.nombreUsuario}`;
 
   return (
     <div className="usuario-detalle-card">
-      {isImageOpen && (
-        <div className="lightbox-overlay" onClick={() => setIsImageOpen(false)}>
-          <button className="lightbox-close" onClick={() => setIsImageOpen(false)}>✖</button>
-          <img src={avatarUrl} alt="Avatar" className="lightbox-image" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
       <div className="detalle-header">
         <h2>Detalle del Usuario</h2>
         {onCerrar && (
@@ -82,10 +73,10 @@ export default function UsuarioDetalle({
       </div>
 
       <div className="detalle-body">
-        <div className="detalle-avatar-wrapper" onClick={() => setIsImageOpen(true)} style={{ cursor: "pointer" }} title="Ampliar imagen">
+        <div className="detalle-avatar-wrapper">
           <img
             src={avatarUrl}
-            alt={usuario.nombreUsuario.charAt(0).toUpperCase()}
+            alt={`Avatar de ${usuario.nombreUsuario}`}
             className="detalle-avatar"
             onError={(e) => {
               (e.target as HTMLImageElement).src =
@@ -115,7 +106,7 @@ export default function UsuarioDetalle({
           <div className="detalle-campo">
             <span className="campo-etiqueta">URL de Imagen:</span>
             <span
-              className="campo-valor url" style={{ wordBreak: "break-all", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
+              className="campo-valor url"
               title={usuario.imagen || "No especificada"}
             >
               {usuario.imagen || "Avatar por defecto"}
