@@ -159,10 +159,6 @@ table {
   z-index: 1;
 }
 
-.app-form label {
-  display: block;
-  margin-bottom: 0.75rem;
-}
 
 .app-form input:not([type='checkbox']),
 .app-form select {
@@ -170,6 +166,24 @@ table {
   width: 100%;
   max-width: 30rem;
   margin-top: 0.25rem;
-  padding: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
   box-sizing: border-box;
+  outline: none;
+  background: var(--bg);
+  color: var(--text);
+  transition: border-color 0.2s;
+}
+.app-form input:focus, .app-form select:focus {
+  border-color: var(--accent-solid);
+}
+.app-form label {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--text-h);
+  display: block;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
 }
