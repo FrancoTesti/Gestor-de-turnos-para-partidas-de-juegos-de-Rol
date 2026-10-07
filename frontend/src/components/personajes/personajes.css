@@ -168,15 +168,12 @@
 
 .form-grid-2 {
   display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.form-grid-2 {
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
+@media (max-width: 600px) {
   .form-grid-2 {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
