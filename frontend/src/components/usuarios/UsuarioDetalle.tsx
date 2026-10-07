@@ -19,6 +19,8 @@ export default function UsuarioDetalle({
   onEditar,
   onEliminar,
 }: UsuarioDetalleProps) {
+  const [isImageOpen, setIsImageOpen] = useState(false);
+
   if (cargando) {
     return (
       <div className="usuario-detalle-card cargando">
@@ -52,8 +54,6 @@ export default function UsuarioDetalle({
       </div>
     );
   }
-
-  const [isImageOpen, setIsImageOpen] = useState(false);
 
   const avatarUrl = usuario.imagen?.trim()
     ? usuario.imagen
