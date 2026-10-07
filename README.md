@@ -6,6 +6,8 @@ Integrantes: Franco Testi, Octavio Gudiño, Renzo Scollo, Alejandro Ciesco y Ema
 
 **Toda la documentación está indexada en [docs/README.md](docs/README.md).**
 
+**¿Primera vez tras la migración a PostgreSQL (Supabase)? Empezá por el [TUTORIAL.md](TUTORIAL.md).**
+
 ## Empezar
 
 El backend está en la raíz; el frontend, en `frontend/`. Son dos proyectos npm distintos: hay que
