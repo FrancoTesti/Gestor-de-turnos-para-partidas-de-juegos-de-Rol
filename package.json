@@ -14,7 +14,9 @@
     "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
     "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
     "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
-    "schema:dump": "ts-node src/valida-entities.ts"
+    "schema:dump": "ts-node src/valida-entities.ts",
+    "db:rls": "node scripts/activar-rls.mjs",
+    "db:probar": "node scripts/probar-conexion-supabase.mjs"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.6.16",
