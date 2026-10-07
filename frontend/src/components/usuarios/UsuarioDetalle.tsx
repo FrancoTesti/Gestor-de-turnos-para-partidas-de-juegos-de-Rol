@@ -18,8 +18,6 @@ export default function UsuarioDetalle({
   onEditar,
   onEliminar,
 }: UsuarioDetalleProps) {
-  const [isImageOpen, setIsImageOpen] = useState(false);
-
   if (cargando) {
     return (
       <div className="usuario-detalle-card cargando">
