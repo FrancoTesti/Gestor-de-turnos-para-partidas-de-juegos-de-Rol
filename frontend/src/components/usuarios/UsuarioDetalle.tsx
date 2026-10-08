@@ -19,6 +19,8 @@ export default function UsuarioDetalle({
   onEditar,
   onEliminar,
 }: UsuarioDetalleProps) {
+  const [isImageOpen, setIsImageOpen] = useState(false);
+
   if (cargando) {
     return (
       <div className="usuario-detalle-card cargando">
@@ -53,8 +55,6 @@ export default function UsuarioDetalle({
     );
   }
 
-  const [isImageOpen, setIsImageOpen] = useState(false);
-
   const avatarUrl = usuario.imagen?.trim()
     ? usuario.imagen
     : `https://api.dicebear.com/7.x/bottts/svg?seed=${usuario.nickname || usuario.nombreUsuario}`;
@@ -85,7 +85,7 @@ export default function UsuarioDetalle({
         <div className="detalle-avatar-wrapper" onClick={() => setIsImageOpen(true)} style={{ cursor: "pointer" }} title="Ampliar imagen">
           <img
             src={avatarUrl}
-            alt={usuario.nombreUsuario.charAt(0).toUpperCase()}
+            alt={`Avatar de ${usuario.nombreUsuario}`}
             className="detalle-avatar"
             onError={(e) => {
               (e.target as HTMLImageElement).src =

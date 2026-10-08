@@ -87,7 +87,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     {error && <p role="alert">{error}</p>}
     {loading && <p role="status">Cargando…</p>}
     <button className="btn-secondary" disabled={busy} onClick={() => { setError(''); setLoading(true); setRevision(n => n + 1); }}>Actualizar listado</button>
-    {!editing && allowed() && <button className="btn-primary" onClick={() => startEdit()}>+ Crear</button>}
+    {!editing && allowed() && <button className="btn-primary" onClick={() => startEdit()}>Crear</button>}
     {editing ? <form onSubmit={e => { e.preventDefault(); void save(); }}>
       <h2>{selected ? 'Editar' : 'Crear'} {config.title.toLowerCase()}</h2>
       {config.fields.filter(f => !selected || !f.createOnly).map(f => <label key={f.key}>{f.label}

@@ -74,7 +74,7 @@ export default function MainLayout() {
 
         <div className="navbar-user">
           <span className="user-greeting">Hola, {usuarioLogueado.nickname}</span>
-          <button onClick={handleLogout} className="btn-logout">Salir</button>
+          <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
         </div>
       </header>
 
