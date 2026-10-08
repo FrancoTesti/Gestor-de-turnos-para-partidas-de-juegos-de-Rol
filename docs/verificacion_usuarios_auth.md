@@ -1,10 +1,9 @@
-# Verificación del módulo de Renzo Scollo
+# Verificación del módulo de Usuarios y Autenticación
 
-Fecha de verificación: 7 de septiembre de 2026.
-
-Rama: `renzo-objeto-frontend`.
-
-Alcance tomado de `plan_desarrollo_5_integrantes.md`: usuarios, autenticación y perfiles.
+**Responsable:** Renzo Scollo  
+**Fecha de verificación:** 7 de septiembre de 2026  
+**Rama:** `renzo-objeto-frontend`  
+**Alcance:** Usuarios, autenticación, sesión persistente y perfiles de usuario.
 
 ## Requisitos comprobados
 

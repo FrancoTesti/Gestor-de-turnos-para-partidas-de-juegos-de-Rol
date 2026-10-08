@@ -18,8 +18,6 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | [modelo.md](modelo.md) | Modelo de datos vigente, entidad por entidad, con el diagrama actualizado |
 | [funcionalidad.md](funcionalidad.md) | Reglas de negocio y permisos implementados |
 | [api.md](api.md) | Endpoints con cuerpos, respuestas y errores |
-| [plantilla_crud_usuario.md](plantilla_crud_usuario.md) | Cómo está armado un módulo CRUD, capa por capa |
-| [PasajeATabla.txt](PasajeATabla.txt) | Pasaje del modelo conceptual a tablas |
 
 ## Para probar y entregar
 
@@ -36,14 +34,12 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | [minutas.md](minutas.md) | Minutas de reunión: fecha, participantes, decisiones y asignaciones |
 | [metodologia.md](metodologia.md) | Metodología de trabajo (Scrum adaptado) y herramienta de trackeo (GitHub Projects) |
 | [trackeo.md](trackeo.md) | Funcionalidades y correcciones por módulo, con responsable y PR |
-| [verificacion_renzo.md](verificacion_renzo.md) | Verificación del módulo de usuarios y autenticación |
-| [verificacion_alejandro.md](verificacion_alejandro.md) | Verificación del módulo de clases, personajes y partidas |
+| [verificacion_usuarios_auth.md](verificacion_usuarios_auth.md) | Verificación del módulo de usuarios y autenticación |
+| [verificacion_clases_personajes.md](verificacion_clases_personajes.md) | Verificación del módulo de clases, personajes y partidas |
 
 ## Diagramas
 
-- `DER_NEW.png` — diagrama entidad-relación vigente.
-- `ModeloDominioOLD.drawio.png` — versión anterior, **desactualizada**. Se conserva como historial;
-  la referencia válida es [modelo.md](modelo.md).
+- `DER_NEW.png` — diagrama entidad-relación vigente; la referencia detallada está en [modelo.md](modelo.md).
 
 ## Reparto del trabajo
 
