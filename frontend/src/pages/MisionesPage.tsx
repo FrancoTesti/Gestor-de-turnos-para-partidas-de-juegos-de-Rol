@@ -258,14 +258,8 @@ export default function MisionesPage() {
               return (
                 <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong style={{ minWidth: '110px', color: 'var(--text-h)' }}>{p.nombre}</strong>
-                  <label style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span>$$:</span>
-                    <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
-                  </label>
-                  <label style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                    <span>XP:</span>
-                    <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
-                  </label>
+                  <label style={{ margin: 0 }}>$$: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} /></label>
+                  <label style={{ margin: 0 }}>XP: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} /></label>
                 </div>
               );
             })}
