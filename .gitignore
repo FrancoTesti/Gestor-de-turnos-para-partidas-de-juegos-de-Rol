@@ -1,15 +1,12 @@
 # Dependencias (se reinstalan con "npm install")
 node_modules/
 
-# Builds y temporales
+# Builds
 dist/
 build/
 playwright-report/
 test-results/
 coverage/
-tmp/
-tools/
-
 
 # Grafo de conocimiento generado por graphify (se reconstruye con /graphify)
 graphify-out/
