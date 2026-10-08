@@ -3,7 +3,6 @@
 .objeto-acciones,
 .objeto-campos-numericos {
   display: flex;
-  /* Sin wrap, el último control de la fila se salía de la pantalla en un ancho de 1280. */
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -22,16 +21,21 @@
 
 .objeto-filtros {
   margin-bottom: 1.25rem;
+  background: var(--bg-card);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
 }
 
 .objeto-filtros input,
 .objeto-filtros select {
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.7rem;
-  color: inherit;
-  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
   font: inherit;
+  font-size: 0.95rem;
 }
 
 .objeto-filtros input {
@@ -41,34 +45,42 @@
 
 .objetos-layout {
   display: grid;
-  grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
   align-items: start;
   gap: 1.5rem;
 }
 
 .objeto-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 1.15rem;
 }
 
 .objeto-card {
   overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 0.75rem;
-  background: var(--bg);
+  border-radius: var(--radius-md);
+  background: var(--bg-card);
   box-shadow: var(--shadow);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.objeto-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent);
+  box-shadow: var(--shadow-lg);
 }
 
 .objeto-card.seleccionado {
   border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 2px var(--accent), var(--accent-glow);
 }
 
 .objeto-card-contenido {
   width: 100%;
   border: 0;
-  padding: 1rem;
+  padding: 1.25rem;
   color: inherit;
   background: transparent;
   text-align: left;
@@ -76,34 +88,37 @@
 }
 
 .objeto-tipo {
-  /* El acento claro no alcanza 4.5:1 sobre blanco; esta variante sí y conserva el rol visual. */
-  color: var(--accent-solid, #7c22c9);
-  font-size: 0.8rem;
+  color: var(--accent-text, var(--accent));
+  font-size: 0.75rem;
   font-weight: 800;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .objeto-acciones {
-  padding: 0 1rem 1rem;
+  padding: 0 1.25rem 1.25rem;
 }
 
 .objeto-acciones button {
   flex: 1;
-  border: 0;
-  border-radius: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   padding: 0.5rem;
   cursor: pointer;
 }
 
 .objeto-acciones .peligro,
 .detalle-error {
-  color: #991b1b;
+  color: var(--error-text);
 }
 
 .objeto-detalle dl {
   display: grid;
-  gap: 0.5rem;
+  gap: 0.65rem;
+  background: var(--bg-card-secondary);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
 }
 
 .objeto-detalle dl div {
@@ -114,33 +129,42 @@
 
 .objeto-detalle dt {
   font-weight: 700;
+  color: var(--text-h);
 }
 
 .objeto-detalle dd {
   margin: 0;
+  color: var(--text);
 }
 
 .btn-comprar {
   width: 100%;
   border: 0;
-  border-radius: 0.5rem;
+  border-radius: var(--radius-sm);
   margin-top: 1rem;
-  padding: 0.7rem 1rem;
-  color: white;
-  background: #15803d;
+  padding: 0.75rem 1rem;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
   cursor: pointer;
   font: inherit;
   font-weight: 700;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-comprar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transform: translateY(-1px);
 }
 
 .btn-comprar:disabled {
   cursor: not-allowed;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .compra-formulario {
   display: grid;
-  gap: 0.8rem;
+  gap: 0.85rem;
   margin-top: 1.25rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--border);
@@ -149,12 +173,13 @@
 .compra-formulario h3,
 .compra-precio {
   margin: 0;
+  color: var(--text-h);
 }
 
 .compra-formulario label {
   display: grid;
   gap: 0.35rem;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 .compra-formulario input,
@@ -162,10 +187,10 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.65rem;
-  color: inherit;
-  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
   font: inherit;
 }
 
@@ -179,17 +204,9 @@
   margin-top: 0;
 }
 
-.compra-acciones button:not(.btn-comprar) {
-  border: 0;
-  border-radius: 0.5rem;
-  padding: 0.7rem;
-  cursor: pointer;
-  font: inherit;
-}
-
 .objeto-formulario {
   display: grid;
-  gap: 1rem;
+  gap: 1.15rem;
 }
 
 .objeto-formulario .form-group {
@@ -198,7 +215,8 @@
 }
 
 .objeto-formulario .form-group > span {
-  font-weight: 700;
+  font-weight: 600;
+  color: var(--text-h);
 }
 
 .objeto-formulario input,
@@ -207,15 +225,15 @@
   width: 100%;
   box-sizing: border-box;
   border: 1px solid var(--border);
-  border-radius: 0.5rem;
-  padding: 0.7rem;
-  color: inherit;
-  background: var(--bg);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
   font: inherit;
 }
 
 .objeto-formulario .error-text {
-  color: #b91c1c;
+  color: var(--error-text);
   font-size: 0.875rem;
 }
 
@@ -225,48 +243,20 @@
   margin-top: 0.5rem;
 }
 
-.objeto-formulario .btn-primary,
-.objeto-formulario .btn-secondary {
-  border: 0;
-  border-radius: 0.5rem;
-  padding: 0.7rem 1rem;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-}
-
-.objeto-formulario .btn-primary {
-  color: white;
-  background: var(--accent);
-}
-
-.objeto-formulario .btn-secondary {
-  color: inherit;
-  background: #e2e8f0;
-}
-
-.objeto-formulario .btn-primary:disabled,
-.objeto-formulario .btn-secondary:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-}
-
 .objeto-campos-numericos > * {
   flex: 1;
 }
 
 .estado-lista {
-  padding: 2rem;
+  padding: 2.5rem;
   border: 1px dashed var(--border);
-  border-radius: 0.75rem;
+  border-radius: var(--radius-md);
   text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-card);
 }
 
-  .objetos-layout {
-    grid-template-columns: 1fr;
-  }
-
-/* Responsive Mobile First */
+/* Responsive */
 .seccion-header,
 .objeto-filtros,
 .objeto-campos-numericos {
@@ -291,6 +281,6 @@
   }
 
   .objetos-layout {
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
   }
 }

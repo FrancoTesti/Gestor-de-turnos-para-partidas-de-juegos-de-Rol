@@ -2,7 +2,7 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background-color: var(--bg);
 }
 
 /* TOP NAVBAR */
@@ -10,16 +10,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: var(--bg);
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border);
   padding: 0 1.5rem;
   height: 4rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm);
   position: sticky;
   top: 0;
   z-index: 1000;
   width: 100%;
   box-sizing: border-box;
+  backdrop-filter: blur(12px);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
 .navbar-brand h1 {
@@ -59,7 +61,7 @@
   font-weight: 500;
   cursor: pointer;
   padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm, 6px);
   transition: all 0.2s ease;
   user-select: none;
 }
@@ -67,14 +69,7 @@
 .nav-dropdown:hover .nav-item,
 .nav-dropdown.active .nav-item {
   color: var(--text-h);
-  background: rgba(0, 0, 0, 0.05);
-}
-
-@media (prefers-color-scheme: dark) {
-  .nav-dropdown:hover .nav-item,
-  .nav-dropdown.active .nav-item {
-    background: rgba(255, 255, 255, 0.1);
-  }
+  background: var(--bg-card-secondary, rgba(255, 255, 255, 0.08));
 }
 
 /* SOLAPAS (Dropdown) */
@@ -84,10 +79,10 @@
   top: 100%;
   left: 50%;
   transform: translateX(-50%) translateY(10px);
-  background: var(--bg);
+  background: var(--bg-card);
   min-width: 180px;
-  border-radius: 8px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-radius: var(--radius-md, 8px);
+  box-shadow: var(--shadow-lg);
   border: 1px solid var(--border);
   padding: 0.5rem 0;
   opacity: 0;
@@ -96,8 +91,6 @@
   flex-direction: column;
   z-index: 1001;
 }
-
-/* Triangulito superior del dropdown removido para minimalismo */
 
 .nav-dropdown:hover .dropdown-content,
 .nav-dropdown:focus-within .dropdown-content {
@@ -115,25 +108,19 @@
   transition: all 0.15s;
   display: block;
   margin: 0 0.5rem;
-  border-radius: 6px;
+  border-radius: var(--radius-sm, 6px);
 }
 
 .dropdown-content a:hover {
-  background: rgba(0, 0, 0, 0.03);
-  color: var(--text-h);
-}
-
-@media (prefers-color-scheme: dark) {
-  .dropdown-content a:hover {
-    background: rgba(255, 255, 255, 0.05);
-  }
+  background: var(--accent-bg);
+  color: var(--accent-text);
 }
 
 /* USER INFO & LOGOUT */
 .navbar-user {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
 }
 
 .user-greeting {
@@ -142,25 +129,23 @@
 }
 
 .btn-logout {
-  background: transparent;
-  color: #dc2626;
-  border: 1px solid #dc2626;
-  padding: 0.4rem 1rem;
-  border-radius: 6px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-sm, 6px);
   cursor: pointer;
-  font-weight: 600;
   font-size: 0.9rem;
-  transition: all 0.2s;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-logout:hover {
-  background: #fef2f2;
-}
-
-@media (prefers-color-scheme: dark) {
-  .btn-logout:hover {
-    background: rgba(220, 38, 38, 0.15);
-  }
+  background: var(--error-solid);
+  color: #ffffff;
+  border-color: var(--error-solid);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
 }
 
 /* MAIN CONTENT */

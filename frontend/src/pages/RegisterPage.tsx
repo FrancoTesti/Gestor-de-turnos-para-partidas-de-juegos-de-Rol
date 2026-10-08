@@ -2,6 +2,7 @@ import { useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import './AuthPages.css';
 
 // Las reglas repiten las del backend (schemas/usuario.schema.ts) para avisar antes
@@ -37,107 +38,117 @@ export default function RegisterPage() {
   };
 
   return (
-    <main className="auth-page">
-      <h2>Registrarse</h2>
-      {error && <Alert type="error" message={error} onClose={() => setError('')} />}
-
-      {mensaje && <Alert type="success" message={mensaje} onClose={limpiarMensaje} />}
-
-      <form className="auth-form" onSubmit={handleRegister} noValidate>
-        <div className="auth-campo">
-          <label htmlFor="registro-nombre">Nombre y apellido</label>
-          <input
-            id="registro-nombre"
-            name="nombreUsuario"
-            autoComplete="name"
-            placeholder="Nombre y apellido"
-            value={nombreUsuario}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setNombreUsuario(e.target.value)}
-            disabled={busy}
-          />
+    <div className="auth-wrapper">
+      <div className="auth-top-bar">
+        <ThemeToggle />
+      </div>
+      <main className="auth-page">
+        <div className="auth-header">
+          <div className="auth-brand-badge" aria-hidden="true">🛡️</div>
+          <h2>Registrarse</h2>
+          <p className="auth-subtitle">Crea tu cuenta de Aventurero o Director de Juego</p>
         </div>
 
-        <div className="auth-campo">
-          <label htmlFor="registro-nickname">Nickname</label>
-          <input
-            id="registro-nickname"
-            name="nickname"
-            autoComplete="username"
-            placeholder="Nickname"
-            value={nickname}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-            disabled={busy}
-          />
-          <small className="auth-ayuda">Con este nombre vas a iniciar sesión; no puede repetirse.</small>
-        </div>
+        {error && <Alert type="error" message={error} onClose={() => setError('')} />}
 
-        <div className="auth-campo">
-          <label htmlFor="registro-contrasena">Contraseña</label>
-          <input
-            id="registro-contrasena"
-            name="contrasena"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Contraseña"
-            value={contrasena}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-            disabled={busy}
-          />
-          <small className="auth-ayuda">Mínimo 6 caracteres.</small>
-        </div>
+        {mensaje && <Alert type="success" message={mensaje} onClose={limpiarMensaje} />}
 
-        <div className="auth-campo">
-          <label htmlFor="registro-repetida">Repetir contraseña</label>
-          <input
-            id="registro-repetida"
-            name="repetirContrasena"
-            type="password"
-            autoComplete="new-password"
-            placeholder="Repetir contraseña"
-            value={repetida}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setRepetida(e.target.value)}
-            disabled={busy}
-          />
-        </div>
-
-        <fieldset className="auth-tipo">
-          <legend>Tipo de cuenta</legend>
-          <label>
+        <form className="auth-form" onSubmit={handleRegister} noValidate>
+          <div className="auth-campo">
+            <label htmlFor="registro-nombre">Nombre y apellido</label>
             <input
-              type="radio"
-              name="tipo"
-              checked={tipo === 'jugador'}
-              onChange={() => setTipo('jugador')}
+              id="registro-nombre"
+              name="nombreUsuario"
+              autoComplete="name"
+              placeholder="Nombre y apellido"
+              value={nombreUsuario}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setNombreUsuario(e.target.value)}
               disabled={busy}
             />
-            Jugador
-          </label>
-          <label>
+          </div>
+
+          <div className="auth-campo">
+            <label htmlFor="registro-nickname">Nickname</label>
             <input
-              type="radio"
-              name="tipo"
-              checked={tipo === 'anfitrion'}
-              onChange={() => setTipo('anfitrion')}
+              id="registro-nickname"
+              name="nickname"
+              autoComplete="username"
+              placeholder="Nickname"
+              value={nickname}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
               disabled={busy}
             />
-            Anfitrión
-          </label>
-          <small className="auth-ayuda">
-            Después podés sumar el otro perfil desde la pantalla «Mis perfiles».
-          </small>
-        </fieldset>
+            <small className="auth-ayuda">Con este nombre vas a iniciar sesión; no puede repetirse.</small>
+          </div>
 
-        <button type="submit" className="auth-primario" disabled={busy} aria-busy={busy}>
-          {busy ? 'Registrando…' : 'Registrar'}
-        </button>
-        <button
-          type="button"
-          className="auth-secundario"
-          onClick={() => navigate('/login')}
-        >
-          Ir a Login
-        </button>
-      </form>
-    </main>
+          <div className="auth-campo">
+            <label htmlFor="registro-contrasena">Contraseña</label>
+            <input
+              id="registro-contrasena"
+              name="contrasena"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Contraseña"
+              value={contrasena}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
+              disabled={busy}
+            />
+            <small className="auth-ayuda">Mínimo 6 caracteres.</small>
+          </div>
+
+          <div className="auth-campo">
+            <label htmlFor="registro-repetida">Repetir contraseña</label>
+            <input
+              id="registro-repetida"
+              name="repetirContrasena"
+              type="password"
+              autoComplete="new-password"
+              placeholder="Repetir contraseña"
+              value={repetida}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setRepetida(e.target.value)}
+              disabled={busy}
+            />
+          </div>
+
+          <fieldset className="auth-tipo">
+            <legend>Tipo de cuenta</legend>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                checked={tipo === 'jugador'}
+                onChange={() => setTipo('jugador')}
+                disabled={busy}
+              />
+              Jugador
+            </label>
+            <label>
+              <input
+                type="radio"
+                name="tipo"
+                checked={tipo === 'anfitrion'}
+                onChange={() => setTipo('anfitrion')}
+                disabled={busy}
+              />
+              Anfitrión
+            </label>
+            <small className="auth-ayuda">
+              Después podés sumar el otro perfil desde la pantalla «Mis perfiles».
+            </small>
+          </fieldset>
+
+          <button type="submit" className="auth-primario" disabled={busy} aria-busy={busy}>
+            {busy ? 'Registrando…' : 'Registrar'}
+          </button>
+          <button
+            type="button"
+            className="auth-secundario"
+            onClick={() => navigate('/login')}
+          >
+            Ir a Login
+          </button>
+        </form>
+      </main>
+    </div>
   );
 }

@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import './MainLayout.css';
 
 export default function MainLayout() {
@@ -28,7 +29,8 @@ export default function MainLayout() {
 
       <header className="top-navbar">
         <div className="navbar-brand">
-          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span aria-hidden="true" style={{ fontSize: '1.4rem' }}>🎲</span>
             <h1>Gestor de Rol</h1>
           </Link>
         </div>
@@ -73,6 +75,7 @@ export default function MainLayout() {
         </nav>
 
         <div className="navbar-user">
+          <ThemeToggle />
           <span className="user-greeting">Hola, {usuarioLogueado.nickname}</span>
           <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
         </div>

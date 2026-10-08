@@ -154,101 +154,130 @@ export default function MisionesPage() {
 
   return (
     <div className="module-page">
-      <h1>Gestión de Misiones</h1>
-      {error && <Alert type="error" message={error} />}
-      {aviso && <p role="status">{aviso}</p>}
+      <div style={{ marginBottom: '1.25rem' }}>
+        <p className="app-eyebrow">Objetivos y Recompensas</p>
+        <h1>Gestión de Misiones</h1>
+      </div>
+      
+      {error && <Alert type="error" message={error} onClose={() => setError('')} />}
+      {aviso && <p role="status" className="mensaje-exito">{aviso}</p>}
 
-      <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: '1 1 50%', minWidth: 0 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+        <div style={{ minWidth: 0 }}>
           <div className="tabla-scroll">
-          <table className="app-table">
-            <thead>
-              <tr><th>Partida</th><th>Sesión</th><th>Misión</th><th>Descripción</th><th>Premio</th><th>Estado</th><th>Acciones</th></tr>
-            </thead>
-            <tbody>
-              {misiones.map(m => (
-                <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
-                  <td>{partidas.find(p => p.idPartida === m.idPartida)?.nombre}</td>
-                  <td>S{m.numSesion}</td>
-                  <td>M{m.numMision}</td>
-                  <td>{m.descripcion}</td>
-                  <td>${m.dineroTotal} | {m.xpTotal}XP</td>
-                  <td>{m.estado ? <b style={{ color: 'green' }}>Completada</b> : <b style={{ color: 'orange' }}>Pendiente</b>}</td>
-                  <td>
-                    {!m.estado && host && (
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button className="btn btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
-                        <button className="btn btn-small" onClick={() => handleEditar(m)}>Editar</button>
-                        <button className="btn btn-small" style={{ background: 'red' }} onClick={() => void handleEliminar(m)}>X</button>
-                      </div>
-                    )}
-                  </td>
+            <table className="app-table">
+              <thead>
+                <tr>
+                  <th>Partida</th>
+                  <th>Sesión</th>
+                  <th>Misión</th>
+                  <th>Descripción</th>
+                  <th>Premio</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {misiones.map(m => (
+                  <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
+                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre}</td>
+                    <td>S{m.numSesion}</td>
+                    <td>M{m.numMision}</td>
+                    <td>{m.descripcion}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--accent-text)' }}>${m.dineroTotal} | {m.xpTotal}XP</td>
+                    <td>
+                      {m.estado ? (
+                        <span className="badge badge-success">Completada</span>
+                      ) : (
+                        <span className="badge badge-warning">Pendiente</span>
+                      )}
+                    </td>
+                    <td>
+                      {!m.estado && host && (
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
+                          <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
+                          <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)}>X</button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
 
           {host && (
-            <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form" style={{ marginTop: '2rem' }}>
-              <h3>{editando ? 'Editar Misión' : 'Crear Misión'}</h3>
-              <label>Sesión en Curso:
-                <select required disabled={editando} value={`${nuevaMision.idPartida}-${nuevaMision.numSesion}`} onChange={e => {
-                  const [p, s] = e.target.value.split('-');
-                  setNuevaMision({ ...nuevaMision, idPartida: p, numSesion: s });
-                }}>
-                  <option value="-">Seleccionar...</option>
-                  {sesiones.filter(s => s.estadoSesion === 1 || editando).map(s => (
-                    <option key={`${s.idPartida}-${s.numSesion}`} value={`${s.idPartida}-${s.numSesion}`}>
-                      Partida {partidas.find(p => p.idPartida === s.idPartida)?.nombre} - S{s.numSesion}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>Número Misión:
-                <input type="number" min="1" disabled={editando} required value={nuevaMision.numMision} onChange={e => setNuevaMision({ ...nuevaMision, numMision: e.target.value })} />
-              </label>
-              <label>Descripción:
-                <input type="text" required value={nuevaMision.descripcion} onChange={e => setNuevaMision({ ...nuevaMision, descripcion: e.target.value })} />
-              </label>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                <label>Dinero Total: <input type="number" min="0" required value={nuevaMision.dineroTotal} onChange={e => setNuevaMision({ ...nuevaMision, dineroTotal: Number(e.target.value) })} /></label>
-                <label>XP Total: <input type="number" min="0" required value={nuevaMision.xpTotal} onChange={e => setNuevaMision({ ...nuevaMision, xpTotal: Number(e.target.value) })} /></label>
-              </div>
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                <button type="submit" className="btn-primary">{editando ? 'Guardar Cambios' : 'Crear Misión'}</button>
-                {editando && <button type="button" className="btn-primary" onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); }}>Cancelar</button>}
-              </div>
-            </form>
+            <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.5rem', marginTop: '1.5rem', boxShadow: 'var(--shadow)' }}>
+              <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form">
+                <h3 style={{ marginTop: 0 }}>{editando ? 'Editar Misión' : 'Crear Misión'}</h3>
+                <label>Sesión en Curso:
+                  <select required disabled={editando} value={`${nuevaMision.idPartida}-${nuevaMision.numSesion}`} onChange={e => {
+                    const [p, s] = e.target.value.split('-');
+                    setNuevaMision({ ...nuevaMision, idPartida: p, numSesion: s });
+                  }}>
+                    <option value="-">Seleccionar...</option>
+                    {sesiones.filter(s => s.estadoSesion === 1 || editando).map(s => (
+                      <option key={`${s.idPartida}-${s.numSesion}`} value={`${s.idPartida}-${s.numSesion}`}>
+                        Partida {partidas.find(p => p.idPartida === s.idPartida)?.nombre} - S{s.numSesion}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>Número Misión:
+                  <input type="number" min="1" disabled={editando} required value={nuevaMision.numMision} onChange={e => setNuevaMision({ ...nuevaMision, numMision: e.target.value })} />
+                </label>
+                <label>Descripción:
+                  <input type="text" required value={nuevaMision.descripcion} onChange={e => setNuevaMision({ ...nuevaMision, descripcion: e.target.value })} />
+                </label>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <label>Dinero Total: <input type="number" min="0" required value={nuevaMision.dineroTotal} onChange={e => setNuevaMision({ ...nuevaMision, dineroTotal: Number(e.target.value) })} /></label>
+                  <label>XP Total: <input type="number" min="0" required value={nuevaMision.xpTotal} onChange={e => setNuevaMision({ ...nuevaMision, xpTotal: Number(e.target.value) })} /></label>
+                </div>
+                <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
+                  <button type="submit" className="btn-primary">{editando ? 'Guardar Cambios' : 'Crear Misión'}</button>
+                  {editando && <button type="button" className="btn-secondary" onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); }}>Cancelar</button>}
+                </div>
+              </form>
+            </div>
           )}
         </div>
 
         {selectedMision && !selectedMision.estado && (
-          <div style={{ flex: '1 1 40%', padding: '1rem', border: '2px solid #ccc', borderRadius: '8px' }}>
-            <h2>Completar Misión {selectedMision.numMision}</h2>
-            <p><strong>A Repartir:</strong> {selectedMision.dineroTotal} Monedas | {selectedMision.xpTotal} Experiencia</p>
+          <aside style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', boxShadow: 'var(--shadow)' }}>
+            <h2 style={{ marginTop: 0 }}>Completar Misión {selectedMision.numMision}</h2>
+            <p style={{ color: 'var(--text)' }}>
+              <strong>A Repartir:</strong>{' '}
+              <span style={{ color: 'var(--success-text)', fontWeight: 700 }}>{selectedMision.dineroTotal} Monedas</span> |{' '}
+              <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>{selectedMision.xpTotal} Experiencia</span>
+            </p>
             <hr />
             
             {participantes?.map(p => {
               const rec = recompensas.find(r => r.idPersonaje === p.idPersonaje);
               return (
-                <div key={p.idPersonaje} style={{ background: '#f9f9f9', padding: '0.5rem', marginBottom: '0.5rem', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                  <strong style={{ width: '120px' }}>{p.nombre}</strong>
-                  <label style={{ margin: 0 }}>$$: <input type="number" min="0" style={{ width: '70px' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} /></label>
-                  <label style={{ margin: 0 }}>XP: <input type="number" min="0" style={{ width: '70px' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} /></label>
+                <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <strong style={{ minWidth: '110px', color: 'var(--text-h)' }}>{p.nombre}</strong>
+                  <label style={{ margin: 0 }}>$$: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} /></label>
+                  <label style={{ margin: 0 }}>XP: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} /></label>
                 </div>
               );
             })}
             
-            <div style={{ marginTop: '1rem', padding: '1rem', background: esCorrecto ? '#e6ffe6' : '#ffe6e6', border: '1px solid', borderColor: esCorrecto ? 'green' : 'red' }}>
-              <p>Sumas actuales: Dinero ({sumaDinero}) | XP ({sumaXp})</p>
-              {!esCorrecto && <p style={{ color: 'red', margin: 0 }}>⚠️ El reparto debe coincidir **exactamente** con los totales de la misión.</p>}
+            <div style={{ marginTop: '1rem', padding: '1rem', background: esCorrecto ? 'var(--success-bg)' : 'var(--error-bg)', border: '1px solid', borderColor: esCorrecto ? 'var(--success-border)' : 'var(--error-border)', borderRadius: 'var(--radius-sm)' }}>
+              <p style={{ margin: 0, fontWeight: 600, color: esCorrecto ? 'var(--success-text)' : 'var(--error-text)' }}>
+                Sumas actuales: Dinero ({sumaDinero}) | XP ({sumaXp})
+              </p>
+              {!esCorrecto && <p style={{ color: 'var(--error-text)', margin: '0.35rem 0 0', fontSize: '0.85rem' }}>⚠️ El reparto debe coincidir **exactamente** con los totales de la misión.</p>}
             </div>
 
-            <button className="btn-primary" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%', opacity: esCorrecto ? 1 : 0.5 }}>
+            <button className="btn-primary" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%' }}>
               Confirmar y Completar Misión
             </button>
-          </div>
+            <button type="button" className="btn-secondary" style={{ marginTop: '0.5rem', width: '100%' }} onClick={() => setSelectedMision(null)}>
+              Cancelar Reparto
+            </button>
+          </aside>
         )}
       </div>
 

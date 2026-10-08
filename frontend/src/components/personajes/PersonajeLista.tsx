@@ -124,8 +124,6 @@ export default function PersonajeLista({
                 key={p.idPersonaje}
                 className={`personaje-card ${esSeleccionado ? 'seleccionado' : ''}`}
                 onClick={() => onSeleccionar?.(p)}
-                role={onSeleccionar ? 'button' : undefined}
-                tabIndex={onSeleccionar ? 0 : undefined}
               >
                 <div>
                   <div className="personaje-top">

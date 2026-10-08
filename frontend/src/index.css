@@ -1,189 +1,545 @@
+/* ==========================================================================
+   GESTOR DE TURNOS - JUEGOS DE ROL
+   Design System & Unified Global Theme Tokens
+   ========================================================================== */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  /* Variante del acento para fondos con texto blanco: #aa3bff queda en 4.39:1 y no alcanza. */
-  --accent-solid: #7c22c9;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(169, 57, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  /* Default: Dark Theme Tokens */
+  --bg: #0d0f17;
+  --bg-secondary: #131722;
+  --bg-card: #171b29;
+  --bg-card-secondary: #1f2438;
+  --bg-card-hover: #23293f;
+  --border: #28304a;
+  --border-subtle: #1e2436;
+  --border-focus: #8b5cf6;
+  --code-bg: #1c2133;
+  
+  --text: #cbd5e1;
+  --text-h: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-inverse: #0d0f17;
 
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
+  /* Brand / Accent Colors (Mystic Violet & Cosmic Gold) */
+  --accent: #c084fc;
+  --accent-solid: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-text: #e9d5ff;
+  --accent-bg: rgba(168, 85, 247, 0.15);
+  --accent-border: rgba(168, 85, 247, 0.4);
+  --accent-glow: 0 0 20px rgba(168, 85, 247, 0.25);
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  /* Status Colors */
+  --success-bg: rgba(16, 185, 129, 0.15);
+  --success-border: rgba(16, 185, 129, 0.4);
+  --success-text: #34d399;
+  --success-solid: #10b981;
+
+  --error-bg: rgba(239, 68, 68, 0.15);
+  --error-border: rgba(239, 68, 68, 0.4);
+  --error-text: #f87171;
+  --error-solid: #ef4444;
+
+  --warning-bg: rgba(245, 158, 11, 0.15);
+  --warning-border: rgba(245, 158, 11, 0.4);
+  --warning-text: #fbbf24;
+  --warning-solid: #f59e0b;
+
+  --info-bg: rgba(59, 130, 246, 0.15);
+  --info-border: rgba(59, 130, 246, 0.4);
+  --info-text: #60a5fa;
+  --info-solid: #3b82f6;
+
+  /* Shadows & Radius */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.5), 0 2px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 10px 30px -4px rgba(0, 0, 0, 0.7), 0 4px 12px -2px rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 25px -5px rgba(139, 92, 246, 0.3);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Typography */
+  --sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --heading: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
   color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  background-color: var(--bg);
+  color-scheme: dark;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  font-size: 16px;
-  @media (min-width: 1024px) {
-    font-size: 18px;
-  }
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-solid: #7c3aed;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+/* Light Theme Tokens */
+[data-theme='light'] {
+  --bg: #f8fafc;
+  --bg-secondary: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-secondary: #f1f5f9;
+  --bg-card-hover: #f8fafc;
+  --border: #e2e8f0;
+  --border-subtle: #edf2f7;
+  --border-focus: #7c3aed;
+  --code-bg: #f1f5f9;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
-  }
+  --text: #334155;
+  --text-h: #0f172a;
+  --text-muted: #475569;
+  --text-inverse: #ffffff;
+
+  --accent: #7c3aed;
+  --accent-solid: #6d28d9;
+  --accent-hover: #5b21b6;
+  --accent-text: #6d28d9;
+  --accent-bg: rgba(124, 58, 237, 0.08);
+  --accent-border: rgba(124, 58, 237, 0.3);
+  --accent-glow: 0 0 20px rgba(124, 58, 237, 0.15);
+
+  --success-bg: #ecfdf5;
+  --success-border: #a7f3d0;
+  --success-text: #065f46;
+  --success-solid: #10b981;
+
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #991b1b;
+  --error-solid: #ef4444;
+
+  --warning-bg: #fffbeb;
+  --warning-border: #fde68a;
+  --warning-text: #92400e;
+  --warning-solid: #f59e0b;
+
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --info-text: #1e40af;
+  --info-solid: #3b82f6;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  --shadow-glow: 0 0 25px -5px rgba(124, 58, 237, 0.2);
+
+  color-scheme: light;
 }
 
-#root {
-  min-height: 100svh;
+/* Explicit Dark Theme Selector */
+[data-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   Base Elements Reset & Typography
+   ========================================================================== */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
   margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
-h1,
-h2 {
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+h1, h2, h3, h4, h5, h6 {
   font-family: var(--heading);
-  font-weight: 500;
+  font-weight: 700;
   color: var(--text-h);
+  letter-spacing: -0.02em;
+  margin-top: 0;
 }
 
 h1 {
-  font-size: 36px;
-  letter-spacing: -1.68px;
-  margin: 20px 0;
-  @media (min-width: 1024px) {
-    font-size: 56px;
-    margin: 32px 0;
-  }
-}
-h2 {
-  font-size: 20px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (min-width: 1024px) {
-    font-size: 24px;
-  }
-}
-p {
-  margin: 0;
+  font-size: clamp(1.75rem, 3.5vw, 2.5rem);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+h2 {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  line-height: 1.3;
+  margin-bottom: 0.5rem;
+}
+
+h3 {
+  font-size: 1.2rem;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+p {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s ease;
+}
+
+a:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
 }
 
 code {
-  font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
+  font-family: var(--mono);
+  font-size: 0.875em;
   background: var(--code-bg);
+  color: var(--text-h);
+  padding: 0.2em 0.4em;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
 }
 
-/* Tablas anchas: se desplazan dentro de su propio contenedor y no arrastran la pantalla. */
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 1.5rem 0;
+}
+
+/* ==========================================================================
+   Form Controls: Inputs, Selects, Buttons
+   ========================================================================== */
+
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  width: 100%;
+  max-width: 100%;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  color: var(--text-h);
+  background-color: var(--bg-card-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+input:not([type='checkbox']):not([type='radio']):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--border-focus);
+  background-color: var(--bg-card);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.8;
+}
+
+input[type='checkbox'],
+input[type='radio'] {
+  accent-color: var(--accent-solid);
+  width: 1.1rem;
+  height: 1.1rem;
+  cursor: pointer;
+}
+
+label {
+  color: var(--text-h);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+button,
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.1rem;
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+  text-decoration: none;
+  background-color: var(--bg-card-secondary);
+  color: var(--text-h);
+}
+
+button:hover:not(:disabled),
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm);
+}
+
+button:active:not(:disabled),
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+button:disabled,
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Primary Button (Accent Violet) */
+.btn-primary,
+.btn-purple,
+.btn-nuevo,
+.auth-primario {
+  background: linear-gradient(135deg, var(--accent-solid) 0%, var(--accent-hover) 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.35);
+}
+
+.btn-primary:hover:not(:disabled),
+.btn-purple:hover:not(:disabled),
+.btn-nuevo:hover:not(:disabled),
+.auth-primario:hover:not(:disabled) {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-solid) 100%);
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.45);
+}
+
+/* Secondary Button */
+.btn-secondary,
+.auth-secundario {
+  background-color: var(--bg-card-secondary);
+  color: var(--text-h);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover:not(:disabled),
+.auth-secundario:hover:not(:disabled) {
+  background-color: var(--bg-card-hover);
+  border-color: var(--border-focus);
+}
+
+/* Danger Button */
+.btn-danger,
+.btn-eliminar,
+.boton-eliminar {
+  background-color: var(--error-bg);
+  color: var(--error-text) !important;
+  border: 1px solid var(--error-border);
+}
+
+.btn-danger:hover:not(:disabled),
+.btn-eliminar:hover:not(:disabled),
+.boton-eliminar:hover:not(:disabled) {
+  background-color: var(--error-solid);
+  color: #ffffff !important;
+  border-color: var(--error-solid);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.35);
+}
+
+/* Small Button */
+.btn-small {
+  padding: 0.35rem 0.65rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+}
+
+/* ==========================================================================
+   Card & Panel Containers
+   ========================================================================== */
+
+.card,
+.panel-detalle,
+.panel-formulario,
+.perfil-card,
+.stat-card,
+.objeto-card,
+.partida-card,
+.usuario-card,
+.clase-card,
+.personaje-card {
+  background-color: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover,
+.objeto-card:hover,
+.partida-card:hover,
+.usuario-card:hover,
+.clase-card:hover,
+.personaje-card:hover {
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-lg);
+}
+
+/* ==========================================================================
+   Table Styles
+   ========================================================================== */
+
 .tabla-scroll {
   width: 100%;
   max-width: 100%;
   overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  box-shadow: var(--shadow-sm);
 }
 
-/* Ningún control debe forzar el ancho de la pantalla en un teléfono. */
-input,
-select,
-textarea {
-  max-width: 100%;
-}
-
-table {
-  border-collapse: collapse;
-}
-
-/* Tablas y formularios de sesiones y misiones, que no tenían estilos propios. */
 .app-table {
   width: 100%;
-  font-size: 0.95rem;
+  border-collapse: collapse;
+  font-size: 0.925rem;
+  text-align: left;
 }
 
-.app-table th,
-.app-table td {
-  padding: 0.5rem;
-  font-size: 0.85rem;
-  text-align: left;
+.app-table th {
+  background-color: var(--bg-card-secondary);
+  color: var(--text-h);
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--border);
   white-space: nowrap;
 }
 
-@media (min-width: 640px) {
-  .app-table th,
-  .app-table td {
-    padding: 0.6rem 0.75rem;
-    font-size: 0.95rem;
-  }
+.app-table td {
+  padding: 0.85rem 1rem;
+  color: var(--text);
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  transition: background-color 0.15s ease;
 }
 
-/* En pantalla chica la tabla se desplaza en horizontal: la primera columna queda fija
-   para no perder de vista a qué registro pertenece cada fila. */
+.app-table tbody tr:hover td {
+  background-color: var(--bg-card-hover);
+  color: var(--text-h);
+}
+
 .app-table th:first-child,
 .app-table td:first-child,
 .module-table th:first-child,
 .module-table td:first-child {
   position: sticky;
   left: 0;
-  background: var(--bg);
+  background: inherit;
   z-index: 1;
 }
 
+/* ==========================================================================
+   App Form Utilities
+   ========================================================================== */
+
+.app-form label {
+  display: block;
+  margin-bottom: 0.85rem;
+  font-weight: 600;
+  color: var(--text-h);
+}
 
 .app-form input:not([type='checkbox']),
 .app-form select {
   display: block;
   width: 100%;
-  max-width: 30rem;
-  margin-top: 0.25rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  border-radius: 6px;
+  max-width: 32rem;
+  margin-top: 0.35rem;
+}
+
+/* Status Badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.badge-jugador,
+.badge-publica,
+.badge-info {
+  background: var(--info-bg);
+  color: var(--info-text);
+  border: 1px solid var(--info-border);
+}
+
+.badge-anfitrión,
+.badge-privada,
+.badge-warning {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  border: 1px solid var(--warning-border);
+}
+
+.badge-activa,
+.badge-active,
+.badge-success {
+  background: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
+}
+
+.badge-finalizada,
+.badge-usuario {
+  background: var(--bg-card-secondary);
+  color: var(--text-muted);
   border: 1px solid var(--border);
-  box-sizing: border-box;
-  outline: none;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
   background: var(--bg);
-  color: var(--text);
-  transition: border-color 0.2s;
 }
-.app-form input:focus, .app-form select:focus {
-  border-color: var(--accent-solid);
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
-.app-form label {
-  font-size: 1rem;
-  font-weight: 500;
-  color: var(--text-h);
-  display: block;
-  margin-top: 1rem;
-  margin-bottom: 0.25rem;
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-solid);
 }
