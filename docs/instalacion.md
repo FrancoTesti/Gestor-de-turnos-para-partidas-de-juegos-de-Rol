@@ -3,7 +3,9 @@
 ## Requisitos
 
 - Node compatible con Vite instalado: `^20.19.0 || >=22.12.0`.
-- npm y MySQL 8 en ejecución.
+- npm.
+- Una cuenta gratuita en [Supabase](https://supabase.com), que aloja la base PostgreSQL. No hace falta
+  instalar ninguna base de datos en la máquina.
 - Dos terminales: una en la raíz del repositorio y otra en `frontend/`.
 
 ## Dependencias
@@ -21,50 +23,56 @@ cd ..
 
 ## Base de datos
 
-### Instalar MySQL en Windows
+La aplicación usa PostgreSQL alojado en Supabase, un servicio independiente con persistencia en disco,
+al que se accede mediante MikroORM.
 
-Si la máquina todavía no tiene el servidor (no alcanza con MySQL Workbench, que es solo la interfaz
-gráfica), instalarlo antes de seguir:
+### Crear el proyecto en Supabase
 
-1. Descargar **MySQL Installer** desde el sitio oficial: <https://dev.mysql.com/downloads/installer/>.
-   Elegir el MSI grande (unos 450 MB), no el `web-community`. Debajo del botón hay un enlace
-   «No thanks, just start my download» para saltear la cuenta de Oracle.
-2. La instalación **pide permisos de administrador** de Windows. Sin esa contraseña no se puede
-   completar; en ese caso queda la alternativa de usar el MySQL de otra máquina y apuntar `DB_HOST`
-   a su dirección.
-3. Si antes hubo otro MySQL en la máquina, puede quedar una carpeta de datos en
-   `C:\ProgramData\MySQL\MySQL Server 8.0`. Si el instalador se queja de que ya existe,
-   **renombrarla** (por ejemplo a `MySQL Server 8.0.old`) en lugar de borrarla.
-4. En el asistente: tipo de instalación **Server only**, puerto **3306**, «Use Strong Password
-   Encryption» y servicio de Windows activado. **Anotar la contraseña de root**: no se puede
-   recuperar y se necesita para el `.env`.
-5. Comprobar que quedó escuchando:
+1. Crear una cuenta en <https://supabase.com> y un proyecto nuevo. Al crearlo hay que elegir una
+   **contraseña de la base de datos**: conviene que tenga solo letras y números, porque va dentro de
+   una URL y símbolos como `@ : / # ? %` la rompen. Si se pierde, se restablece en
+   *Project Settings → Database*.
+2. Elegir la región más cercana a donde correrá el backend: cada consulta viaja por red, y una región
+   lejana se nota en los tiempos de respuesta.
+3. Abrir **Connect**, entrar en la pestaña **Direct** (*Connection string*) y, en *Method*, elegir
+   **Session pooler** (puerto 5432). La conexión directa de Supabase es solo IPv6 y falla en muchas
+   redes; el Session pooler funciona por IPv4.
+4. Copiar la cadena, que se ve así, y reemplazar `[YOUR-PASSWORD]` por la contraseña, sin los corchetes:
 
-```powershell
-Get-Service MySQL* | Select-Object Name, Status
-Test-NetConnection 127.0.0.1 -Port 3306
+```text
+postgresql://postgres.<codigo-del-proyecto>:<contraseña>@aws-0-<region>.pooler.supabase.com:5432/postgres
 ```
-
-El servidor escucha solo en `127.0.0.1`: no queda expuesto a la red. La base de este proyecto es
-descartable y se puede recrear en cualquier momento.
 
 ### Configurar la conexión
 
-Copiar `.env.example` a `.env` y completar `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` y `PORT`. No subir `.env` al repositorio.
+Copiar `.env.example` a `.env` y completar `SUPABASE_DB_URL` con esa cadena (una sola línea, sin comillas
+ni espacios alrededor del `=`). No subir `.env` al repositorio. Para comprobar que la conexión es válida:
 
-Para una instalación nueva, crear una base vacía en MySQL, por ejemplo:
-
-```sql
-CREATE DATABASE rpg_desarrollo CHARACTER SET utf8mb4;
+```sh
+npm run db:probar
 ```
 
-Configurar `DB_NAME=rpg_desarrollo` y un usuario con permisos sobre esa base. Desde la raíz:
+El script se conecta, crea y revierte un esquema temporal con una tabla, prueba `SELECT ... FOR UPDATE` y
+nunca imprime la contraseña.
+
+### Crear las tablas
+
+En un proyecto nuevo y vacío, desde la raíz:
 
 ```sh
 npm run schema:create
+npm run db:rls
 ```
 
-Usar ese comando únicamente en una base nueva y vacía. Si ya hay datos, conservarlos: esta actualización no necesita recrear tablas. `SQL/rpg.sql` es una alternativa histórica que contiene estructura y datos de ejemplo; no ejecutarlo además de `schema:create` ni sobre una base existente.
+- `schema:create` crea las 12 tablas a partir de las entidades. Usarlo únicamente en una base nueva y
+  vacía: si ya hay datos, conservarlos.
+- `db:rls` activa Row Level Security en todas las tablas, sin políticas. Supabase expone el esquema `public`
+  por una API REST con una clave pública; sin RLS, cualquiera con esa clave podría leer tablas como
+  `usuarios`. El backend se conecta como dueño de las tablas y no se ve afectado. Es idempotente y hay
+  que volver a ejecutarlo si se recrean las tablas.
+
+`SQL/rpg.sql` es la versión histórica del esquema en sintaxis MySQL: no sirve para PostgreSQL y no hay que
+ejecutarla. La fuente de verdad del esquema son las entidades de `src/entities/`.
 
 El catálogo puede cargarse desde la interfaz con una cuenta de anfitrión, o bien mediante el script de datos de demostración. Las cuentas nuevas también se pueden crear desde Registro.
 
@@ -84,7 +92,7 @@ Este script crea los usuarios `dm_demo` (anfitrión) y `jugador_demo` (jugador) 
 
 Las contraseñas nuevas de usuarios y partidas privadas se guardan con scrypt y sal aleatoria, no como texto. Los usuarios antiguos no pueden iniciar sesión hasta migrarlos; las claves antiguas de partidas privadas también requieren la migración.
 
-1. Hacer una copia de seguridad de la base.
+1. Hacer una copia de seguridad de la base (ver [respaldo.md](respaldo.md)).
 2. Detener el backend y confirmar que `.env` apunta a la base correcta.
 3. Revisar sin modificar datos:
 
@@ -116,23 +124,39 @@ npm run dev
 
 Abrir `http://localhost:5173`. Vite reenvía `/api` al backend en el puerto 3000. Si cambian ese puerto, actualizar el destino en `frontend/vite.config.ts`. El origen permitido por defecto es `http://localhost:5173`; si usan otra dirección, configurar `CORS_ORIGIN` exactamente igual (incluido el puerto).
 
+### Todo desde un solo servidor
+
+El backend también sirve el frontend compilado, de modo que la aplicación completa queda en un único
+origen, como en una publicación real:
+
+```sh
+npm run build
+npm --prefix frontend run build
+npm start
+```
+
+Abrir `http://localhost:3000`. El servidor acepta las peticiones que llegan desde su propio origen, así que
+en este modo no hace falta tocar `CORS_ORIGIN`.
+
 Para Live Share, el anfitrión ejecuta ambos procesos y comparte el servidor de Vite. Los invitados deben usar ese mismo frontend y su proxy `/api`, no conectar a su propio `localhost:3000`. Si la URL compartida cambia el origen, el anfitrión debe ajustar `CORS_ORIGIN` y reiniciar el backend.
 
 ## Pruebas
 
 Backend: `npm run build` y `npm test`. Frontend: `npm run build`, `npm run lint` y `npm test` desde `frontend/`.
 
-Las pruebas de integración usan MySQL real y necesitan un usuario de pruebas con permiso para crear y eliminar bases. No usan `DB_NAME`, `DB_USER` ni `DB_PASSWORD` de desarrollo. Ejemplo en PowerShell, contra un MySQL local de pruebas:
+Las pruebas de integración usan PostgreSQL real. Reciben la conexión en `TEST_DB_URL` (puede ser la misma
+URL de `SUPABASE_DB_URL`) y **nunca tocan el esquema `public`**: cada ejecución crea un esquema
+`rpg_test_<aleatorio>` dentro de esa base, corre los casos y elimina solo ese esquema. Si `TEST_DB_URL` no
+está definida, la suite falla antes de tocar nada. Ejemplo en PowerShell:
 
 ```powershell
-$env:TEST_DB_HOST = '127.0.0.1'
-$env:TEST_DB_PORT = '3306'
-$env:TEST_DB_USER = 'usuario_pruebas'
-$env:TEST_DB_PASSWORD = 'completar_localmente'
+$env:TEST_DB_URL = 'postgresql://postgres.<codigo>:<contraseña>@aws-0-<region>.pooler.supabase.com:5432/postgres'
 npm run test:integration
 ```
 
-El comando genera un nombre `rpg_test_<aleatorio>`, crea la base, ejecuta los casos y elimina solo esa base. No limpia ninguna base preexistente. Si el proceso es interrumpido abruptamente puede quedar una base temporal; identificarla antes de eliminarla manualmente. Para aislamiento máximo, ejecutar las pruebas en otra instancia de MySQL.
+Si el proceso se interrumpe abruptamente puede quedar un esquema temporal; identificarlo (`rpg_test_*` o
+`rpg_e2e_*`) antes de eliminarlo manualmente. Contra un PostgreSQL local o de integración continua, que no
+tiene SSL, agregar `DB_SSL=false`.
 
 ### Cobertura
 
@@ -141,7 +165,7 @@ Cada suite mide su propia cobertura, porque miden cosas distintas:
 ```sh
 npm run test:coverage              # unitarias del backend (Vitest)
 cd frontend && npm run test:coverage   # unitarias del frontend
-cd .. && npm run test:coverage:integration   # integración contra MySQL (c8)
+cd .. && npm run test:coverage:integration   # integración contra PostgreSQL (c8)
 ```
 
 `test:coverage:integration` compila, ejecuta la suite de integración instrumentada con `c8` y falla
@@ -151,37 +175,44 @@ si la cobertura baja de los umbrales declarados en `package.json`. Los informes 
 
 ### Pruebas de navegador (E2E)
 
-Los recorridos de navegador usan Playwright con Chromium y necesitan el backend compilado, MySQL y un usuario de pruebas. Desde la raíz:
+Los recorridos de navegador usan Playwright con Chromium y necesitan el backend compilado y `TEST_DB_URL`. Desde la raíz:
 
 ```powershell
 npm ci
 npm --prefix frontend ci
 npx playwright install chromium
-$env:TEST_DB_HOST = '127.0.0.1'
-$env:TEST_DB_PORT = '3306'
-$env:TEST_DB_USER = 'usuario_pruebas'
-$env:TEST_DB_PASSWORD = 'completar_localmente'
+$env:TEST_DB_URL = 'postgresql://postgres.<codigo>:<contraseña>@aws-0-<region>.pooler.supabase.com:5432/postgres'
 npm run test:e2e
 ```
 
-La suite crea una base `rpg_e2e_<aleatorio>`, levanta Express en el puerto 3101 y Vite en el 5174, ejecuta los recorridos y elimina únicamente su propia base. Nunca usa `DB_NAME`. Si los puertos 3101 o 5174 están ocupados, el preparador falla antes de ejecutar los casos. Las capturas y trazas de los fallos quedan en `test-results/`, que no se versiona. El detalle de cada recorrido y sus límites está en [entrega.md](entrega.md).
+La suite crea un esquema `rpg_e2e_<aleatorio>`, levanta Express en el puerto 3101 y Vite en el 5174, ejecuta los recorridos y elimina únicamente su propio esquema. Nunca toca `public`. Si los puertos 3101 o 5174 están ocupados, el preparador falla antes de ejecutar los casos. Las capturas y trazas de los fallos quedan en `test-results/`, que no se versiona. El detalle de cada recorrido y sus límites está en [entrega.md](entrega.md).
+
+Cada consulta a una base remota tarda decenas o cientos de milisegundos, y los recorridos largos (juego
+completo con dos cuentas, auditoría de accesibilidad) pueden superar el límite de 60 s por prueba. Contra
+Supabase desde otro continente, ampliarlo con `E2E_TIMEOUT_MS`:
+
+```powershell
+$env:E2E_TIMEOUT_MS = '240000'
+npm run test:e2e
+```
 
 ## Sesiones y despliegue
 
 Las sesiones duran ocho horas y usan cookies HttpOnly y SameSite=Strict. La recarga del navegador conserva el ingreso; cerrar sesión, cambiar la contraseña o reiniciar el backend lo invalida. Los tokens se guardan solo en memoria del servidor: un despliegue con varias instancias necesitará un almacén de sesiones compartido.
 
-En producción usar HTTPS, `NODE_ENV=production` (cookie Secure), un origen explícito y un proxy que sirva frontend y `/api` bajo el mismo sitio. `npm run build` genera el backend; `npm start` lo ejecuta. El frontend se compila aparte y necesita fallback a `index.html` para las rutas de React.
+En producción usar HTTPS, `NODE_ENV=production` (cookie Secure y `trust proxy`) y un único servicio que sirva el frontend y `/api` bajo el mismo sitio: `npm start` ya lo hace si existe `frontend/dist`. Ver [despliegue.md](despliegue.md).
 
 ## Problemas frecuentes
 
-- `ECONNREFUSED 127.0.0.1:3306` al ejecutar `npm run dev`: no hay ningún MySQL escuchando. Revisar
-  que el servicio esté iniciado (`Get-Service MySQL*`) y que exista el archivo `.env`; sin `.env` la
-  configuración cae a `127.0.0.1`, usuario `root` y base `hola`, aunque la base esté en otra máquina.
+- `SUPABASE_DB_URL` ausente: sin esa variable el backend no tiene a qué conectarse. Revisar que exista el archivo `.env` en la raíz y que la línea no tenga comillas ni espacios alrededor del `=`.
+- `28P01 password authentication failed`: la contraseña de la URL no coincide con la de la base. Si tiene `@ : / # ? %`, restablecerla por una solo alfanumérica en *Project Settings → Database* y actualizar el `.env`.
+- `ENOTFOUND db.<codigo>.supabase.co` o `ENETUNREACH`: se está usando la conexión directa, que es solo IPv6. Usar la cadena del **Session pooler** (puerto 5432).
+- `The server does not support SSL connections`: es un PostgreSQL sin SSL (local o de integración continua). Definir `DB_SSL=false`.
 - `Error HTTP 502` en el navegador: el frontend está levantado pero el backend no. Iniciar `npm run dev`
   en la raíz; la pantalla avisa que el servidor no responde.
-- Error de conexión: comprobar que MySQL esté iniciado y que puerto/credenciales sean correctos.
+- Las pantallas tardan en cargar: cada consulta viaja a la región de Supabase. Elegir una región cercana al backend; ver [despliegue.md](despliegue.md).
 - Login rechazado con cuentas antiguas: revisar la migración, no borrar usuarios ni desactivar la autenticación.
 - `401`: la sesión falta o expiró. Volver a ingresar.
-- `403`: operación ajena, rol insuficiente u origen incorrecto.
+- `403`: operación ajena, rol insuficiente u origen incorrecto (un origen distinto del servidor y de `CORS_ORIGIN`).
 - `409` al borrar: el registro tiene relaciones o historial que deben conservarse.
 - No aparecen cambios compartidos: verificar que los archivos estén guardados en la PC anfitriona; Live Share no guarda automáticamente el repositorio en las PCs invitadas.

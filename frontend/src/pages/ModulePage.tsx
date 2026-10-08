@@ -86,8 +86,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     <h1>{config.title}</h1>
     {error && <p role="alert">{error}</p>}
     {loading && <p role="status">Cargando…</p>}
-    <button disabled={busy} onClick={() => { setError(''); setLoading(true); setRevision(n => n + 1); }}>Actualizar listado</button>
-    {!editing && allowed() && <button onClick={() => startEdit()}>Crear</button>}
+    <button className="btn-secondary" disabled={busy} onClick={() => { setError(''); setLoading(true); setRevision(n => n + 1); }}>Actualizar listado</button>
+    {!editing && allowed() && <button className="btn-primary" onClick={() => startEdit()}>Crear</button>}
     {editing ? <form onSubmit={e => { e.preventDefault(); void save(); }}>
       <h2>{selected ? 'Editar' : 'Crear'} {config.title.toLowerCase()}</h2>
       {config.fields.filter(f => !selected || !f.createOnly).map(f => <label key={f.key}>{f.label}
@@ -97,16 +97,33 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         </select> : f.key === 'estado' ? <select value={String(values.estado)} onChange={e => setValues({ ...values, estado: e.target.value })}><option value="activa">Activa</option><option value="finalizada">Finalizada</option></select> :
         <input type={f.type === 'boolean' ? 'checkbox' : f.type ?? 'text'} required={!f.optional && f.type !== 'boolean'} min={f.min} max={f.max ?? (f.type === 'number' ? 2147483647 : undefined)} step={f.type === 'number' ? 1 : undefined} maxLength={f.type === 'password' ? 100 : undefined} checked={f.type === 'boolean' ? Boolean(values[f.key]) : undefined} value={f.type === 'boolean' ? undefined : String(values[f.key] ?? '')} onChange={e => setValues({ ...values, [f.key]: f.type === 'boolean' ? e.target.checked : e.target.value })} />}
       </label>)}
-      <button disabled={busy} type="submit">Guardar</button><button type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
+      <button className="btn-primary" disabled={busy} type="submit">Guardar</button><button className="btn-secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
     </form> : <>
-      <label>Buscar <input value={search} onChange={e => setSearch(e.target.value)} /></label>
-      {resource === 'personajes' && <label>Filtrar por clase <select value={classFilter} onChange={e => setClassFilter(e.target.value)}><option value="">Todas</option>{refs.clases?.map(c => <option key={String(c.idClase)} value={String(c.idClase)}>{label(c)}</option>)}</select></label>}
-      {resource === 'partidas' && <label><input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />Solo partidas activas</label>}
-      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => <td key={k}>{display(r, k)}</td>)}<td><button onClick={() => void detail(r)}>Ver detalle</button>{allowed(r) && <><button onClick={() => startEdit(r)}>Editar</button><button disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
+      <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'center', background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+          Buscar: <input value={search} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
+        </label>
+        {resource === 'personajes' && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+            Filtrar por clase:
+            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
+              <option value="">Todas</option>
+              {refs.clases?.map(c => <option key={String(c.idClase)} value={String(c.idClase)}>{label(c)}</option>)}
+            </select>
+          </label>
+        )}
+        {resource === 'partidas' && (
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
+            <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
+            Solo partidas activas
+          </label>
+        )}
+      </div>
+      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => <td key={k}>{display(r, k)}</td>)}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
       {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{config.fields.find(f => f.key === k)?.label ?? k}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
         <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} />
-        <button onClick={() => setSelected(null)}>Cerrar detalle</button>
+        <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
       </article>}
     </>}
   </section>;
@@ -133,7 +150,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
         <h3>Mochila / Inventario #{String(row.numInventario)}</h3>
         {error && <p role="alert">{error}</p>}
-        <p style={{ fontSize: '0.9rem', color: '#4a5568' }}>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text)' }}>
           Capacidad: <strong>{objects.length} / {totalCapacity} espacios ocupados</strong> ({freePositions.length} libres)
         </p>
 
@@ -151,11 +168,11 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
                   fontSize: '0.85rem',
                 }}
               >
-                <div style={{ fontWeight: 600, color: '#4a5568', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.75rem' }}>Casillero #{idx}</div>
                 {item ? (
                   <div style={{ marginTop: '0.2rem' }}>
                     <strong>{label(item)}</strong>
-                    <div style={{ color: '#4a5568', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
+                    <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
                   </div>
                 ) : (
                   <span style={{ color: '#a0aec0', fontStyle: 'italic' }}>[ Libre ]</span>
@@ -177,7 +194,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
             }
             void perform(() => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: posNum }));
           }}
-          style={{ background: '#f7fafc', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid #e2e8f0' }}
+          style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid var(--border)' }}
         >
           <h4 style={{ marginTop: 0 }}>Mover objeto a este inventario</h4>
           {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>⚠️ Capacidad insuficiente: Este inventario está lleno.</p>}
@@ -219,10 +236,10 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
             e.preventDefault();
             void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) }));
           }}
-          style={{ background: '#f7fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}
+          style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
         >
           <h4 style={{ marginTop: 0 }}>Vender objeto de este inventario</h4>
-          <p style={{ fontSize: '0.85rem', color: '#4a5568' }}>Elegí un precio entero entre el 70 % y el 100 % del valor base.</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Elegí un precio entero entre el 70 % y el 100 % del valor base.</p>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto a vender
             <select

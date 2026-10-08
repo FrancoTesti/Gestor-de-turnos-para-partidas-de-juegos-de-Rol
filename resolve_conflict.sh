@@ -1,3 +1,5 @@
+#!/bin/bash
+cat << 'API' > docs/api.md
 # Documentación de la API HTTP
 
 Rutas base: `http://localhost:3000/api`
@@ -24,42 +26,42 @@ correspondiente.
 
 ## Catálogos `/clases` y `/tiendas`
 
-Las clases y tiendas están disponibles para lectura para todo usuario autenticado. La administración
-(creación, edición y borrado) está restringida a usuarios con perfil de anfitrión.
+Las clases y tiendas están predefinidas y son de solo lectura. Todo usuario autenticado puede
+leerlas.
 
-- `GET /clases` — devuelve el listado completo (`[{ idClase, nombreClase, descripcionClase }]`).
-- `GET /clases/:id` — devuelve la clase (`{ idClase, nombreClase, descripcionClase }`). **404** si no existe; **400** si el ID es inválido.
-- `POST /clases` — `{ nombreClase, descripcionClase }`. Solo anfitriones (**403** si no es anfitrión). Devuelve la clase creada (**201**); **400** si los datos son inválidos o faltan campos obligatorios.
-- `PUT /clases/:id` — `{ nombreClase?, descripcionClase? }`. Solo anfitriones (**403**). Devuelve la clase actualizada (**200**); **404** si no existe; **400** si no se envía ningún campo o los datos son inválidos.
-- `DELETE /clases/:id` — solo anfitriones (**403**). Devuelve **204** sin cuerpo. **404** si no existe; **409** si la clase tiene datos relacionados (personajes, objetos).
+- `GET /clases` — devuelve el listado completo (`[{ idClase, nombre, descripcion, puntosVida }]`).
+- `GET /clases/:id` — devuelve la clase si existe (**404** si no).
 - `GET /tiendas` — devuelve el catálogo de objetos de todas las tiendas (solo hay una por clase).
 - `GET /tiendas/:id` — **404** si la tienda no existe. Devuelve los objetos a la venta
   `[{ idObjeto, nombre, descripcion, clase: { idClase, nombre }, valor, unico }]`.
 
 ## Partidas `/partidas`
 
-- `GET /partidas` — devuelve todas las partidas (`[{ idPartida, nombre, estado, limiteJugadores, esPrivada, idUsuarioAnfitrion, nicknameAnfitrion }]`).
-- `GET /partidas/activas` — lista de partidas donde `estado` es `'activa'` para que los jugadores puedan unirse (`[{ idPartida, nombre, estado: "activa", limiteJugadores, esPrivada, idUsuarioAnfitrion, nicknameAnfitrion }]`).
-- `GET /partidas/:id` — detalle de la partida (`PartidaPublicaDTO`). **404** si no existe; **400** si el ID es inválido.
-- `POST /partidas` — `{ nombre, estado, limiteJugadores, esPrivada, contrasena?, idUsuarioAnfitrion }`.
-  Solo anfitriones (**403** si no es anfitrión o si el `idUsuarioAnfitrion` no coincide con el usuario autenticado). Si `esPrivada` es `true`, requiere `contrasena`; si es `false`, no debe tener contraseña (**400**). Devuelve **201** con la partida creada.
-- `PUT /partidas/:id` — `{ nombre?, estado?, limiteJugadores?, esPrivada?, contrasena? }`.
-  Solo el anfitrión dueño de la partida (**403**). Devuelve la partida actualizada (**200**). **404** si no existe; **400** si los datos son inválidos, si se reduce `limiteJugadores` por debajo de los personajes ya inscritos, o si se intenta cambiar `estado` a `'finalizada'` teniendo una sesión en curso.
-- `DELETE /partidas/:id` — solo el anfitrión dueño (**403**). Devuelve **204** sin cuerpo. **404** si no existe; **409** si tiene personajes o sesiones asociadas.
+- `GET /partidas` — devuelve todas las partidas del anfitrión (para armar el dashboard).
+- `GET /partidas/activas` — lista pública de partidas donde se pueden unir personajes
+  (`[{ idPartida, nombre, anfitrion: { usuario: { nombreUsuario } }, publico }]`).
+- `GET /partidas/:id` — detalle de la partida, accesible solo para el anfitrión (trae el arreglo
+  de sesiones) y los jugadores que tienen personaje ahí. **404** si no existe; **403** si no tenés
+  acceso.
+- `POST /partidas` — `{ nombre, contrasena? }`. Si no se envía contraseña, la partida es pública.
+  El creador queda como anfitrión. **400** si el nombre está vacío.
+- `PUT /partidas/:id` — `{ nombre, contrasena? }`. Omita `contrasena` (o envíe string vacío) para
+  hacerla pública. **403** si no sos el dueño; **400** si el nombre está vacío.
+- `DELETE /partidas/:id` — **409** si tiene personajes o sesiones, **403** si no sos el dueño.
 
 ## Personajes `/personajes`
 
-- `GET /personajes` — devuelve los personajes (`[{ idPersonaje, nombreFicticio, raza, xp, nivel, dinero, idClase, claseNombre, idUsuarioJugador, jugadorNombre, idPartida, partidaNombre }]`).
-- `GET /personajes?idClase=2` — filtra los personajes por ID de clase.
-- `GET /personajes/:id` — detalle completo del personaje. **404** si no existe; **400** si el ID es inválido.
-- `POST /personajes` — `{ nombreFicticio, raza, idClase, idPartida, idUsuarioJugador, contrasenaPartida? }`.
-  Solo usuarios con perfil de jugador (**403** si no tiene perfil de jugador o si `idUsuarioJugador` no coincide con el usuario autenticado). Inicializa automáticamente `dinero: 100`, `xp: 0`, `nivel: 1` y crea el inventario inicial (número 1 con capacidad 10) en una sola transacción. Devuelve **201** con el personaje creado.
-  - **400** si faltan campos requeridos o son inválidos.
-  - **404** si la clase, el jugador o la partida no existen.
-  - **409** si la partida está finalizada, el jugador está inactivo, la contraseña de la partida privada es incorrecta o falta, el cupo de jugadores está lleno, o el jugador ya tiene un personaje en esa partida.
-- `PUT /personajes/:id` — `{ nombreFicticio?, raza?, idClase? }`.
-  Solo el jugador dueño del personaje (**403** si pertenece a otro jugador o si se intentan modificar campos no editables como `dinero`, `xp` o `nivel`). Devuelve **200** con el personaje actualizado; **404** si no existe el personaje o la clase; **400** si no se envía ningún campo o los datos son inválidos.
-- `DELETE /personajes/:id` — solo el jugador dueño (**403**). Devuelve **204** sin cuerpo. **404** si no existe; **409** si tiene objetos en el inventario («Vendé los objetos antes de borrar el personaje») o historial de sesiones («No se puede borrar un personaje con historial de sesiones»). Si no tiene dependencias bloqueantes, elimina automáticamente los inventarios vacíos y el personaje.
+- `GET /personajes` — personajes del jugador logueado (`[{ idPersonaje, nombreFicticio, raza }]`).
+- `GET /personajes?idClase=2` — filtra los personajes por id de clase.
+- `GET /personajes/:id` — `{ idPersonaje, nombreFicticio, raza, clase, jugador, partida }`.
+  Muestra todo el detalle.
+- `POST /personajes` — `{ nombreFicticio, raza, idClase, idPartida, contrasena? }`.
+  El jugador se une a una partida. **403** si la partida no está activa; **409** si el cupo
+  de jugadores está lleno (6) o si la partida es privada y la contraseña no coincide. Devuelve
+  **401** (con el campo `requiereContrasena: true`) si es privada pero el jugador no envió la
+  contraseña.
+- `PUT /personajes/:id` — solo `nombreFicticio`, `raza` e `idClase`; cualquier otro campo da **403**.
+- `DELETE /personajes/:id` — **409** si tiene objetos o historial de sesiones.
 
 ## Sesiones `/sesiones`
 
@@ -103,7 +105,7 @@ Las clases y tiendas están disponibles para lectura para todo usuario autentica
 - `PUT /inventarios/:idPersonaje/:numInventario` — `{ cantidadEspacio }`. **200**; **403** si el personaje no es propio; **404** si el inventario no existe; **409** si al reducir la capacidad existen objetos guardados en posiciones mayores o iguales a la nueva `cantidadEspacio`.
 - `DELETE /inventarios/:idPersonaje/:numInventario` — **204**; **403** si el personaje no es propio; **404** si el inventario no existe; **409** si el inventario contiene objetos.
 - `POST /inventarios/:idPersonaje/:numInventario/mover` — `{ idObjeto, posicion }`; entre inventarios del mismo personaje. El inventario de la URL es el destino. **200** `{ idObjeto, idPersonaje, numInventario, cantidadEspacio, posicion }`. **403** si el objeto o personaje no pertenece al usuario logueado; **404** si el objeto o inventario no existe; **409** si la posición supera la capacidad o la casilla de destino ya está ocupada.
-- `POST /objetos/:id/comprar` — `{ idPersonaje, numInventario, posicion }`. Descuenta el dinero con bloqueo pesimista en PostgreSQL (`FOR UPDATE`) para asegurar concurrencia sin duplicados.
+- `POST /objetos/:id/comprar` — `{ idPersonaje, numInventario, posicion }`. Descuenta el dinero con bloqueo pesimista en MySQL (`FOR UPDATE`) para asegurar concurrencia sin duplicados.
   **200** `{ objeto, idPersonaje, numInventario, dineroRestante }`. **403** si el personaje no es propio; **404** si el objeto, personaje o inventario no existe; **409** si el objeto no está a la venta, falta saldo, el inventario está lleno o la posición está ocupada; **400** si la posición supera la capacidad o el objeto único ya pertenece a otro personaje de la misma partida.
 - `POST /objetos/:id/vender` — `{ idPersonaje, idTienda, precio }`. El precio debe caer entre el 70 % y el 100 % del valor del objeto (`docs/funcionalidad.md` y `src/services/venta.rules.ts` explican el redondeo).
   **200** `{ idObjeto, idPersonaje, dineroRestante, precio }`. **403** si el personaje no es propio; **404** si el objeto o la tienda no existe; **409** si el objeto no está en tu inventario, la tienda es de otra clase, el precio está fuera de rango o el saldo superaría el entero máximo.
@@ -122,3 +124,4 @@ curl -c cookies.txt -X POST http://localhost:3000/api/auth/login \
 curl -b cookies.txt http://localhost:3000/api/auth/me
 curl -b cookies.txt http://localhost:3000/api/partidas/activas
 ```
+API

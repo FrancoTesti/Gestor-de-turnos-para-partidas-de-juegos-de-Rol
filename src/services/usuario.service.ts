@@ -48,7 +48,7 @@ export class UsuarioService {
     try {
       await this.repo.guardarCambios();
     } catch (error) {
-      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === 'ER_DUP_ENTRY') {
+      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === '23505') {
         throw new NicknameEnUsoError();
       }
       throw error;
@@ -66,7 +66,7 @@ export class UsuarioService {
     try {
       await this.repo.guardarCambios();
     } catch (error) {
-      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === 'ER_DUP_ENTRY') {
+      if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === '23505') {
         throw new NicknameEnUsoError();
       }
       throw error;

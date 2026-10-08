@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 import 'dotenv/config';
 import express, { type ErrorRequestHandler } from 'express';
-import { MikroORM, RequestContext } from '@mikro-orm/mysql';
+import { MikroORM, RequestContext } from '@mikro-orm/postgresql';
 import config from './mikro-orm.config';
 import { crearUsuarioRouter } from './routes/usuario.routes';
 import { crearClaseRouter } from './routes/clase.routes';
@@ -14,14 +14,21 @@ import { crearAnfitrionRouter } from './routes/anfitrion.routes';
 import { crearPartidaRouter } from './routes/partida.routes';
 import { crearPersonajeRouter } from './routes/personaje.routes';
 import { createAuth } from './security/auth';
-import { authorizeCrud, HttpError } from './security/authorization';
+import { HttpError } from './security/authorization';
 import { crearJuegoRouter } from './routes/juego.routes';
 
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { ZodError } from 'zod';
 import { ForeignKeyConstraintViolationException, UniqueConstraintViolationException } from '@mikro-orm/core';
 
 export function createApp(orm: MikroORM) {
   const app = express();
+
+  // Detrás del proxy del proveedor (Render, Railway...) la IP real llega en X-Forwarded-For. Sin esto
+  // todos los usuarios compartirían la misma IP y el mismo límite de intentos de login.
+  // Solo en producción: sin proxy delante, confiar en ese encabezado permitiría falsificar la IP.
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
   // Middleware CORS para permitir peticiones desde el frontend
   const allowedOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
@@ -43,7 +50,11 @@ export function createApp(orm: MikroORM) {
   // Parsea el body JSON de los POST/PUT
   app.use(express.json({ limit: '64kb' }));
   app.use((req, res, next) => {
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== allowedOrigin) {
+    // Defensa CSRF: un POST/PUT/DELETE solo se acepta desde el frontend autorizado (CORS_ORIGIN) o desde
+    // el propio servidor, que es el caso de la app publicada con el frontend servido por la API.
+    // Un sitio ajeno manda su propio Origin, que no coincide con ninguno de los dos.
+    const origenPropio = `${req.protocol}://${req.get('host')}`;
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== allowedOrigin && req.headers.origin !== origenPropio) {
       res.status(403).json({ message: 'Origen no permitido' }); return;
     }
     next();
@@ -68,15 +79,33 @@ export function createApp(orm: MikroORM) {
   // Rutas de la API
   const auth = createAuth(orm.em);
   app.use('/api/auth', auth.router);
-  app.use('/api', auth.requireAuth, authorizeCrud(orm.em), crearJuegoRouter(orm.em));
-  app.use('/api/usuarios', crearUsuarioRouter(orm.em));
-  app.use('/api/clases', crearClaseRouter(orm.em));
-  app.use('/api/objetos', crearObjetoRouter(orm.em));
-  app.use('/api/tiendas', crearTiendaRouter(orm.em));
-  app.use('/api/jugadores', crearJugadorRouter(orm.em));
-  app.use('/api/anfitriones', crearAnfitrionRouter(orm.em));
-  app.use('/api/partidas', crearPartidaRouter(orm.em));
-  app.use('/api/personajes', crearPersonajeRouter(orm.em));
+  app.use('/api', auth.requireAuth, crearJuegoRouter(orm.em));
+  app.use('/api/usuarios', auth.requireAuth, crearUsuarioRouter(orm.em));
+  app.use('/api/clases', auth.requireAuth, crearClaseRouter(orm.em));
+  app.use('/api/objetos', auth.requireAuth, crearObjetoRouter(orm.em));
+  app.use('/api/tiendas', auth.requireAuth, crearTiendaRouter(orm.em));
+  app.use('/api/jugadores', auth.requireAuth, crearJugadorRouter(orm.em));
+  app.use('/api/anfitriones', auth.requireAuth, crearAnfitrionRouter(orm.em));
+  app.use('/api/partidas', auth.requireAuth, crearPartidaRouter(orm.em));
+  app.use('/api/personajes', auth.requireAuth, crearPersonajeRouter(orm.em));
+
+  // Frontend compilado (frontend/dist): se sirve desde el mismo origen que la API, porque la cookie
+  // de sesión es SameSite=Strict. En desarrollo no existe esa carpeta y Vite atiende el frontend.
+  const frontendDist = path.resolve(__dirname, '../frontend/dist');
+  if (existsSync(path.join(frontendDist, 'index.html'))) {
+    app.use(express.static(frontendDist, {
+      index: false,
+      setHeaders: (res, archivo) => {
+        // Los archivos de Vite llevan hash en el nombre; el HTML debe revalidarse siempre.
+        res.setHeader('Cache-Control', archivo.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
+      },
+    }));
+    // Fallback para las rutas de React (/dashboard, /profiles...) al recargar la página.
+    app.get(/^\/(?!api(\/|$)).*/, (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+  }
 
   // 404
   app.use((req, res) => {

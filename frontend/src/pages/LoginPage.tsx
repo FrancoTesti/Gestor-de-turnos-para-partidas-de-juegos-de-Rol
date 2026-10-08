@@ -9,7 +9,7 @@ export default function LoginPage() {
   const [nickname, setNickname] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [errorLogin, setErrorLogin] = useState('');
-  const { usuarioLogueado, loguearse } = useUser();
+  const { usuarioLogueado, loguearse, mensaje, limpiarMensaje } = useUser();
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
@@ -44,6 +44,14 @@ export default function LoginPage() {
           <h2>Iniciar Sesión</h2>
           <p className="auth-subtitle">Gestor de Turnos para Partidas de Rol</p>
         </div>
+
+        {mensaje && (
+          <Alert
+            type="success"
+            message={mensaje}
+            onClose={limpiarMensaje}
+          />
+        )}
 
         {errorLogin && (
           <Alert

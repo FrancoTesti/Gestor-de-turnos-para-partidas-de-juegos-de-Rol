@@ -143,7 +143,8 @@ export class ObjetoService {
       const objeto = await em.findOne(
         Objeto,
         { idObjeto },
-        { populate: ['tienda', 'inventario.personaje'], lockMode: LockMode.PESSIMISTIC_WRITE },
+        // select-in: PostgreSQL no admite FOR UPDATE sobre el lado opcional de un LEFT JOIN (tienda / inventario).
+        { populate: ['tienda', 'inventario.personaje'], strategy: 'select-in', lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!objeto) throw new ObjetoNoEncontradoError();
       if (!objeto.tienda || objeto.inventario) throw new ObjetoNoDisponibleError();

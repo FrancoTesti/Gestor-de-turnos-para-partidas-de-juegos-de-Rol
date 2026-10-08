@@ -1,8 +1,8 @@
-# Verificación del módulo de Alejandro Mario Ciesco
+# Verificación del módulo de Clases, Personajes y Partidas
 
-Fecha de verificación: 28 de septiembre de 2026.
-
-Módulo: **Clases, personajes, filtros y acceso a partidas públicas y privadas**.
+**Responsable:** Alejandro Mario Ciesco  
+**Fecha de verificación:** 28 de septiembre de 2026  
+**Alcance:** Clases, personajes, filtros y acceso a partidas públicas y privadas.
 
 ## Requisitos comprobados
 

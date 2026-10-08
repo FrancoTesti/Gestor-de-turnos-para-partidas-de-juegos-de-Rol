@@ -23,6 +23,9 @@ export const participationSchema = z.object({ idPersonajes: z.array(idSchema).mi
 export const rewardSchema = z.object({ recompensas: z.array(z.object({ idPersonaje: idSchema, dinero: amount, xp: amount }).strict()).min(1).max(1000).refine(items => new Set(items.map(i => i.idPersonaje)).size === items.length, 'Hay personajes repetidos') }).strict();
 export const saleSchema = z.object({ idPersonaje: idSchema, idTienda: idSchema, precio: amount }).strict();
 const lock = { lockMode: LockMode.PESSIMISTIC_WRITE } as const;
+// PostgreSQL no admite FOR UPDATE sobre el lado opcional de un LEFT JOIN: con relaciones opcionales
+// (Objeto.inventario / Objeto.tienda) hay que cargarlas en consultas aparte. El bloqueo queda en la fila raíz.
+const sinJoinOpcional = { strategy: 'select-in' } as const;
 const conflict = (condition: boolean, message: string) => { if (condition) throw new HttpError(409, message); };
 export const sessionDTO = (s: Sesion) => ({ idPartida: s.partida.idPartida, numSesion: s.numSesion, duracionSesion: s.duracionSesion, cantJugadores: s.cantJugadores, estadoSesion: s.estadoSesion });
 export const missionDTO = (m: Mision) => ({ idPartida: m.sesion.partida.idPartida, numSesion: m.sesion.numSesion, numMision: m.numMision, descripcion: m.descripcion, dineroTotal: m.dineroTotal, xpTotal: m.xpTotal, dineroOtorgadoAJugadores: m.dineroOtorgadoAJugadores, xpOtorgadoJugadores: m.xpOtorgadoJugadores, asistenciaGrupoGrande: m.asistenciaGrupoGrande, estado: m.estado });
@@ -186,7 +189,7 @@ export class JuegoService {
   async moveObject(user: number, character: number, number: number, body: unknown) {
     const data = z.object({ idObjeto: idSchema, posicion: amount }).strict().parse(body);
     return this.em.transactional(async tx => {
-      const object = await tx.findOne(Objeto, { idObjeto: data.idObjeto }, { ...lock, populate: ['inventario.personaje'] });
+      const object = await tx.findOne(Objeto, { idObjeto: data.idObjeto }, { ...lock, ...sinJoinOpcional, populate: ['inventario.personaje'] });
       if (!object) throw new HttpError(404, 'Objeto no encontrado');
       const p = await ownedCharacter(tx, character, user);
       await tx.lock(p, LockMode.PESSIMISTIC_WRITE);
@@ -203,7 +206,7 @@ export class JuegoService {
   async sell(user: number, objectId: number, body: unknown) {
     const data = saleSchema.parse(body);
     return this.em.transactional(async tx => {
-      const object = await tx.findOne(Objeto, { idObjeto: objectId }, { ...lock, populate: ['inventario.personaje'] });
+      const object = await tx.findOne(Objeto, { idObjeto: objectId }, { ...lock, ...sinJoinOpcional, populate: ['inventario.personaje'] });
       if (!object) throw new HttpError(404, 'Objeto no encontrado');
       const p = await ownedCharacter(tx, data.idPersonaje, user);
       await tx.lock(p, LockMode.PESSIMISTIC_WRITE);

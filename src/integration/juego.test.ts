@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { resolve } from 'node:path';
-import { createConnection, type Connection } from 'mysql2/promise';
-import { MikroORM } from '@mikro-orm/mysql';
+import { Client } from 'pg';
+import { MikroORM } from '@mikro-orm/postgresql';
 import type { Server } from 'node:http';
-import config from '../mikro-orm.config';
+import config, { enEsquema, sslDb } from '../mikro-orm.config';
 import { createApp } from '../app';
 import { Usuario } from '../entities/Usuario.entity';
 import { Jugador } from '../entities/Jugador.entity';
@@ -21,9 +21,10 @@ import { Tienda } from '../entities/Tienda.entity';
 import { ObjetoService } from '../services/objeto.service';
 import { hashPassword, verifyPassword } from '../security/password';
 
-// Nunca usa DB_NAME ni borra una base existente: crea una base única por ejecución.
-const database = `rpg_test_${randomBytes(12).toString('hex')}`;
-let connection: Connection;
+// Nunca toca el esquema public ni borra uno existente: crea un esquema único por ejecución
+// dentro de la base indicada en TEST_DB_URL y lo elimina al terminar.
+const schema = `rpg_test_${randomBytes(12).toString('hex')}`;
+let connection: Client;
 let orm: MikroORM;
 let server: Server;
 let base: string;
@@ -39,11 +40,11 @@ async function request(path: string, method = 'GET', body?: unknown, cookie = ho
   return { status: res.status, body: text ? JSON.parse(text) : undefined, cookie: setCookie.split(';')[0] ?? '', setCookie };
 }
 before(async () => {
-  assert.ok(process.env.TEST_DB_PORT, 'Indicá TEST_DB_PORT para habilitar explícitamente las pruebas MySQL');
-  const settings = { host: process.env.TEST_DB_HOST ?? '127.0.0.1', port: Number(process.env.TEST_DB_PORT), user: process.env.TEST_DB_USER ?? 'root', password: process.env.TEST_DB_PASSWORD ?? '' };
-  connection = await createConnection(settings);
-  await connection.query(`CREATE DATABASE \`${database}\``); created = true;
-  orm = await MikroORM.init({ ...config, ...settings, dbName: database, debug: false });
+  assert.ok(process.env.TEST_DB_URL, 'Indicá TEST_DB_URL para habilitar explícitamente las pruebas contra PostgreSQL');
+  connection = new Client({ connectionString: process.env.TEST_DB_URL, ssl: sslDb });
+  await connection.connect();
+  await connection.query(`CREATE SCHEMA "${schema}"`); created = true;
+  orm = await MikroORM.init({ ...config, clientUrl: process.env.TEST_DB_URL, ...enEsquema(schema), debug: false });
   await orm.schema.createSchema();
   server = createApp(orm).listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
@@ -54,7 +55,7 @@ after(async () => {
   if (server) await new Promise<void>((resolve, reject) => server.close(e => e ? reject(e) : resolve()));
   if (orm) await orm.close(true);
   if (connection) {
-    if (created && /^rpg_test_[a-f0-9]{24}$/.test(database)) await connection.query(`DROP DATABASE \`${database}\``);
+    if (created && /^rpg_test_[a-f0-9]{24}$/.test(schema)) await connection.query(`DROP SCHEMA "${schema}" CASCADE`);
     await connection.end();
   }
 });
@@ -398,9 +399,9 @@ test('migración explícita de usuarios y partidas, diagnóstico sin escritura e
   const user = await em.findOneOrFail(Usuario, { idUsuario: ids.player });
   const game = await em.findOneOrFail(Partida, { idPartida: ids.game });
   user.contrasena = 'legado123'; game.contrasena = 'partida123'; await em.flush();
-  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, DB_HOST: process.env.TEST_DB_HOST ?? '127.0.0.1', DB_PORT: process.env.TEST_DB_PORT, DB_USER: process.env.TEST_DB_USER ?? 'root', DB_PASSWORD: process.env.TEST_DB_PASSWORD ?? '', // 30 s: arrancar el script (Node + MikroORM + conexión) tarda cerca de 7 s en una
+  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, SUPABASE_DB_URL: process.env.TEST_DB_URL, // 30 s: arrancar el script (Node + MikroORM + conexión) tarda cerca de 7 s en una
   // máquina lenta, y acá se ejecuta tres veces con la base ya cargada.
-  DB_NAME: database }, timeout: 30000 });
+  DB_SCHEMA: schema }, timeout: 30000 });
   assert.match(run(false), /Modo diagnóstico/);
   assert.equal((await orm.em.fork().findOneOrFail(Usuario, { idUsuario: ids.player })).contrasena, 'legado123');
   const output = run(true); assert.doesNotMatch(output, /legado123|partida123/);

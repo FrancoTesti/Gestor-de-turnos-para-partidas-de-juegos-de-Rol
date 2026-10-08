@@ -4,14 +4,16 @@ Fecha de la corrida: 21 de septiembre de 2026. Rama: `renzo/semana-17-23`.
 
 ## Cómo se ejecuta
 
-Requiere MySQL y las variables `TEST_DB_*`, igual que el resto de los recorridos de navegador. Desde
-la raíz del repositorio:
+Requiere PostgreSQL y la variable `TEST_DB_URL`, igual que el resto de los recorridos de navegador
+(la corrida del 21 de septiembre fue contra MySQL). Contra una base remota conviene ampliar el límite por
+prueba con `E2E_TIMEOUT_MS`. Desde la raíz del repositorio:
 
 ```powershell
 npm ci
 npm --prefix frontend ci
 npx playwright install chromium
-$env:TEST_DB_PORT = '3306'
+$env:TEST_DB_URL = 'postgresql://postgres.<codigo>:<contraseña>@aws-0-<region>.pooler.supabase.com:5432/postgres'
+$env:E2E_TIMEOUT_MS = '240000'
 npm run test:e2e -- e2e/responsive.spec.ts e2e/accesibilidad.spec.ts
 ```
 

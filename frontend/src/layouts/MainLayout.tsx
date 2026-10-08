@@ -14,89 +14,76 @@ export default function MainLayout() {
     catch { window.alert('No se pudo cerrar la sesión. Reintentá.'); }
   };
 
-  // Solo mostrar layout si está logueado
   if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
   if (!usuarioLogueado) return <Navigate to="/login" replace />;
 
+  const isActive = (paths: string[]) => paths.includes(location.pathname) ? 'active' : '';
+
   return (
     <div className="main-layout">
-      {/* Alert global */}
       {mensaje && (
-        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 999 }}>
-          <Alert
-            type="success"
-            message={mensaje}
-            onClose={() => {
-              limpiarMensaje();
-            }}
-          />
+        <div style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 9999 }}>
+          <Alert type="success" message={mensaje} onClose={limpiarMensaje} />
         </div>
       )}
 
-      {/* Navbar */}
-      <nav className="navbar">
+      <header className="top-navbar">
         <div className="navbar-brand">
-          <div className="brand-logo-badge" aria-hidden="true">🎲</div>
-          <h1>Gestor de Turnos - Juegos de Rol</h1>
+          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <span aria-hidden="true" style={{ fontSize: '1.4rem' }}>🎲</span>
+            <h1>Gestor de Rol</h1>
+          </Link>
         </div>
-        <div className="navbar-user">
-          <ThemeToggle />
-          <div className="user-greeting-badge">
-            <span className="user-dot" aria-hidden="true" />
-            <span>Hola, <strong>{usuarioLogueado.nickname}</strong></span>
-          </div>
-          <button onClick={handleLogout} className="btn-logout">
-            Cerrar Sesión
-          </button>
-        </div>
-      </nav>
 
-      {/* Sidebar */}
-      <div className="layout-container">
-        <aside className="sidebar">
-          <div className="sidebar-header-label">Menú de Navegación</div>
-          <ul className="nav-menu">
-            {[['/classes', '🛡️ Clases'], ['/stores', '🏪 Tiendas'], ['/sessions', '📅 Sesiones'], ['/missions', '📜 Misiones'], ['/inventory', '📦 Inventarios'], ['/profiles', '👤 Perfiles']].map(([path, label]) => (
-              <li
-                key={path}
-                className={location.pathname === path ? 'active' : ''}
-              >
-                <Link className={location.pathname === path ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to={path}>{label}</Link>
-              </li>
-            ))}
-            <li
-              className={location.pathname === '/dashboard' ? 'active' : ''}
-            >
-              <Link className={location.pathname === '/dashboard' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/dashboard">📊 Dashboard</Link>
+        <nav className="navbar-menu nav-menu">
+          <ul className="nav-horizontal">
+            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])}`}>
+              <span className="nav-item">Juego ▾</span>
+              <div className="dropdown-content">
+                <Link to="/games">Partidas</Link>
+                <Link to="/sessions">Sesiones</Link>
+                <Link to="/missions">Misiones</Link>
+              </div>
             </li>
-            <li
-              className={location.pathname === '/users' ? 'active' : ''}
-            >
-              <Link className={location.pathname === '/users' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/users">👥 Usuarios</Link>
+
+            <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])}`}>
+              <span className="nav-item">Personajes ▾</span>
+              <div className="dropdown-content">
+                <Link to="/characters">Personajes</Link>
+                <Link to="/inventory">Inventarios</Link>
+              </div>
             </li>
-            <li
-              className={location.pathname === '/games' ? 'active' : ''}
-            >
-              <Link className={location.pathname === '/games' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/games">🎮 Partidas</Link>
+
+            <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])}`}>
+              <span className="nav-item">Catálogo ▾</span>
+              <div className="dropdown-content">
+                <Link to="/classes">Clases</Link>
+                <Link to="/objects">Objetos</Link>
+                <Link to="/stores">Tiendas</Link>
+              </div>
             </li>
-            <li
-              className={location.pathname === '/objects' ? 'active' : ''}
-            >
-              <Link className={location.pathname === '/objects' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/objects">🎒 Objetos</Link>
-            </li>
-            <li
-              className={location.pathname === '/characters' ? 'active' : ''}
-            >
-              <Link className={location.pathname === '/characters' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/characters">⚔️ Personajes</Link>
+
+            <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])}`}>
+              <span className="nav-item">Sistema ▾</span>
+              <div className="dropdown-content">
+                <Link to="/dashboard">Dashboard</Link>
+                <Link to="/users">Usuarios</Link>
+                <Link to="/profiles">Mis Perfiles</Link>
+              </div>
             </li>
           </ul>
-        </aside>
+        </nav>
 
-        {/* Main Content */}
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
+        <div className="navbar-user">
+          <ThemeToggle />
+          <span className="user-greeting">Hola, {usuarioLogueado.nickname}</span>
+          <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+        </div>
+      </header>
+
+      <main className="main-content">
+        <Outlet />
+      </main>
     </div>
   );
 }

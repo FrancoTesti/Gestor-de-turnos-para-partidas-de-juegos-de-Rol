@@ -12,7 +12,7 @@
 Backend y frontend viven en el mismo repositorio:
 
 * [Repositorio completo](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol)
-* [Backend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/src) (`src/`, Express + MikroORM)
+* [Backend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/src) (`src/`, Express + MikroORM + PostgreSQL en Supabase)
 * [Frontend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/frontend) (`frontend/`, React + Vite)
 * [Documentación](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/blob/main/docs/README.md)
 
@@ -26,9 +26,8 @@ El modelo vigente, entidad por entidad y con las reglas que no se ven en el diag
 
 ![Diagrama entidad-relación del sistema](docs/DER_NEW.png)
 
-La versión conceptual original se conserva como historial en `docs/ModeloDominioOLD.drawio.png`
-([enlace al Drive](https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing));
-quedó desactualizada respecto de lo implementado.
+La versión conceptual original de inicio de cursada se conserva como referencia en el
+[Drive del equipo](https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing).
 
 
 
@@ -64,7 +63,7 @@ Adicionales para Aprobación
 ## Estado de lo implementado
 
 El alcance mínimo y los adicionales para aprobación están implementados de punta a punta
-(interfaz → API → MySQL) y cada requisito tiene su prueba asociada en la matriz de
+(interfaz → API → PostgreSQL en Supabase) y cada requisito tiene su prueba asociada en la matriz de
 [docs/entrega.md](docs/entrega.md), que también registra lo que queda parcial: la revisión responsive
 y de accesibilidad todavía no recorrió todas las pantallas. Las reglas de negocio están en
 [docs/funcionalidad.md](docs/funcionalidad.md) y los endpoints, en [docs/api.md](docs/api.md).
