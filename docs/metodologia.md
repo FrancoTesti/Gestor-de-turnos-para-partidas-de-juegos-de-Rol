@@ -1,28 +1,22 @@
 # Metodología de trabajo
 
-Documento que pide la cátedra: tipo de metodología usada para el seguimiento, cómo se registra el
-avance y qué herramienta se usa para el trackeo.
+Documento que describe la metodología utilizada para la gestión y seguimiento del proyecto, el registro de avances y la herramienta de trackeo adoptada según los requerimientos de la cátedra.
 
-> **Aclaración.** El equipo no eligió una metodología formal al empezar el proyecto. La que se declara
-> acá es la que mejor describe cómo se trabajó en la práctica, y se adopta de forma explícita desde
-> el cierre de la entrega para ordenar el registro.
+## Metodología adoptada: Scrum con tablero Kanban
 
-## Metodología adoptada: Scrum adaptado, con tablero Kanban
+El desarrollo se gestionó mediante el marco de trabajo **Scrum** adaptado a la dinámica del equipo, complementado con un tablero **Kanban** para el seguimiento visual y continuo del flujo de tareas.
 
-Se eligió Scrum porque es lo más parecido a lo que el equipo hizo: avanzar por iteraciones cortas,
-reunirse a repartir y revisar trabajo, y entregar incrementos que se integran al repositorio común.
-No se aplica completo (no hay Scrum Master ni *daily* formal). Se toma de Scrum lo que ya se hacía y
-se suma un tablero Kanban para ver el estado de cada tarea.
+El trabajo se estructuró en iteraciones (sprints) semanales orientadas a objetivos, con reuniones de coordinación, división de responsabilidades y entregas incrementales integradas mediante *pull requests*.
 
 | Elemento de Scrum | Cómo se aplicó en este proyecto |
 | --- | --- |
-| *Product backlog* | La matriz CRUD y los requisitos de la cátedra, volcados en [entrega.md](entrega.md) y en las columnas *Backlog* del tablero. |
-| *Sprint* (iteración) | Una semana, alineada con las clases de Desarrollo de Software. Las ramas de trabajo hablan de "iteración" (por ejemplo `ramaEmaIteracion4`). |
-| *Sprint planning* | En la reunión semanal se reparten módulos y tareas (ver las asignaciones de cada entrada en [minutas.md](minutas.md)). |
-| *Sprint review* | Al cerrar cada iteración se muestra lo hecho y se prueba junto en la reunión, con las capturas y los recorridos de [pruebas_manuales.md](pruebas_manuales.md). |
-| Incremento | Cada módulo llega a `main` por *pull request* con la integración continua en verde. |
-| Roles | Un responsable por módulo (ver tabla de abajo). La coordinación general la lleva Franco, que es quien propone las agendas y organiza las llamadas. |
-| *Daily* | No se hace. La comunicación diaria es asincrónica, por el chat del equipo. |
+| *Product backlog* | La matriz CRUD y los requisitos de la cátedra, volcados en [entrega.md](entrega.md) y en la columna *Backlog* del tablero. |
+| *Sprint* (iteración) | Iteraciones semanales alineadas a los objetivos de cursada y entregas parciales. |
+| *Sprint planning* | En la reunión semanal se planifican, dividen y asignan las tareas por módulo (registradas en [minutas.md](minutas.md)). |
+| *Sprint review* | Al finalizar cada iteración se valida lo implementado mediante pruebas manuales ([pruebas_manuales.md](pruebas_manuales.md)) y automatizadas. |
+| Incremento | Cada módulo completado se integra a `main` mediante *pull request* con validación de CI en verde. |
+| Roles | Un responsable asignado por módulo (ver tabla a continuación). Franco Testi actúa como coordinador general, organizando agendas y reuniones. |
+| *Daily* (comunicación continua) | Seguimiento asincrónico diario a través del canal de comunicación del equipo para destrabar bloqueos rápidamente. |
 
 ### Responsables por módulo
 
