@@ -15,13 +15,13 @@
   --border-focus: #8b5cf6;
   --code-bg: #1c2133;
   
-  --text: #94a3b8;
+  --text: #cbd5e1;
   --text-h: #f8fafc;
-  --text-muted: #64748b;
+  --text-muted: #94a3b8;
   --text-inverse: #0d0f17;
 
   /* Brand / Accent Colors (Mystic Violet & Cosmic Gold) */
-  --accent: #a855f7;
+  --accent: #c084fc;
   --accent-solid: #8b5cf6;
   --accent-hover: #7c3aed;
   --accent-text: #e9d5ff;
@@ -89,9 +89,9 @@
   --border-focus: #7c3aed;
   --code-bg: #f1f5f9;
 
-  --text: #475569;
+  --text: #334155;
   --text-h: #0f172a;
-  --text-muted: #64748b;
+  --text-muted: #475569;
   --text-inverse: #ffffff;
 
   --accent: #7c3aed;
