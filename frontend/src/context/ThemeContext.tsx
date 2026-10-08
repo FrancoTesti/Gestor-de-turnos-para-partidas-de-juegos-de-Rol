@@ -10,8 +10,12 @@ interface ThemeContextType {
 }
 
 function getSystemTheme(): 'dark' | 'light' {
-  if (typeof window === 'undefined') return 'dark';
-  return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return 'dark';
+  try {
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  } catch {
+    return 'dark';
+  }
 }
 
 const defaultThemeContext: ThemeContextType = {
@@ -60,12 +64,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getSystemTheme);
 
   useEffect(() => {
-    const media = window.matchMedia('(prefers-color-scheme: light)');
-    const listener = (e: MediaQueryListEvent) => {
-      setSystemTheme(e.matches ? 'light' : 'dark');
-    };
-    media.addEventListener('change', listener);
-    return () => media.removeEventListener('change', listener);
+    if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return;
+    try {
+      const media = window.matchMedia('(prefers-color-scheme: light)');
+      const listener = (e: MediaQueryListEvent) => {
+        setSystemTheme(e.matches ? 'light' : 'dark');
+      };
+      media.addEventListener?.('change', listener);
+      return () => media.removeEventListener?.('change', listener);
+    } catch {}
   }, []);
 
   const resolvedTheme = theme === 'system' ? systemTheme : theme;
