@@ -33,7 +33,7 @@ export default function MainLayout() {
           </Link>
         </div>
 
-        <nav className="navbar-menu">
+        <nav className="navbar-menu nav-menu">
           <ul className="nav-horizontal">
             <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])}`}>
               <span className="nav-item">Juego ▾</span>
