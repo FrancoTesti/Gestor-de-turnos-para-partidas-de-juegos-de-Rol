@@ -34,6 +34,8 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 | [entrega.md](entrega.md) | Estado de la entrega, evidencias de build/tests y enlaces a los PR |
 | [seguimiento.md](seguimiento.md) | Estado por módulo y registro de defectos con el PR que los resuelve |
 | [minutas.md](minutas.md) | Minutas de reunión: fecha, participantes, decisiones y asignaciones |
+| [metodologia.md](metodologia.md) | Metodología de trabajo (Scrum adaptado) y herramienta de trackeo (GitHub Projects) |
+| [trackeo.md](trackeo.md) | Funcionalidades y correcciones por módulo, con responsable y PR |
 | [verificacion_renzo.md](verificacion_renzo.md) | Verificación del módulo de usuarios y autenticación |
 | [verificacion_alejandro.md](verificacion_alejandro.md) | Verificación del módulo de clases, personajes y partidas |
 
