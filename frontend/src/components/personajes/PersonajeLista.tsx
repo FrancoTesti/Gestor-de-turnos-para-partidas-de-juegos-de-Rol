@@ -52,7 +52,7 @@ export default function PersonajeLista({
         <div className="personaje-header">
           <h2>Personajes de Juego</h2>
         </div>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
+        <div className="lista-vacia">
           <span>⏳ Cargando personajes...</span>
         </div>
       </section>
@@ -105,7 +105,7 @@ export default function PersonajeLista({
       </header>
 
       {personajesFiltrados.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem', background: '#f7fafc', borderRadius: '8px' }}>
+        <div className="lista-vacia">
           <p>
             {filtroClase === 'todas'
               ? 'No hay personajes registrados en el sistema.'

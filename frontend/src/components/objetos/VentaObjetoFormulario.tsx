@@ -77,20 +77,32 @@ export default function VentaObjetoFormulario({
         </p>
       )}
 
-      <div className="rango-info" style={{ background: '#ebf8ff', padding: '0.6rem 0.8rem', borderRadius: '6px', margin: '0.75rem 0', border: '1px solid #bee3f8' }}>
-        <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: '#2b6cb0', fontWeight: 600 }}>
+      <div className="rango-info" style={{
+        background: 'rgba(59, 130, 246, 0.12)',
+        padding: '0.6rem 0.8rem',
+        borderRadius: '6px',
+        margin: '0.75rem 0',
+        border: '1px solid rgba(59, 130, 246, 0.35)'
+      }}>
+        <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: 'var(--info-text, #38bdf8)', fontWeight: 600 }}>
           🏷️ Rango de precio permitido: 70 % a 100 %
         </p>
-        <p style={{ margin: 0, fontSize: '0.85rem', color: '#4a5568' }}>
+        <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
           Mínimo: <strong>${rango.minimo}</strong> — Máximo: <strong>${rango.maximo}</strong>
         </p>
       </div>
 
-      <div className="saldo-resumen" style={{ background: '#f0fff4', padding: '0.6rem 0.8rem', borderRadius: '6px', marginBottom: '0.75rem', border: '1px solid #9ae6b4' }}>
+      <div className="saldo-resumen" style={{
+        background: 'rgba(34, 197, 94, 0.12)',
+        padding: '0.6rem 0.8rem',
+        borderRadius: '6px',
+        marginBottom: '0.75rem',
+        border: '1px solid rgba(34, 197, 94, 0.35)'
+      }}>
         <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
           💰 Saldo actual: <strong>${saldoActual}</strong>
         </p>
-        <p style={{ margin: 0, fontSize: '0.9rem', color: '#276749' }}>
+        <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--success-text, #22c55e)' }}>
           📊 Saldo después de la venta: <strong>${saldoResultante}</strong>
         </p>
       </div>

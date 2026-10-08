@@ -161,21 +161,21 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               <div
                 key={idx}
                 style={{
-                  border: item ? '1px solid #cbd5e0' : '1px dashed #cbd5e0',
-                  background: item ? '#ffffff' : '#f7fafc',
+                  border: item ? '1px solid var(--border)' : '1px dashed var(--border)',
+                  background: item ? 'var(--bg-card)' : 'var(--bg-card-secondary)',
                   padding: '0.5rem',
                   borderRadius: '6px',
                   fontSize: '0.85rem',
                 }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text)', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem' }}>Casillero #{idx}</div>
                 {item ? (
                   <div style={{ marginTop: '0.2rem' }}>
                     <strong>{label(item)}</strong>
                     <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
                   </div>
                 ) : (
-                  <span style={{ color: '#a0aec0', fontStyle: 'italic' }}>[ Libre ]</span>
+                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>[ Libre ]</span>
                 )}
               </div>
             );

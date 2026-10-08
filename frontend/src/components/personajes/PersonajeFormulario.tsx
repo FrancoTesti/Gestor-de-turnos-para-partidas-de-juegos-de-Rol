@@ -130,7 +130,7 @@ export default function PersonajeFormulario({
       <h3>{esEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje (Caso de Uso)'}</h3>
 
       {error && <div className="mensaje-error">{error}</div>}
-      {cargandoRef && <div style={{ marginBottom: '1rem', color: '#4a5568' }}>Cargando clases, jugadores y partidas...</div>}
+      {cargandoRef && <div style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>Cargando clases, jugadores y partidas...</div>}
 
       <form onSubmit={handleSubmit}>
         <div className="form-grid-2">
@@ -212,7 +212,7 @@ export default function PersonajeFormulario({
           </select>
         </div>
 
-        <div style={{ marginTop: '1rem', marginBottom: '0.5rem', fontWeight: 600, color: '#4a5568' }}>
+        <div style={{ marginTop: '1rem', marginBottom: '0.5rem', fontWeight: 600, color: 'var(--text-h)' }}>
           Atributos Iniciales del Personaje:
         </div>
 

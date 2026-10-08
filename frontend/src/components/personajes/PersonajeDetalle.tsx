@@ -43,7 +43,7 @@ export default function PersonajeDetalle({
 
       <div style={{ marginTop: '1rem' }}>
         <div className="personaje-top">
-          <h3 style={{ fontSize: '1.5rem', color: '#2d3748', margin: 0 }}>
+          <h3 style={{ fontSize: '1.5rem', color: 'var(--text-h)', margin: 0 }}>
             {personaje.nombreFicticio}
           </h3>
           <span className="personaje-badge-id">ID: #{personaje.idPersonaje}</span>
@@ -68,7 +68,7 @@ export default function PersonajeDetalle({
           </div>
         </div>
 
-        <div style={{ background: '#f7fafc', padding: '1rem', borderRadius: '6px', border: '1px solid #e2e8f0' }}>
+        <div style={{ background: 'var(--bg-card-secondary)', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border)' }}>
           <p style={{ margin: '0.4rem 0' }}>
             👤 <strong>Jugador Propietario:</strong> {jugadorNombre} (ID Usuario: #{personaje.idUsuarioJugador})
           </p>

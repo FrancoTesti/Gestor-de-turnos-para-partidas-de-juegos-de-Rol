@@ -34,10 +34,10 @@ export default function ClaseDetalle({ clase, onVolver, onEditar }: ClaseDetalle
 
       <div style={{ marginTop: '1rem' }}>
         <div className="clase-icon-badge">🛡️</div>
-        <h3 style={{ fontSize: '1.4rem', color: '#2d3748', margin: '0.5rem 0' }}>
+        <h3 style={{ fontSize: '1.4rem', color: 'var(--text-h)', margin: '0.5rem 0' }}>
           {clase.nombreClase}
         </h3>
-        <p style={{ color: '#4a5568', lineHeight: 1.5, fontSize: '1rem' }}>
+        <p style={{ color: 'var(--text-muted)', lineHeight: 1.5, fontSize: '1rem' }}>
           {clase.descripcionClase}
         </p>
       </div>

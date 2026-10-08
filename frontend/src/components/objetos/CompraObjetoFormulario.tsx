@@ -63,15 +63,21 @@ export default function CompraObjetoFormulario({
             </select>
           </label>
 
-          <div className="saldo-resumen" style={{ background: saldoInsuficiente ? '#fff5f5' : '#f0fff4', padding: '0.6rem 0.8rem', borderRadius: '6px', margin: '0.75rem 0', border: `1px solid ${saldoInsuficiente ? '#feb2b2' : '#9ae6b4'}` }}>
+          <div className="saldo-resumen" style={{
+            background: saldoInsuficiente ? 'rgba(239, 68, 68, 0.12)' : 'rgba(34, 197, 94, 0.12)',
+            padding: '0.6rem 0.8rem',
+            borderRadius: '6px',
+            margin: '0.75rem 0',
+            border: `1px solid ${saldoInsuficiente ? 'rgba(239, 68, 68, 0.35)' : 'rgba(34, 197, 94, 0.35)'}`
+          }}>
             <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
               💰 Saldo actual: <strong>${saldoActual}</strong>
             </p>
-            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: saldoInsuficiente ? '#c53030' : '#276749' }}>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: saldoInsuficiente ? 'var(--error-text, #ef4444)' : 'var(--success-text, #22c55e)' }}>
               📊 Saldo después de la compra: <strong>${saldoRestante}</strong>
             </p>
             {saldoInsuficiente && (
-              <p role="alert" style={{ margin: '0.25rem 0 0 0', color: '#c53030', fontWeight: 600, fontSize: '0.85rem' }}>
+              <p role="alert" style={{ margin: '0.25rem 0 0 0', color: 'var(--error-text, #ef4444)', fontWeight: 600, fontSize: '0.85rem' }}>
                 ⚠️ Saldo insuficiente. Te faltan ${objeto.valor - saldoActual} monedas.
               </p>
             )}
