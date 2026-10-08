@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Usuario } from "../../interfaces";
 import "./usuarios.css";
 
@@ -18,6 +19,8 @@ export default function UsuarioDetalle({
   onEditar,
   onEliminar,
 }: UsuarioDetalleProps) {
+  const [isImageOpen, setIsImageOpen] = useState(false);
+
   if (cargando) {
     return (
       <div className="usuario-detalle-card cargando">
@@ -58,6 +61,12 @@ export default function UsuarioDetalle({
 
   return (
     <div className="usuario-detalle-card">
+      {isImageOpen && (
+        <div className="lightbox-overlay" onClick={() => setIsImageOpen(false)}>
+          <button className="lightbox-close" onClick={() => setIsImageOpen(false)}>✖</button>
+          <img src={avatarUrl} alt="Avatar" className="lightbox-image" onClick={(e) => e.stopPropagation()} />
+        </div>
+      )}
       <div className="detalle-header">
         <h2>Detalle del Usuario</h2>
         {onCerrar && (
@@ -73,7 +82,7 @@ export default function UsuarioDetalle({
       </div>
 
       <div className="detalle-body">
-        <div className="detalle-avatar-wrapper">
+        <div className="detalle-avatar-wrapper" onClick={() => setIsImageOpen(true)} style={{ cursor: "pointer" }} title="Ampliar imagen">
           <img
             src={avatarUrl}
             alt={`Avatar de ${usuario.nombreUsuario}`}
@@ -106,7 +115,7 @@ export default function UsuarioDetalle({
           <div className="detalle-campo">
             <span className="campo-etiqueta">URL de Imagen:</span>
             <span
-              className="campo-valor url"
+              className="campo-valor url" style={{ wordBreak: "break-all", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}
               title={usuario.imagen || "No especificada"}
             >
               {usuario.imagen || "Avatar por defecto"}

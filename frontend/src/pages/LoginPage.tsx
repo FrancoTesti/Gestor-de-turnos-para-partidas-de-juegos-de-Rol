@@ -8,7 +8,7 @@ export default function LoginPage() {
   const [nickname, setNickname] = useState('');
   const [contrasena, setContrasena] = useState('');
   const [errorLogin, setErrorLogin] = useState('');
-  const { usuarioLogueado, loguearse } = useUser();
+  const { usuarioLogueado, loguearse, mensaje, limpiarMensaje } = useUser();
   const [busy, setBusy] = useState(false);
   const navigate = useNavigate();
 
@@ -35,6 +35,14 @@ export default function LoginPage() {
   return (
     <main className="auth-page">
       <h2>Iniciar Sesión</h2>
+
+      {mensaje && (
+        <Alert
+          type="success"
+          message={mensaje}
+          onClose={limpiarMensaje}
+        />
+      )}
 
       {errorLogin && (
         <Alert

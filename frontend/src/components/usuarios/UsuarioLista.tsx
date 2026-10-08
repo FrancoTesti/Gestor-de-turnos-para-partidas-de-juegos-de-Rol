@@ -104,7 +104,7 @@ export default function UsuarioLista({
                 <img
                   className="usuario-imagen"
                   src={usuario.imagen}
-                  alt={`Avatar de ${usuario.nickname}`}
+                  alt={usuario.nickname.charAt(0).toUpperCase()}
                 />
               ) : (
                 <div
