@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
+import { useTheme, type Theme } from '../context/ThemeContext';
 import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
 import { actualizarUsuario } from '../services/usuario.service';
 import { actualizarJugador, crearJugador, eliminarJugador } from '../services/jugador.service';
@@ -11,6 +12,7 @@ import './ProfilesPage.css';
 // ofrecen acciones sobre cuentas ajenas.
 export default function ProfilesPage() {
   const { usuarioLogueado, jugadores, anfitriones, recargar, logout } = useUser();
+  const { theme, setTheme } = useTheme();
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [busy, setBusy] = useState(false);
@@ -53,9 +55,41 @@ export default function ProfilesPage() {
 
   return (
     <section className="profiles-page">
-      <h1>Mis perfiles</h1>
+      <div className="profiles-header">
+        <p className="app-eyebrow">Ajustes de Cuenta</p>
+        <h1>Mis perfiles</h1>
+      </div>
+
       {error && <p className="perfil-error" role="alert">{error}</p>}
       {aviso && <p className="perfil-aviso" role="status">{aviso}</p>}
+
+      {/* Configuración de Apariencia / Tema */}
+      <article className="perfil-card">
+        <h2>🎨 Apariencia y Tema</h2>
+        <p className="perfil-nota" style={{ marginBottom: '1rem' }}>
+          Personalizá el aspecto visual de la aplicación. Los cambios se guardan automáticamente en tu dispositivo.
+        </p>
+        <div className="theme-options-grid">
+          {(
+            [
+              ['dark', '🌙 Tema Oscuro', 'Colores oscuros para inmersión rolera'],
+              ['light', '☀️ Tema Claro', 'Colores claros y nítidos para alta visibilidad'],
+              ['system', '💻 Tema del Sistema', 'Sincronizado con la preferencia de tu dispositivo'],
+            ] as [Theme, string, string][]
+          ).map(([t, label, desc]) => (
+            <button
+              key={t}
+              type="button"
+              className={`theme-option-card ${theme === t ? 'active' : ''}`}
+              onClick={() => setTheme(t)}
+            >
+              <div className="theme-option-title">{label}</div>
+              <div className="theme-option-desc">{desc}</div>
+              {theme === t && <span className="theme-option-check">✓ Activo</span>}
+            </button>
+          ))}
+        </div>
+      </article>
 
       <article className="perfil-card">
         <h2>Datos de la cuenta</h2>

@@ -153,13 +153,13 @@ export default function TiendasPage() {
   }
 
   return (
-    <section style={{ padding: '1.5rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <section style={{ padding: '0.5rem 0' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', margin: 0 }}>
             Comercio del sistema
           </p>
-          <h1 style={{ margin: 0 }}>Tiendas</h1>
+          <h1 style={{ margin: '0.25rem 0 0' }}>Tiendas</h1>
         </div>
         {!mostrarFormulario && esAnfitrion && (
           <button type="button" className="btn-primary" onClick={abrirFormularioCrear}>
@@ -169,22 +169,22 @@ export default function TiendasPage() {
       </header>
 
       {mensaje && (
-        <p role="status" style={{ color: '#276749', background: '#f0fff4', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem' }}>
+        <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
           ✅ {mensaje}
         </p>
       )}
       {error && (
-        <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
           <span>⚠️ {error}</span>
-          <button type="button" onClick={cargar}>Reintentar</button>
+          <button type="button" onClick={cargar} className="btn-secondary">Reintentar</button>
         </div>
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: '#f7fafc', padding: '1.5rem', borderRadius: '8px', maxWidth: '560px', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '560px', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Tienda' : 'Nueva Tienda'}</h2>
           {errorForm && (
-            <p role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
+            <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
               ⚠️ {errorForm}
             </p>
           )}
@@ -198,7 +198,7 @@ export default function TiendasPage() {
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               />
             </label>
             <label>
@@ -208,7 +208,7 @@ export default function TiendasPage() {
                 value={claseTienda}
                 onChange={(e) => setClaseTienda(e.target.value)}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               >
                 {TIPOS_TIENDA.map((t) => (
                   <option key={t} value={t}>{t}</option>
@@ -221,7 +221,7 @@ export default function TiendasPage() {
                 value={idClase}
                 onChange={(e) => setIdClase(e.target.value ? Number(e.target.value) : '')}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               >
                 <option value="">Sin restricción de clase</option>
                 {clases.map((c) => (
@@ -229,7 +229,7 @@ export default function TiendasPage() {
                 ))}
               </select>
             </label>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
               <button type="submit" className="btn-primary" disabled={guardando}>
                 {guardando ? 'Guardando…' : enEdicion ? 'Actualizar' : 'Crear Tienda'}
               </button>
@@ -247,23 +247,23 @@ export default function TiendasPage() {
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1rem' }}>
-        <label>
-          🔍 Buscar:{' '}
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>🔍 Buscar:</span>
           <input
             type="search"
             placeholder="Nombre o tipo"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+            style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '220px' }}
           />
         </label>
-        <label>
-          Tipo:{' '}
+        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span>Tipo:</span>
           <select
             value={filtroTipo}
             onChange={(e) => setFiltroTipo(e.target.value)}
-            style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+            style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)' }}
           >
             <option value="">Todos los tipos</option>
             {tiposTienda.map((t) => (
@@ -272,16 +272,16 @@ export default function TiendasPage() {
           </select>
         </label>
         {(busqueda || filtroTipo) && (
-          <button type="button" onClick={() => { setBusqueda(''); setFiltroTipo(''); }}>
+          <button type="button" className="btn-secondary" onClick={() => { setBusqueda(''); setFiltroTipo(''); }}>
             Quitar filtros
           </button>
         )}
       </div>
 
-      {cargando && <p role="status">⏳ Cargando tiendas…</p>}
+      {cargando && <p role="status" style={{ color: 'var(--text-muted)' }}>⏳ Cargando tiendas…</p>}
 
       {!cargando && !error && tiendasFiltradas.length === 0 && (
-        <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
+        <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)' }}>
           {busqueda || filtroTipo
             ? 'No hay tiendas que coincidan con los filtros.'
             : 'No hay tiendas registradas en el sistema.'}
@@ -291,14 +291,14 @@ export default function TiendasPage() {
       {/* Tabla de tiendas */}
       {!cargando && tiendasFiltradas.length > 0 && (
         <div className="tabla-scroll">
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.95rem' }}>
+          <table className="app-table">
             <thead>
-              <tr style={{ background: '#edf2f7', textAlign: 'left' }}>
-                <th style={{ padding: '0.6rem 1rem' }}>#</th>
-                <th style={{ padding: '0.6rem 1rem' }}>Nombre</th>
-                <th style={{ padding: '0.6rem 1rem' }}>Tipo</th>
-                <th style={{ padding: '0.6rem 1rem' }}>Clase vinculada</th>
-                <th style={{ padding: '0.6rem 1rem' }}>Acciones</th>
+              <tr>
+                <th>#</th>
+                <th>Nombre</th>
+                <th>Tipo</th>
+                <th>Clase vinculada</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -306,23 +306,23 @@ export default function TiendasPage() {
                 <tr
                   key={String(t.idTienda)}
                   style={{
-                    borderBottom: '1px solid #e2e8f0',
-                    background: seleccionada?.idTienda === t.idTienda ? '#ebf8ff' : undefined,
+                    background: seleccionada?.idTienda === t.idTienda ? 'var(--accent-bg)' : undefined,
                     cursor: 'pointer',
                   }}
                   onClick={() => setSeleccionada(t)}
                 >
-                  <td style={{ padding: '0.6rem 1rem', color: '#4a5568' }}>#{t.idTienda}</td>
-                  <td style={{ padding: '0.6rem 1rem', fontWeight: 600 }}>🏪 {t.nombre}</td>
-                  <td style={{ padding: '0.6rem 1rem' }}>
-                    <span style={{ background: '#bee3f8', color: '#2c5282', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.85rem' }}>
+                  <td style={{ color: 'var(--text-muted)' }}>#{t.idTienda}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>🏪 {t.nombre}</td>
+                  <td>
+                    <span className="badge badge-info">
                       {t.claseTienda}
                     </span>
                   </td>
-                  <td style={{ padding: '0.6rem 1rem', color: '#4a5568' }}>{nombreClase(t.idClase)}</td>
-                  <td style={{ padding: '0.6rem 1rem' }}>
+                  <td style={{ color: 'var(--text)' }}>{nombreClase(t.idClase)}</td>
+                  <td>
                     <button
                       type="button"
+                      className="btn-secondary"
                       onClick={(e) => { e.stopPropagation(); setSeleccionada(t); }}
                       style={{ marginRight: '0.5rem' }}
                     >
@@ -357,20 +357,20 @@ export default function TiendasPage() {
 
       {/* Panel de detalle */}
       {seleccionada && (
-        <aside style={{ marginTop: '1.5rem', padding: '1.25rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '480px', border: '1px solid #e2e8f0' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', maxWidth: '520px', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' }}>
           <h3 style={{ marginTop: 0 }}>Detalle de tienda #{seleccionada.idTienda}</h3>
-          <dl style={{ display: 'grid', gap: '0.5rem' }}>
-            <div><dt style={{ fontWeight: 600, color: '#4a5568' }}>Nombre</dt><dd style={{ margin: 0 }}>{seleccionada.nombre}</dd></div>
-            <div><dt style={{ fontWeight: 600, color: '#4a5568' }}>Tipo de tienda</dt><dd style={{ margin: 0 }}>{seleccionada.claseTienda}</dd></div>
-            <div>
-              <dt style={{ fontWeight: 600, color: '#4a5568' }}>Clase vinculada</dt>
-              <dd style={{ margin: 0 }}>{nombreClase(seleccionada.idClase)}</dd>
+          <dl style={{ display: 'grid', gap: '0.75rem', margin: '1rem 0' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}><dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Nombre</dt><dd style={{ margin: 0, color: 'var(--text)' }}>{seleccionada.nombre}</dd></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}><dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Tipo de tienda</dt><dd style={{ margin: 0, color: 'var(--text)' }}>{seleccionada.claseTienda}</dd></div>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Clase vinculada</dt>
+              <dd style={{ margin: 0, color: 'var(--text)' }}>{nombreClase(seleccionada.idClase)}</dd>
             </div>
           </dl>
-          <p style={{ fontSize: '0.85rem', color: '#4a5568', marginTop: '0.75rem' }}>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '1rem 0' }}>
             Los objetos de esta tienda aparecerán como sugeridos para personajes de la clase vinculada.
           </p>
-          <button type="button" style={{ marginTop: '0.5rem' }} onClick={() => setSeleccionada(null)}>
+          <button type="button" className="btn-secondary" onClick={() => setSeleccionada(null)}>
             Cerrar detalle
           </button>
         </aside>

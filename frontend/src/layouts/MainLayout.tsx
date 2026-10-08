@@ -1,6 +1,7 @@
 import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import './MainLayout.css';
 
 export default function MainLayout() {
@@ -35,10 +36,15 @@ export default function MainLayout() {
       {/* Navbar */}
       <nav className="navbar">
         <div className="navbar-brand">
+          <div className="brand-logo-badge" aria-hidden="true">🎲</div>
           <h1>Gestor de Turnos - Juegos de Rol</h1>
         </div>
         <div className="navbar-user">
-          <span>Hola, {usuarioLogueado.nickname}</span>
+          <ThemeToggle />
+          <div className="user-greeting-badge">
+            <span className="user-dot" aria-hidden="true" />
+            <span>Hola, <strong>{usuarioLogueado.nickname}</strong></span>
+          </div>
           <button onClick={handleLogout} className="btn-logout">
             Cerrar Sesión
           </button>
@@ -48,39 +54,40 @@ export default function MainLayout() {
       {/* Sidebar */}
       <div className="layout-container">
         <aside className="sidebar">
+          <div className="sidebar-header-label">Menú de Navegación</div>
           <ul className="nav-menu">
             {[['/classes', '🛡️ Clases'], ['/stores', '🏪 Tiendas'], ['/sessions', '📅 Sesiones'], ['/missions', '📜 Misiones'], ['/inventory', '📦 Inventarios'], ['/profiles', '👤 Perfiles']].map(([path, label]) => (
               <li
                 key={path}
                 className={location.pathname === path ? 'active' : ''}
               >
-                <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to={path}>{label}</Link>
+                <Link className={location.pathname === path ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to={path}>{label}</Link>
               </li>
             ))}
             <li
               className={location.pathname === '/dashboard' ? 'active' : ''}
             >
-              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/dashboard">📊 Dashboard</Link>
+              <Link className={location.pathname === '/dashboard' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/dashboard">📊 Dashboard</Link>
             </li>
             <li
               className={location.pathname === '/users' ? 'active' : ''}
             >
-              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/users">👥 Usuarios</Link>
+              <Link className={location.pathname === '/users' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/users">👥 Usuarios</Link>
             </li>
             <li
               className={location.pathname === '/games' ? 'active' : ''}
             >
-              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/games">🎮 Partidas</Link>
+              <Link className={location.pathname === '/games' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/games">🎮 Partidas</Link>
             </li>
             <li
               className={location.pathname === '/objects' ? 'active' : ''}
             >
-              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/objects">🎒 Objetos</Link>
+              <Link className={location.pathname === '/objects' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/objects">🎒 Objetos</Link>
             </li>
             <li
               className={location.pathname === '/characters' ? 'active' : ''}
             >
-              <Link style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/characters">⚔️ Personajes</Link>
+              <Link className={location.pathname === '/characters' ? 'active' : ''} style={{ textDecoration: 'none', color: 'inherit', display: 'block', width: '100%' }} to="/characters">⚔️ Personajes</Link>
             </li>
           </ul>
         </aside>

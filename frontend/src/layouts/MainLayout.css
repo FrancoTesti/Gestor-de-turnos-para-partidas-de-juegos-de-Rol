@@ -2,169 +2,265 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background-color: var(--bg);
 }
 
+/* Navbar */
 .navbar {
-  background: #333;
-  color: white;
-  padding: 1rem 2rem;
+  background: var(--bg-card);
+  color: var(--text-h);
+  padding: 0.85rem 1.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  flex-direction: column;
+  gap: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(12px);
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.navbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.brand-logo-badge {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--accent-glow);
 }
 
 .navbar-brand h1 {
-  color: white;
+  color: var(--text-h);
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  background: linear-gradient(135deg, var(--text-h) 30%, var(--accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .navbar-user {
   display: flex;
   align-items: center;
   gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.user-greeting-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border);
+  padding: 0.4rem 0.85rem;
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.user-greeting-badge strong {
+  color: var(--text-h);
+}
+
+.user-dot {
+  width: 8px;
+  height: 8px;
+  background-color: var(--success-solid);
+  border-radius: 50%;
+  box-shadow: 0 0 8px var(--success-solid);
 }
 
 .btn-logout {
-  background: #d32f2f;
-  color: white;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
+  background: var(--error-bg);
+  color: var(--error-text);
+  border: 1px solid var(--error-border);
+  padding: 0.45rem 0.95rem;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .btn-logout:hover {
-  background: #b71c1c;
+  background: var(--error-solid);
+  color: #ffffff;
+  border-color: var(--error-solid);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  transform: translateY(-1px);
 }
 
+/* Layout Body */
 .layout-container {
   display: flex;
   flex: 1;
+  flex-direction: column;
 }
 
+/* Sidebar */
 .sidebar {
-  width: 250px;
-  background: var(--code-bg);
-  border-right: 1px solid var(--border);
+  width: 100%;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  padding: 1rem 0;
+  padding: 0.75rem 0;
+  transition: background-color 0.25s ease, border-color 0.25s ease;
+}
+
+.sidebar-header-label {
+  display: none;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  padding: 0 1.5rem 0.75rem;
 }
 
 .nav-menu {
   list-style: none;
   margin: 0;
-  padding: 0;
-}
-
-.nav-menu li {
-  margin: 0;
+  padding: 0 0.5rem;
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  gap: 0.35rem;
 }
 
 .nav-menu li {
   margin: 0;
   cursor: pointer;
+  flex: 0 0 auto;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s ease;
 }
 
-.nav-menu li {
-  display: block;
-  padding: 1rem 1.5rem;
-  color: var(--text-h);
+.nav-menu a {
+  color: var(--text);
   text-decoration: none;
-  border-left: 4px solid transparent;
-  transition: background 0.2s, border-color 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.85rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+  text-align: center;
+  border-bottom: 3px solid transparent;
+  white-space: nowrap;
+  border-radius: var(--radius-sm);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.nav-menu li:hover {
-  background: var(--accent-bg);
+.nav-menu a:hover {
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
 }
 
-.nav-menu li.active {
-  background: var(--accent-bg);
-  border-left-color: #1976d2;
-  font-weight: bold;
+.nav-menu li.active a,
+.nav-menu a.active {
+  color: var(--accent-text, #ffffff) !important;
+  background: var(--accent-bg) !important;
+  border-bottom-color: var(--accent) !important;
+  font-weight: 700;
 }
 
+/* Main Content */
 .main-content {
   flex: 1;
   min-width: 0;
-  padding: 2rem;
+  padding: 1.25rem;
   background: var(--bg);
   overflow-y: auto;
+  transition: background-color 0.25s ease;
 }
 
-.nav-menu a { color: inherit; text-decoration: none; display: block; }
-.module-page h1 { font-size: clamp(1.8rem, 4vw, 2.5rem); line-height: 1.2; }
+.module-page h1 {
+  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
+  line-height: 1.2;
+}
 
-/* Responsive */
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
-    gap: 1rem;
-  }
-
-  .layout-container {
-    flex-direction: column;
-  }
-
-  .sidebar {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid #ddd;
-  }
-
+/* Tablet & Desktop Breakpoints */
+@media (min-width: 640px) {
   .nav-menu {
-    display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
+    overflow-x: visible;
   }
-
   .nav-menu li {
     flex: 1 1 7rem;
-    /* Con emoji en las etiquetas, el ancho mínimo automático empujaba el último ítem
-       fuera de la pantalla a 768 px. Dejarlos encoger hace que el texto baje de línea. */
     min-width: 0;
-    padding: .5rem;
   }
-  .main-content { padding: 1rem; }
-  .navbar-user { flex-wrap: wrap; justify-content: center; }
-
   .nav-menu a {
-    display: block;
+    white-space: normal;
     width: 100%;
     max-width: 100%;
     box-sizing: border-box;
     min-width: 0;
     overflow-wrap: anywhere;
-    padding: 0.75rem;
-    text-align: center;
-    border-left: none;
-    border-bottom: 3px solid transparent;
-  }
-
-  .nav-menu a.active {
-    border-left: none;
-    border-bottom-color: #1976d2;
   }
 }
 
-/* En un teléfono el menú pasa a ser una tira desplazable: ocupaba siete líneas
-   de alto y empujaba el contenido fuera de la primera pantalla. */
-@media (max-width: 600px) {
-  .nav-menu {
+@media (min-width: 768px) {
+  .navbar {
+    flex-direction: row;
+    gap: 0;
+    padding: 0.85rem 2rem;
+  }
+  .navbar-user {
     flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: thin;
+    justify-content: flex-end;
   }
-
+  .layout-container {
+    flex-direction: row;
+  }
+  .sidebar {
+    width: 255px;
+    border-right: 1px solid var(--border);
+    border-bottom: none;
+    padding: 1.5rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 65px);
+  }
+  .sidebar-header-label {
+    display: block;
+  }
+  .nav-menu {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
   .nav-menu li {
-    flex: 0 0 auto;
+    display: block;
   }
-
   .nav-menu a {
-    white-space: nowrap;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: none;
+    border-left: 3px solid transparent;
+  }
+  .nav-menu li.active a,
+  .nav-menu a.active {
+    border-left-color: var(--accent) !important;
+    border-bottom-color: transparent !important;
+  }
+  .main-content {
+    padding: 2rem;
+    max-width: 1400px;
   }
 }

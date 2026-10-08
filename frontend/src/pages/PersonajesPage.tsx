@@ -174,13 +174,13 @@ export default function PersonajesPage() {
   const partidasActivas = partidas.filter((p) => p.estado === 'activa');
 
   return (
-    <section style={{ padding: '1.5rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <section style={{ padding: '0.5rem 0' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', margin: 0 }}>
             Juego de Rol
           </p>
-          <h1 style={{ margin: 0 }}>Personajes</h1>
+          <h1 style={{ margin: '0.25rem 0 0' }}>Personajes</h1>
         </div>
         {!mostrarFormulario && esJugador && (
           <button type="button" className="btn-purple" onClick={abrirFormularioCrear}>
@@ -190,22 +190,22 @@ export default function PersonajesPage() {
       </header>
 
       {mensaje && (
-        <p role="status" style={{ color: '#276749', background: '#f0fff4', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem' }}>
+        <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
           ✅ {mensaje}
         </p>
       )}
       {error && (
-        <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
           <span>⚠️ {error}</span>
-          <button type="button" onClick={cargar}>Reintentar</button>
+          <button type="button" onClick={cargar} className="btn-secondary">Reintentar</button>
         </div>
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: '#f7fafc', padding: '1.5rem', borderRadius: '8px', maxWidth: '640px', marginBottom: '1.5rem' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '640px', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje'}</h2>
           {errorForm && (
-            <p role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.5rem 0.75rem', borderRadius: '4px' }}>
+            <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
               ⚠️ {errorForm}
             </p>
           )}
@@ -219,7 +219,7 @@ export default function PersonajesPage() {
                 value={nombreFicticio}
                 onChange={(e) => setNombreFicticio(e.target.value)}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               />
             </label>
             <label>
@@ -231,7 +231,7 @@ export default function PersonajesPage() {
                 value={raza}
                 onChange={(e) => setRaza(e.target.value)}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               />
             </label>
             <label>
@@ -241,7 +241,7 @@ export default function PersonajesPage() {
                 value={idClase}
                 onChange={(e) => setIdClase(Number(e.target.value))}
                 disabled={guardando}
-                style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               >
                 <option value="">Seleccionar clase…</option>
                 {clases.map((c) => (
@@ -258,7 +258,7 @@ export default function PersonajesPage() {
                     value={idPartida}
                     onChange={(e) => { setIdPartida(Number(e.target.value)); setContrasenaPartida(''); }}
                     disabled={guardando}
-                    style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                    style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
                   >
                     <option value="">Seleccionar partida activa…</option>
                     {partidasActivas.map((p) => {
@@ -274,19 +274,19 @@ export default function PersonajesPage() {
                 </label>
 
                 {partidaSeleccionada && (
-                  <div style={{ background: '#edf2f7', padding: '0.75rem', borderRadius: '6px', fontSize: '0.9rem', color: '#2d3748' }}>
+                  <div style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: 'var(--text)' }}>
                     <p style={{ margin: '0.2rem 0' }}>
-                      <strong>Partida:</strong> {partidaSeleccionada.nombre} (#{partidaSeleccionada.idPartida})
+                      <strong style={{ color: 'var(--text-h)' }}>Partida:</strong> {partidaSeleccionada.nombre} (#{partidaSeleccionada.idPartida})
                     </p>
                     <p style={{ margin: '0.2rem 0' }}>
-                      <strong>Acceso:</strong> {partidaSeleccionada.esPrivada ? '🔒 Privada (requiere contraseña)' : '🌐 Pública (acceso directo)'}
+                      <strong style={{ color: 'var(--text-h)' }}>Acceso:</strong> {partidaSeleccionada.esPrivada ? '🔒 Privada (requiere contraseña)' : '🌐 Pública (acceso directo)'}
                     </p>
                     {(() => {
                       const ocupados = personajes.filter((pj) => pj.idPartida === partidaSeleccionada.idPartida).length;
                       const disponibles = Math.max(0, partidaSeleccionada.limiteJugadores - ocupados);
                       return (
-                        <p style={{ margin: '0.2rem 0', color: disponibles > 0 ? '#276749' : '#c53030' }}>
-                          <strong>Cupos:</strong> {disponibles} de {partidaSeleccionada.limiteJugadores} disponibles {disponibles === 0 && '— ⚠️ ¡Partida llena!'}
+                        <p style={{ margin: '0.2rem 0', color: disponibles > 0 ? 'var(--success-text)' : 'var(--error-text)', fontWeight: 600 }}>
+                          <strong style={{ color: 'var(--text-h)' }}>Cupos:</strong> {disponibles} de {partidaSeleccionada.limiteJugadores} disponibles {disponibles === 0 && '— ⚠️ ¡Partida llena!'}
                         </p>
                       );
                     })()}
@@ -304,11 +304,11 @@ export default function PersonajesPage() {
                   value={contrasenaPartida}
                   onChange={(e) => setContrasenaPartida(e.target.value)}
                   disabled={guardando}
-                  style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
+                  style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
                 />
               </label>
             )}
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
               <button type="submit" className="btn-purple" disabled={guardando}>
                 {guardando ? 'Guardando…' : enEdicion ? 'Actualizar' : 'Crear Personaje'}
               </button>
@@ -339,7 +339,7 @@ export default function PersonajesPage() {
       />
 
       {seleccionado && (
-        <aside style={{ marginTop: '1.5rem', padding: '1rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '520px' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '540px', boxShadow: 'var(--shadow)' }}>
           <PersonajeDetalle personaje={seleccionado} clases={clases} onVolver={() => setSeleccionado(null)} />
         </aside>
       )}

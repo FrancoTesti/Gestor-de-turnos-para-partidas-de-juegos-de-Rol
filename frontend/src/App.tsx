@@ -1,6 +1,7 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import ObjetosPage from './components/objetos/ObjetosPage';
 import { UserProvider } from './context/UserContext';
+import { ThemeProvider } from './context/ThemeContext';
 import MainLayout from './layouts/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import LoginPage from './pages/LoginPage';
@@ -19,40 +20,42 @@ import './App.css';
 
 export default function App() {
   return (
-    <UserProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+    <ThemeProvider>
+      <UserProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
 
-          <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/users" element={<UsersPage />} />
-            <Route path="/objects" element={<ObjetosPage />} />
+            <Route element={<MainLayout />}>
+              <Route path="/dashboard" element={<DashboardPage />} />
+              <Route path="/users" element={<UsersPage />} />
+              <Route path="/objects" element={<ObjetosPage />} />
 
-            {/* Clases — Alejandro Ciesco */}
-            <Route path="/classes" element={<ClasesPage />} />
+              {/* Clases — Alejandro Ciesco */}
+              <Route path="/classes" element={<ClasesPage />} />
 
-            {/* Tiendas — Octavio Gudiño */}
-            <Route path="/stores" element={<TiendasPage />} />
+              {/* Tiendas — Octavio Gudiño */}
+              <Route path="/stores" element={<TiendasPage />} />
 
-            {/* Partidas y sesiones usan el flujo unificado de ModulePage. */}
-            <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
-            <Route path="/partidas" element={<Navigate to="/games" replace />} />
+              {/* Partidas y sesiones usan el flujo unificado de ModulePage. */}
+              <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
+              <Route path="/partidas" element={<Navigate to="/games" replace />} />
 
-            {/* Personajes — Alejandro Ciesco */}
-            <Route path="/characters" element={<PersonajesPage />} />
+              {/* Personajes — Alejandro Ciesco */}
+              <Route path="/characters" element={<PersonajesPage />} />
 
-            <Route path="/sessions" element={<SesionesPage />} />
-            <Route path="/missions" element={<MisionesPage />} />
-            <Route path="/inventory" element={<ModulePage key="inventarios" resource="inventarios" />} />
-            <Route path="/profiles" element={<ProfilesPage />} />
-          </Route>
+              <Route path="/sessions" element={<SesionesPage />} />
+              <Route path="/missions" element={<MisionesPage />} />
+              <Route path="/inventory" element={<ModulePage key="inventarios" resource="inventarios" />} />
+              <Route path="/profiles" element={<ProfilesPage />} />
+            </Route>
 
-          <Route path="/" element={<Navigate to="/login" replace />} />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
-    </UserProvider>
+            <Route path="/" element={<Navigate to="/login" replace />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </BrowserRouter>
+      </UserProvider>
+    </ThemeProvider>
   );
 }

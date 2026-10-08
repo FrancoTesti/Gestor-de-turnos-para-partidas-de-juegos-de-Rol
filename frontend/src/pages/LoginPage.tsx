@@ -2,6 +2,7 @@ import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import ThemeToggle from '../components/ui/ThemeToggle';
 import './AuthPages.css';
 
 export default function LoginPage() {
@@ -33,60 +34,69 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="auth-page">
-      <h2>Iniciar Sesión</h2>
-
-      {errorLogin && (
-        <Alert
-          type="error"
-          message={errorLogin}
-          onClose={() => setErrorLogin('')}
-        />
-      )}
-
-      <form className="auth-form" onSubmit={handleLogin} noValidate>
-        <div className="auth-campo">
-          <label htmlFor="login-nickname">Nickname</label>
-          <input
-            id="login-nickname"
-            name="nickname"
-            autoComplete="username"
-            placeholder="Nickname"
-            value={nickname}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
-            disabled={busy}
-          />
+    <div className="auth-wrapper">
+      <div className="auth-top-bar">
+        <ThemeToggle />
+      </div>
+      <main className="auth-page">
+        <div className="auth-header">
+          <div className="auth-brand-badge" aria-hidden="true">🎲</div>
+          <h2>Iniciar Sesión</h2>
+          <p className="auth-subtitle">Gestor de Turnos para Partidas de Rol</p>
         </div>
 
-        <div className="auth-campo">
-          <label htmlFor="login-contrasena">Contraseña</label>
-          <input
-            id="login-contrasena"
-            name="contrasena"
-            type="password"
-            autoComplete="current-password"
-            placeholder="Contraseña"
-            value={contrasena}
-            onChange={(e: ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
-            disabled={busy}
+        {errorLogin && (
+          <Alert
+            type="error"
+            message={errorLogin}
+            onClose={() => setErrorLogin('')}
           />
-        </div>
+        )}
 
-        <button type="submit" className="auth-primario" disabled={busy} aria-busy={busy}>
-          {busy ? 'Ingresando…' : 'Ingresar'}
-        </button>
-        <button
-          type="button"
-          className="auth-secundario"
-          onClick={() => navigate('/register')}
-        >
-          Ir a Registro
-        </button>
-      </form>
+        <form className="auth-form" onSubmit={handleLogin} noValidate>
+          <div className="auth-campo">
+            <label htmlFor="login-nickname">Nickname</label>
+            <input
+              id="login-nickname"
+              name="nickname"
+              autoComplete="username"
+              placeholder="Nickname"
+              value={nickname}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setNickname(e.target.value)}
+              disabled={busy}
+            />
+          </div>
 
-      <p className="auth-nota">
-        ¿Todavía no tenés cuenta? Registrate eligiendo si vas a jugar o a dirigir partidas.
-      </p>
-    </main>
+          <div className="auth-campo">
+            <label htmlFor="login-contrasena">Contraseña</label>
+            <input
+              id="login-contrasena"
+              name="contrasena"
+              type="password"
+              autoComplete="current-password"
+              placeholder="Contraseña"
+              value={contrasena}
+              onChange={(e: ChangeEvent<HTMLInputElement>) => setContrasena(e.target.value)}
+              disabled={busy}
+            />
+          </div>
+
+          <button type="submit" className="auth-primario" disabled={busy} aria-busy={busy}>
+            {busy ? 'Ingresando…' : 'Ingresar'}
+          </button>
+          <button
+            type="button"
+            className="auth-secundario"
+            onClick={() => navigate('/register')}
+          >
+            Ir a Registro
+          </button>
+        </form>
+
+        <p className="auth-nota">
+          ¿Todavía no tenés cuenta? Registrate eligiendo si vas a jugar o a dirigir partidas.
+        </p>
+      </main>
+    </div>
   );
 }

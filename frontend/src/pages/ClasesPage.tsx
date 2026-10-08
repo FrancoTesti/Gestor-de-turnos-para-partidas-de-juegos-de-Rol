@@ -106,13 +106,13 @@ export default function ClasesPage() {
     : clases;
 
   return (
-    <section style={{ padding: '1.5rem' }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+    <section style={{ padding: '0.5rem 0' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
         <div>
-          <p style={{ fontSize: '0.8rem', color: '#4a5568', textTransform: 'uppercase', margin: 0 }}>
+          <p style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', margin: 0 }}>
             Catálogo del sistema
           </p>
-          <h1 style={{ margin: 0 }}>Clases de Personaje</h1>
+          <h1 style={{ margin: '0.25rem 0 0' }}>Clases de Personaje</h1>
         </div>
         {vista === 'listado' && esAnfitrion && (
           <button
@@ -126,15 +126,15 @@ export default function ClasesPage() {
       </header>
 
       {mensaje && (
-        <p role="status" style={{ color: '#276749', background: '#f0fff4', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem' }}>
+        <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
           ✅ {mensaje}
         </p>
       )}
       {error && (
-        <div role="alert" style={{ color: '#c53030', background: '#fff5f5', padding: '0.75rem', borderRadius: '6px', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
           <span>⚠️ {error}</span>
           {vista === 'listado' && (
-            <button type="button" onClick={recargar} style={{ marginLeft: '1rem' }}>
+            <button type="button" onClick={recargar} className="btn-secondary" style={{ marginLeft: '1rem' }}>
               Reintentar
             </button>
           )}
@@ -142,37 +142,37 @@ export default function ClasesPage() {
       )}
 
       {vista === 'formulario' ? (
-        <div style={{ maxWidth: '600px' }}>
+        <div style={{ maxWidth: '640px' }}>
           <ClaseFormulario
             claseInicial={enEdicion}
             onGuardar={guardar}
             onCancelar={() => { setEnEdicion(null); setVista('listado'); }}
           />
-          {guardando && <p role="status">Guardando…</p>}
+          {guardando && <p role="status" style={{ marginTop: '0.75rem', color: 'var(--text-muted)' }}>Guardando…</p>}
         </div>
       ) : (
         <>
-          <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-            <label htmlFor="buscarClase">
-              🔍 Buscar:{' '}
+          <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <label htmlFor="buscarClase" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🔍 Buscar:</span>
               <input
                 id="buscarClase"
                 type="search"
                 placeholder="Nombre o descripción"
                 value={busqueda}
                 onChange={(e) => setBusqueda(e.target.value)}
-                style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #cbd5e0' }}
+                style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '260px' }}
               />
             </label>
             {busqueda && (
-              <button type="button" onClick={() => setBusqueda('')}>
+              <button type="button" className="btn-secondary" onClick={() => setBusqueda('')}>
                 Quitar filtro
               </button>
             )}
           </div>
 
           {!cargando && !error && clasesFiltradas.length === 0 && (
-            <p style={{ color: '#4a5568', fontStyle: 'italic' }}>
+            <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)' }}>
               {busqueda ? 'No hay clases que coincidan con la búsqueda.' : 'No hay clases registradas en el sistema.'}
             </p>
           )}
@@ -187,11 +187,12 @@ export default function ClasesPage() {
           />
 
           {seleccionada && (
-            <aside style={{ marginTop: '1.5rem', padding: '1rem', background: '#f7fafc', borderRadius: '8px', maxWidth: '480px' }}>
+            <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '520px', boxShadow: 'var(--shadow)' }}>
               <ClaseDetalle clase={seleccionada} />
               <button
                 type="button"
-                style={{ marginTop: '0.75rem' }}
+                className="btn-secondary"
+                style={{ marginTop: '1rem' }}
                 onClick={() => setSeleccionada(null)}
               >
                 Cerrar detalle
