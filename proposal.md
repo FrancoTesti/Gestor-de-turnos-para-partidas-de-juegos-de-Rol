@@ -12,7 +12,7 @@
 Backend y frontend viven en el mismo repositorio:
 
 * [Repositorio completo](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol)
-* [Backend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/src) (`src/`, Express + MikroORM + PostgreSQL en Supabase)
+* [Backend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/src) (`src/`, Express + MikroORM)
 * [Frontend](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/tree/main/frontend) (`frontend/`, React + Vite)
 * [Documentación](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/blob/main/docs/README.md)
 
@@ -64,7 +64,7 @@ Adicionales para Aprobación
 ## Estado de lo implementado
 
 El alcance mínimo y los adicionales para aprobación están implementados de punta a punta
-(interfaz → API → PostgreSQL en Supabase) y cada requisito tiene su prueba asociada en la matriz de
+(interfaz → API → MySQL) y cada requisito tiene su prueba asociada en la matriz de
 [docs/entrega.md](docs/entrega.md), que también registra lo que queda parcial: la revisión responsive
 y de accesibilidad todavía no recorrió todas las pantallas. Las reglas de negocio están en
 [docs/funcionalidad.md](docs/funcionalidad.md) y los endpoints, en [docs/api.md](docs/api.md).
