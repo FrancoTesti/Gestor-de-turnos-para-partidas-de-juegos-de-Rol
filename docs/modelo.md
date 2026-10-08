@@ -1,9 +1,8 @@
 # Modelo de datos vigente
 
-Esta página reemplaza a `ModeloDominioOLD.drawio.png`, que quedó desactualizado: no incluye
-`esUnico` en Objeto ni refleja los nombres de campos que finalmente se implementaron. El diagrama
-`DER_NEW.png` sigue siendo válido como vista general; lo de abajo es la versión que se corresponde
-exactamente con `src/entities/` y con `SQL/rpg.sql`.
+Esta página documenta el modelo de datos relacional vigente del proyecto, el cual se corresponde
+exactamente con las entidades en `src/entities/` y con las tablas en PostgreSQL. El diagrama
+`DER_NEW.png` acompaña como vista gráfica general.
 
 ## Diagrama entidad-relación
 

@@ -293,5 +293,5 @@ de usuarios y sin necesidad de ejecutarse en local. La evidencia de cada suite e
 - **Datos de prueba:** la base de Supabase contiene, además del catálogo de demostración, restos de la
   verificación manual de esta migración (una partida, un personaje, dinero y karma modificados). Conviene
   limpiarlos antes de grabar la demostración.
-- **Documentos históricos:** `plan_final_dsw.md`, `verificacion_renzo.md` y los planes de
-  `docs/superpowers/` conservan menciones a MySQL porque registran corridas de septiembre.
+- **Documentos de verificación:** `verificacion_usuarios_auth.md` conserva menciones a MySQL porque
+  registra la corrida de verificación de ese módulo realizada en septiembre.

@@ -26,9 +26,8 @@ El modelo vigente, entidad por entidad y con las reglas que no se ven en el diag
 
 ![Diagrama entidad-relación del sistema](docs/DER_NEW.png)
 
-La versión conceptual original se conserva como historial en `docs/ModeloDominioOLD.drawio.png`
-([enlace al Drive](https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing));
-quedó desactualizada respecto de lo implementado.
+La versión conceptual original de inicio de cursada se conserva como referencia en el
+[Drive del equipo](https://drive.google.com/file/d/1-zXEpOdd3ASk3xKuXXNHCWMKxyeTyydU/view?usp=sharing).
 
 
 
