@@ -35,6 +35,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const [search, setSearch] = useState('');
   const [classFilter, setClassFilter] = useState('');
   const [activeOnly, setActiveOnly] = useState(false);
+  const [sortField, setSortField] = useState<string>('idPartida');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
   const [revision, setRevision] = useState(0);
   const url = (r: Row) => `/${resource}/${config.keys.map(k => r[k]).join('/')}`;
   useEffect(() => {
@@ -75,13 +77,30 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const detail = async (r: Row) => { setError(''); try { setSelected(await api<Row>(url(r))); } catch (e) { setError((e as Error).message); } };
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
-    return rows.filter(r => {
+    let res = rows.filter(r => {
       const matchesSearch = !term || Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
       const matchesClass = !classFilter || String(r.idClase) === classFilter;
       const matchesActive = !activeOnly || r.estado === 'activa';
       return matchesSearch && matchesClass && matchesActive;
     });
-  }, [rows, search, classFilter, activeOnly]);
+
+    if (resource === 'partidas' && sortField) {
+      res = [...res].sort((a, b) => {
+        let valA = a[sortField];
+        let valB = b[sortField];
+        if (typeof valA === 'number' && typeof valB === 'number') {
+          return sortDir === 'asc' ? valA - valB : valB - valA;
+        }
+        valA = String(valA ?? '').toLowerCase();
+        valB = String(valB ?? '').toLowerCase();
+        if (valA === valB) return 0;
+        const comp = valA > valB ? 1 : -1;
+        return sortDir === 'asc' ? comp : -comp;
+      });
+    }
+
+    return res;
+  }, [rows, search, classFilter, activeOnly, resource, sortField, sortDir]);
   const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
@@ -109,7 +128,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     </form> : <>
       <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
-          Buscar: <input value={search} placeholder="Filtrar por cualquier campo..." onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
+          {resource === 'partidas' ? 'Buscar por Id de Partida:' : 'Buscar:'}
+          <input value={search} placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
         </label>
         {resource === 'personajes' && (
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
@@ -121,10 +141,30 @@ export default function ModulePage({ resource }: { resource: Resource }) {
           </label>
         )}
         {resource === 'partidas' && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
-            <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
-            Solo partidas activas
-          </label>
+          <>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+              Ordenar por:
+              <select value={sortField} onChange={e => setSortField(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
+                <option value="idPartida">Id de Partida</option>
+                <option value="nombre">Nombre</option>
+                <option value="limiteJugadores">Límite de Jugadores</option>
+                <option value="estado">Estado</option>
+              </select>
+            </label>
+            <button
+              type="button"
+              className="btn-secondary"
+              style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
+              onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
+              title="Alternar dirección de orden"
+            >
+              {sortDir === 'asc' ? '▲ Asc' : '▼ Desc'}
+            </button>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
+              <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
+              Solo partidas activas
+            </label>
+          </>
         )}
         {(search || classFilter || activeOnly) && (
           <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setClassFilter(''); setActiveOnly(false); }}>
@@ -213,15 +253,19 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
           {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>⚠️ Capacidad insuficiente: Este inventario está lleno.</p>}
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto del personaje
-            <input
-              type="number"
-              min="1"
+            <select
               required
-              placeholder="ID del objeto"
               value={object}
               onChange={e => setObject(e.target.value)}
               style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            />
+            >
+              <option value="">Seleccionar objeto...</option>
+              {objects.map(o => (
+                <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
+                  {label(o)} (ID: #{String(o.idObjeto)}) — Casillero #{String(o.posicion)}
+                </option>
+              ))}
+            </select>
           </label>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Posición destino (0 a {totalCapacity - 1})

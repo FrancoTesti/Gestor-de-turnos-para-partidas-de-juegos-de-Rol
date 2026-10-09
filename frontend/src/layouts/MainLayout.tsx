@@ -1,6 +1,8 @@
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import Modal from '../components/ui/Modal';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import './MainLayout.css';
 
@@ -9,9 +11,40 @@ export default function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleLogout = async () => {
-    try { await logout(); navigate('/login'); }
-    catch { window.alert('No se pudo cerrar la sesión. Reintentá.'); }
+  const [mostrarModalLogout, setMostrarModalLogout] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const navRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    setOpenDropdown(null);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogoutClick = () => {
+    setMostrarModalLogout(true);
+  };
+
+  const confirmarLogout = async () => {
+    setMostrarModalLogout(false);
+    try {
+      await logout();
+      navigate('/login');
+    } catch {
+      window.alert('No se pudo cerrar la sesión. Reintentá.');
+    }
+  };
+
+  const toggleDropdown = (menu: string) => {
+    setOpenDropdown(prev => (prev === menu ? null : menu));
   };
 
   if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
@@ -27,6 +60,17 @@ export default function MainLayout() {
         </div>
       )}
 
+      <Modal
+        isOpen={mostrarModalLogout}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que deseas cerrar sesión?"
+        onConfirm={confirmarLogout}
+        onCancel={() => setMostrarModalLogout(false)}
+        confirmText="Cerrar Sesión"
+        cancelText="Cancelar"
+        type="confirm"
+      />
+
       <header className="top-navbar">
         <div className="navbar-brand">
           <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -35,40 +79,80 @@ export default function MainLayout() {
           </Link>
         </div>
 
-        <nav className="navbar-menu nav-menu">
+        <nav className="navbar-menu nav-menu" ref={navRef}>
           <ul className="nav-horizontal">
-            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])}`}>
-              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Juego ▾</span>
+            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])} ${openDropdown === 'juego' ? 'open' : ''}`}>
+              <span
+                className="nav-item"
+                role="button"
+                tabIndex={0}
+                aria-haspopup="true"
+                aria-expanded={openDropdown === 'juego'}
+                onClick={() => toggleDropdown('juego')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('juego'); } }}
+              >
+                Juego ▾
+              </span>
               <div className="dropdown-content">
-                <Link to="/games">Partidas</Link>
-                <Link to="/sessions">Sesiones</Link>
-                <Link to="/missions">Misiones</Link>
+                <Link to="/games" onClick={() => setOpenDropdown(null)}>Partidas</Link>
+                <Link to="/sessions" onClick={() => setOpenDropdown(null)}>Sesiones</Link>
+                <Link to="/missions" onClick={() => setOpenDropdown(null)}>Misiones</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])}`}>
-              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Personajes ▾</span>
+            <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])} ${openDropdown === 'personajes' ? 'open' : ''}`}>
+              <span
+                className="nav-item"
+                role="button"
+                tabIndex={0}
+                aria-haspopup="true"
+                aria-expanded={openDropdown === 'personajes'}
+                onClick={() => toggleDropdown('personajes')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('personajes'); } }}
+              >
+                Personajes ▾
+              </span>
               <div className="dropdown-content">
-                <Link to="/characters">Personajes</Link>
-                <Link to="/inventory">Inventarios</Link>
+                <Link to="/characters" onClick={() => setOpenDropdown(null)}>Personajes</Link>
+                <Link to="/inventory" onClick={() => setOpenDropdown(null)}>Inventarios</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])}`}>
-              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Catálogo ▾</span>
+            <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])} ${openDropdown === 'catalogo' ? 'open' : ''}`}>
+              <span
+                className="nav-item"
+                role="button"
+                tabIndex={0}
+                aria-haspopup="true"
+                aria-expanded={openDropdown === 'catalogo'}
+                onClick={() => toggleDropdown('catalogo')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('catalogo'); } }}
+              >
+                Catálogo ▾
+              </span>
               <div className="dropdown-content">
-                <Link to="/classes">Clases</Link>
-                <Link to="/objects">Objetos</Link>
-                <Link to="/stores">Tiendas</Link>
+                <Link to="/classes" onClick={() => setOpenDropdown(null)}>Clases</Link>
+                <Link to="/objects" onClick={() => setOpenDropdown(null)}>Objetos</Link>
+                <Link to="/stores" onClick={() => setOpenDropdown(null)}>Tiendas</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])}`}>
-              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Sistema ▾</span>
+            <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])} ${openDropdown === 'sistema' ? 'open' : ''}`}>
+              <span
+                className="nav-item"
+                role="button"
+                tabIndex={0}
+                aria-haspopup="true"
+                aria-expanded={openDropdown === 'sistema'}
+                onClick={() => toggleDropdown('sistema')}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('sistema'); } }}
+              >
+                Sistema ▾
+              </span>
               <div className="dropdown-content">
-                <Link to="/dashboard">Dashboard</Link>
-                <Link to="/users">Usuarios</Link>
-                <Link to="/profiles">Mis Perfiles</Link>
+                <Link to="/dashboard" onClick={() => setOpenDropdown(null)}>Dashboard</Link>
+                <Link to="/users" onClick={() => setOpenDropdown(null)}>Usuarios</Link>
+                <Link to="/profiles" onClick={() => setOpenDropdown(null)}>Mis Perfiles</Link>
               </div>
             </li>
           </ul>
@@ -77,7 +161,7 @@ export default function MainLayout() {
         <div className="navbar-user">
           <ThemeToggle />
           <span className="user-greeting truncate" title={usuarioLogueado.nickname}>Hola, {usuarioLogueado.nickname}</span>
-          <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+          <button onClick={handleLogoutClick} className="btn-logout">Cerrar Sesión</button>
         </div>
       </header>
 
