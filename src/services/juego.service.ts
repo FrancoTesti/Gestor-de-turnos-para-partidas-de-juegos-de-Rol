@@ -21,7 +21,7 @@ export const missionSchema = z.object({
 export const inventorySchema = z.object({ idPersonaje: idSchema, numInventario: idSchema, cantidadEspacio: idSchema.max(1000) }).strict();
 export const participationSchema = z.object({ idPersonajes: z.array(idSchema).min(1).max(1000).refine(ids => new Set(ids).size === ids.length, 'Hay personajes repetidos') }).strict();
 export const rewardSchema = z.object({ recompensas: z.array(z.object({ idPersonaje: idSchema, dinero: amount, xp: amount }).strict()).min(1).max(1000).refine(items => new Set(items.map(i => i.idPersonaje)).size === items.length, 'Hay personajes repetidos') }).strict();
-export const saleSchema = z.object({ idPersonaje: idSchema, idTienda: idSchema, precio: amount }).strict();
+export const saleSchema = z.object({ idPersonaje: idSchema, idTienda: idSchema, precio: amount.optional() }).strict();
 const lock = { lockMode: LockMode.PESSIMISTIC_WRITE } as const;
 // PostgreSQL no admite FOR UPDATE sobre el lado opcional de un LEFT JOIN: con relaciones opcionales
 // (Objeto.inventario / Objeto.tienda) hay que cargarlas en consultas aparte. El bloqueo queda en la fila raíz.
@@ -214,11 +214,12 @@ export class JuegoService {
       const tienda = await tx.findOne(Tienda, { idTienda: data.idTienda }, { populate: ['clase'] });
       if (!tienda) throw new HttpError(404, 'Tienda no encontrada');
       conflict(!!tienda.clase && !!p.clase && tienda.clase.idClase !== p.clase.idClase, 'No podés vender a una tienda de otra clase');
+      const precioVenta = data.precio !== undefined ? data.precio : object.valor;
       const rango = rangoVenta(object.valor);
-      conflict(data.precio < rango.minimo || data.precio > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
-      conflict(p.dinero + data.precio > 2147483647, 'El saldo excedería el límite permitido');
-      p.dinero += data.precio; object.inventario = null; object.tienda = tienda; object.posicion = 0;
-      await tx.flush(); return { idObjeto: object.idObjeto, idPersonaje: p.idPersonaje, dineroRestante: p.dinero, precio: data.precio };
+      conflict(precioVenta < rango.minimo || precioVenta > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
+      conflict(p.dinero + precioVenta > 2147483647, 'El saldo excedería el límite permitido');
+      p.dinero += precioVenta; object.inventario = null; object.tienda = tienda; object.posicion = 0;
+      await tx.flush(); return { idObjeto: object.idObjeto, idPersonaje: p.idPersonaje, dineroRestante: p.dinero, precio: precioVenta };
     });
   }
 }

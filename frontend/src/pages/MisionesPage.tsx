@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
-import type { Mision, Sesion, Partida } from '../interfaces';
+import type { Mision, Sesion, Partida, Personaje } from '../interfaces';
 import { obtenerMisiones, crearMision, actualizarMision, eliminarMision, completarMision } from '../services/mision.service';
 import type { Recompensa } from '../services/mision.service';
 import { obtenerSesion } from '../services/sesion.service';
@@ -16,11 +16,19 @@ function mensajeError(e: unknown): string {
 
 export default function MisionesPage() {
   const { usuarioLogueado, rolDe } = useUser();
-  const host = rolDe(usuarioLogueado?.idUsuario ?? 0) === 'anfitrion';
+  const userId = usuarioLogueado?.idUsuario ?? 0;
+  const host = rolDe(userId) === 'anfitrion';
   
   const [misiones, setMisiones] = useState<Mision[]>([]);
   const [sesiones, setSesiones] = useState<Sesion[]>([]);
   const [partidas, setPartidas] = useState<Partida[]>([]);
+  const [personajes, setPersonajes] = useState<Personaje[]>([]);
+  const [filtroPartida, setFiltroPartida] = useState<string>(() => {
+    if (typeof window !== 'undefined') {
+      return new URLSearchParams(window.location.search).get('partida') || '';
+    }
+    return '';
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
@@ -37,8 +45,20 @@ export default function MisionesPage() {
 
   useEffect(() => {
     let activo = true;
-    Promise.all([obtenerMisiones(), api<Sesion[]>('/sesiones'), api<Partida[]>('/partidas')])
-      .then(([mis, ses, pts]) => { if (activo) { setMisiones(mis); setSesiones(ses); setPartidas(pts); } })
+    Promise.all([
+      obtenerMisiones(),
+      api<Sesion[]>('/sesiones').catch(() => []),
+      api<Partida[]>('/partidas').catch(() => []),
+      api<Personaje[]>('/personajes').catch(() => []),
+    ])
+      .then(([mis, ses, pts, pjs]) => {
+        if (activo) {
+          setMisiones(mis);
+          setSesiones(ses);
+          setPartidas(pts);
+          setPersonajes(pjs);
+        }
+      })
       .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
       .finally(() => { if (activo) setLoading(false); });
     return () => { activo = false; };
@@ -146,6 +166,29 @@ export default function MisionesPage() {
     }
   };
 
+  const misPersonajes = useMemo(() => {
+    return personajes.filter(p => p.idUsuarioJugador === userId);
+  }, [personajes, userId]);
+
+  const partidasDelUsuario = useMemo(() => {
+    return partidas.filter(p => {
+      const esAnfitrionDePartida = p.idUsuarioAnfitrion === userId;
+      const tienePjEnPartida = misPersonajes.some(pj => pj.idPartida === p.idPartida);
+      return esAnfitrionDePartida || tienePjEnPartida;
+    });
+  }, [partidas, userId, misPersonajes]);
+
+  const misionesFiltradas = useMemo(() => {
+    if (filtroPartida) {
+      return misiones.filter(m => String(m.idPartida) === String(filtroPartida));
+    }
+    if (partidas.length > 0 && partidasDelUsuario.length > 0) {
+      const idsPermitidos = new Set(partidasDelUsuario.map(p => p.idPartida));
+      return misiones.filter(m => idsPermitidos.has(m.idPartida));
+    }
+    return misiones;
+  }, [misiones, filtroPartida, partidas.length, partidasDelUsuario]);
+
   const sumaDinero = recompensas.reduce((acc, r) => acc + r.dinero, 0);
   const sumaXp = recompensas.reduce((acc, r) => acc + r.xp, 0);
   const esCorrecto = selectedMision && sumaDinero === selectedMision.dineroTotal && sumaXp === selectedMision.xpTotal;
@@ -162,7 +205,38 @@ export default function MisionesPage() {
       {error && <Alert type="error" message={error} onClose={() => setError('')} />}
       {aviso && <p role="status" className="mensaje-exito">{aviso}</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+      {/* Selector de Partida */}
+      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem', background: 'var(--bg-card)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', boxSizing: 'border-box', width: '100%' }}>
+        <label htmlFor="filtro-partida-misiones" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+          <span>🎲 Partida:</span>
+        </label>
+        <select
+          id="filtro-partida-misiones"
+          aria-label="Filtrar por Partida"
+          value={filtroPartida}
+          onChange={(e) => setFiltroPartida(e.target.value)}
+          style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+        >
+          <option value="">Todas las partidas visibles ({partidasDelUsuario.length > 0 ? partidasDelUsuario.length : partidas.length})</option>
+          {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
+            <option key={p.idPartida} value={String(p.idPartida)}>
+              {p.nombre} (#{p.idPartida})
+            </option>
+          ))}
+        </select>
+        {filtroPartida && (
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={() => setFiltroPartida('')}
+            style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }}
+          >
+            Mostrar todas las partidas
+          </button>
+        )}
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <div style={{ minWidth: 0 }}>
           <div className="tabla-scroll">
             <table className="app-table">
@@ -178,9 +252,9 @@ export default function MisionesPage() {
                 </tr>
               </thead>
               <tbody>
-                {misiones.map(m => (
+                {misionesFiltradas.map(m => (
                   <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre}</td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre || `Partida #${m.idPartida}`}</td>
                     <td>S{m.numSesion}</td>
                     <td>M{m.numMision}</td>
                     <td>{m.descripcion}</td>

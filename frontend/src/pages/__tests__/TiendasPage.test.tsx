@@ -34,6 +34,25 @@ vi.mock('../../services/clase.service', () => ({
   obtenerClases: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
 }));
 
+vi.mock('../../services/objeto.service', () => ({
+  obtenerObjetos: vi.fn().mockResolvedValue([
+    {
+      idObjeto: 1,
+      nombre: 'Espada Legendaria',
+      descripcion: 'Espada forjada por dioses',
+      tipoObjeto: 'Arma',
+      valor: 500,
+      nivelObjeto: 5,
+      esUnico: true,
+      idTienda: 1,
+      idPersonaje: null,
+      numInventario: null,
+      posicion: 0,
+    },
+  ]),
+  comprarObjeto: vi.fn().mockResolvedValue({}),
+}));
+
 describe('TiendasPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -77,4 +96,19 @@ describe('TiendasPage', () => {
       expect(screen.getByText(/Tienda creada correctamente/i)).toBeInTheDocument();
     });
   });
+
+  it('abre el catálogo de una tienda y muestra objetos disponibles con lógica de objeto único', async () => {
+    render(<TiendasPage />);
+    await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
+
+    const verCatalogoBtns = screen.getAllByRole('button', { name: /Ver catálogo/i });
+    fireEvent.click(verCatalogoBtns[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Catálogo de Objetos/i)).toBeInTheDocument();
+      expect(screen.getByText(/Espada Legendaria/i)).toBeInTheDocument();
+      expect(screen.getByText(/Se puede vender/i)).toBeInTheDocument();
+    });
+  });
 });
+

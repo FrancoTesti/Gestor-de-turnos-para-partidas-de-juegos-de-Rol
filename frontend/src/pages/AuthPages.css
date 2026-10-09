@@ -91,13 +91,17 @@
 }
 
 .auth-campo input {
+  box-sizing: border-box;
+  height: 2.75rem;
+  line-height: 1.25rem;
+  font-family: inherit;
   padding: 0.75rem 0.95rem;
   font-size: 0.95rem;
   background: var(--bg-card-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   color: var(--text-h);
-  transition: all 0.15s ease;
+  transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .auth-campo input:focus {
@@ -120,19 +124,37 @@
 
 .auth-toggle-password {
   position: absolute;
-  right: 0.5rem;
+  right: 0.4rem;
   top: 50%;
   transform: translateY(-50%);
+  width: 2.25rem;
+  height: 2.25rem;
+  box-sizing: border-box;
   background: transparent;
   border: none;
+  outline: none;
   color: var(--text-muted);
-  padding: 0.4rem;
+  padding: 0;
+  margin: 0;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--radius-sm);
   transition: color 0.15s ease, background 0.15s ease;
+  user-select: none;
+}
+
+.auth-toggle-password svg {
+  display: block;
+  width: 18px;
+  height: 18px;
+}
+
+.auth-toggle-password:focus,
+.auth-toggle-password:active {
+  outline: none;
+  transform: translateY(-50%);
 }
 
 .auth-toggle-password:hover {

@@ -2,13 +2,17 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState, ty
 import type { Usuario, Jugador, Anfitrion } from '../interfaces';
 import { api, ApiError, SESSION_EXPIRED_EVENT } from '../services/api';
 interface Session { usuario: Usuario; roles: { idUsuario: number; jugador: boolean; anfitrion: boolean } }
-interface UserContextType {
+export interface UserContextType {
   usuarios: Usuario[]; jugadores: Jugador[]; anfitriones: Anfitrion[];
   usuarioLogueado: Usuario | null; mensaje: string; cargandoSesion: boolean;
   registrarUsuario: (nombre: string, nickname: string, password: string, tipo: 'jugador' | 'anfitrion') => Promise<void>;
   loguearse: (nickname: string, password: string) => Promise<void>;
   logout: () => Promise<void>; limpiarMensaje: () => void; recargar: () => Promise<void>;
   rolDe: (id: number) => 'jugador' | 'anfitrion' | 'usuario';
+  esJugador: boolean;
+  esAnfitrion: boolean;
+  tieneRolJugador: (id?: number) => boolean;
+  tieneRolAnfitrion: (id?: number) => boolean;
 }
 const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: ReactNode }) {
@@ -60,12 +64,24 @@ export function UserProvider({ children }: { children: ReactNode }) {
     await api('/auth/logout', 'POST');
     clearSession(); setMensaje('Sesión cerrada.');
   };
+  const tieneRolJugador = useCallback((id?: number) => {
+    const targetId = id ?? session?.usuario?.idUsuario;
+    if (!targetId) return false;
+    return jugadores.some(j => j.idUsuario === targetId) || (session?.usuario?.idUsuario === targetId && !!session?.roles?.jugador);
+  }, [jugadores, session]);
+  const tieneRolAnfitrion = useCallback((id?: number) => {
+    const targetId = id ?? session?.usuario?.idUsuario;
+    if (!targetId) return false;
+    return anfitriones.some(a => a.idUsuario === targetId) || (session?.usuario?.idUsuario === targetId && !!session?.roles?.anfitrion);
+  }, [anfitriones, session]);
+  const esJugador = session?.usuario ? tieneRolJugador(session.usuario.idUsuario) : false;
+  const esAnfitrion = session?.usuario ? tieneRolAnfitrion(session.usuario.idUsuario) : false;
   const rolDe = (id: number) => {
-    if (anfitriones.some(a => a.idUsuario === id)) return 'anfitrion';
-    if (jugadores.some(j => j.idUsuario === id)) return 'jugador';
+    if (tieneRolAnfitrion(id)) return 'anfitrion';
+    if (tieneRolJugador(id)) return 'jugador';
     return 'usuario';
   };
-  return <UserContext.Provider value={{ usuarios, jugadores, anfitriones, usuarioLogueado: session?.usuario ?? null, mensaje, cargandoSesion, registrarUsuario, loguearse, logout, limpiarMensaje, rolDe, recargar }}>{children}</UserContext.Provider>;
+  return <UserContext.Provider value={{ usuarios, jugadores, anfitriones, usuarioLogueado: session?.usuario ?? null, mensaje, cargandoSesion, registrarUsuario, loguearse, logout, limpiarMensaje, rolDe, recargar, esJugador, esAnfitrion, tieneRolJugador, tieneRolAnfitrion }}>{children}</UserContext.Provider>;
 }
 // eslint-disable-next-line react-refresh/only-export-components
 export function useUser() {

@@ -6,8 +6,9 @@ const TIENDAS_URL = '/tiendas';
 export type CrearTiendaData = Omit<Tienda, 'idTienda'>;
 export type ActualizarTiendaData = Partial<CrearTiendaData>;
 
-export async function obtenerTiendas(): Promise<Tienda[]> {
-  return api<Tienda[]>(TIENDAS_URL);
+export async function obtenerTiendas(params?: { idPartida?: number }): Promise<Tienda[]> {
+  const query = params?.idPartida ? `?idPartida=${params.idPartida}` : '';
+  return api<Tienda[]>(`${TIENDAS_URL}${query}`);
 }
 
 export async function obtenerTiendaPorId(idTienda: number): Promise<Tienda> {

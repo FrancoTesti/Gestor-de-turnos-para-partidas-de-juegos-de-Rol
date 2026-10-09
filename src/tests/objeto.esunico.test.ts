@@ -108,4 +108,35 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     expect(resultado.dineroRestante).toBe(200);
     expect(tx.flush).toHaveBeenCalledOnce();
   });
+
+  it('permite volver a comprar un objeto único si fue vendido a una tienda (COUNT en inventarios vuelve a 0)', async () => {
+    // Objeto único vendido previamente: inventario = null, tienda = tienda
+    objetoUnico.inventario = null;
+    objetoUnico.tienda = tienda;
+
+    const tx = {
+      findOne: vi.fn()
+        .mockResolvedValueOnce(objetoUnico) // Objeto a comprar en la tienda
+        .mockResolvedValueOnce(personaje) // Personaje comprador
+        .mockResolvedValueOnce(null) // COUNT en inventarios = 0 (ningún personaje lo posee actualmente)
+        .mockResolvedValueOnce(inventario) // Inventario destino
+        .mockResolvedValueOnce(null), // Posición vacía en inventario
+      count: vi.fn().mockResolvedValue(0),
+      flush: vi.fn().mockResolvedValue(undefined),
+    };
+
+    const em = {
+      transactional: vi.fn(async (cb: (t: EntityManager) => Promise<unknown>) => cb(tx as unknown as EntityManager)),
+    } as unknown as EntityManager;
+
+    const service = new ObjetoService(em);
+
+    // Debe permitir comprarlo nuevamente porque COUNT = 0
+    const resultado = await service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
+
+    expect(resultado.objeto.esUnico).toBe(true);
+    expect(objetoUnico.inventario).toBe(inventario);
+    expect(objetoUnico.tienda).toBeNull();
+    expect(tx.flush).toHaveBeenCalledOnce();
+  });
 });

@@ -57,6 +57,8 @@ export interface Tienda {
   claseTienda: string;
   nombre: string;
   idClase: number | null;   // CF -> Clase(idClase) (opcional)
+  idPartida?: number | null; // CF -> Partida(idPartida) (opcional)
+  partidaNombre?: string;
 }
 
 export interface Personaje {
@@ -67,8 +69,11 @@ export interface Personaje {
   nivel: number;
   dinero: number;
   idClase: number;          // CF -> Clase(idClase) NN
+  claseNombre?: string;
   idUsuarioJugador: number; // CF -> Jugador(idUsuario) NN
+  jugadorNombre?: string;
   idPartida: number;        // CF -> Partida(idPartida) NN
+  partidaNombre?: string;
 }
 
 export interface Inventario {
