@@ -11,7 +11,10 @@ const objetoMock: ObjetoPublico = {
   nivelObjeto: 5,
   valor: 150,
   esUnico: true,
+  idTienda: null,
   idPersonaje: null,
+  numInventario: null,
+  posicion: 0,
 };
 
 const objetoPersonaje: ObjetoPublico = {
@@ -22,7 +25,10 @@ const objetoPersonaje: ObjetoPublico = {
   nivelObjeto: 2,
   valor: 50,
   esUnico: false,
+  idTienda: null,
   idPersonaje: 10,
+  numInventario: 1,
+  posicion: 0,
 };
 
 describe('ObjetoLista', () => {

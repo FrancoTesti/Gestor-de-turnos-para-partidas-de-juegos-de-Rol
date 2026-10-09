@@ -1,9 +1,12 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import PersonajeFormulario from '../PersonajeFormulario';
+import type { JugadorExtendido } from '../../../services/jugador.service';
 
 const clases = [{ idClase: 1, nombreClase: 'Guerrero', descripcionClase: 'Fuerza bruta' }];
-const jugadores = [{ idUsuario: 10, nombreUsuario: 'Juan Pérez', nickname: 'juanp', estado: true, rol: 'jugador' as const }];
+const jugadores: JugadorExtendido[] = [
+  { idUsuario: 10, nombreUsuario: 'Juan Pérez', nickname: 'juanp', imagen: '', estado: true }
+];
 const partidas = [{ idPartida: 5, nombre: 'Aventura Inicial', idUsuarioAnfitrion: 2, nicknameAnfitrion: 'host', estado: 'activa' as const, esPrivada: false, limiteJugadores: 4 }];
 
 describe('PersonajeFormulario', () => {
