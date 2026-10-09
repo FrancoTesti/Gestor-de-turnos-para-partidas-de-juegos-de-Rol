@@ -38,7 +38,7 @@ export default function MainLayout() {
         <nav className="navbar-menu nav-menu">
           <ul className="nav-horizontal">
             <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])}`}>
-              <span className="nav-item">Juego ▾</span>
+              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Juego ▾</span>
               <div className="dropdown-content">
                 <Link to="/games">Partidas</Link>
                 <Link to="/sessions">Sesiones</Link>
@@ -47,7 +47,7 @@ export default function MainLayout() {
             </li>
 
             <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])}`}>
-              <span className="nav-item">Personajes ▾</span>
+              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Personajes ▾</span>
               <div className="dropdown-content">
                 <Link to="/characters">Personajes</Link>
                 <Link to="/inventory">Inventarios</Link>
@@ -55,7 +55,7 @@ export default function MainLayout() {
             </li>
 
             <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])}`}>
-              <span className="nav-item">Catálogo ▾</span>
+              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Catálogo ▾</span>
               <div className="dropdown-content">
                 <Link to="/classes">Clases</Link>
                 <Link to="/objects">Objetos</Link>
@@ -64,7 +64,7 @@ export default function MainLayout() {
             </li>
 
             <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])}`}>
-              <span className="nav-item">Sistema ▾</span>
+              <span className="nav-item" role="button" tabIndex={0} aria-haspopup="true">Sistema ▾</span>
               <div className="dropdown-content">
                 <Link to="/dashboard">Dashboard</Link>
                 <Link to="/users">Usuarios</Link>
@@ -76,7 +76,7 @@ export default function MainLayout() {
 
         <div className="navbar-user">
           <ThemeToggle />
-          <span className="user-greeting">Hola, {usuarioLogueado.nickname}</span>
+          <span className="user-greeting truncate" title={usuarioLogueado.nickname}>Hola, {usuarioLogueado.nickname}</span>
           <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
         </div>
       </header>

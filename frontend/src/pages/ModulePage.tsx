@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
 import './ModulePage.css';
@@ -73,7 +73,15 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     await api(selected ? url(selected) : `/${resource}`, selected ? 'PUT' : 'POST', data);
   });
   const detail = async (r: Row) => { setError(''); try { setSelected(await api<Row>(url(r))); } catch (e) { setError((e as Error).message); } };
-  const filtered = rows.filter(r => Object.values(r).join(' ').toLocaleLowerCase().includes(search.toLocaleLowerCase()) && (!classFilter || String(r.idClase) === classFilter) && (!activeOnly || r.estado === 'activa'));
+  const filtered = useMemo(() => {
+    const term = search.trim().toLocaleLowerCase();
+    return rows.filter(r => {
+      const matchesSearch = !term || Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
+      const matchesClass = !classFilter || String(r.idClase) === classFilter;
+      const matchesActive = !activeOnly || r.estado === 'activa';
+      return matchesSearch && matchesClass && matchesActive;
+    });
+  }, [rows, search, classFilter, activeOnly]);
   const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
@@ -99,14 +107,14 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       </label>)}
       <button className="btn-primary" disabled={busy} type="submit">Guardar</button><button className="btn-secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
     </form> : <>
-      <div style={{ marginTop: '2rem', marginBottom: '2rem', display: 'flex', gap: '1.5rem', alignItems: 'center', background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
+      <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
-          Buscar: <input value={search} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
+          Buscar: <input value={search} placeholder="Filtrar por cualquier campo..." onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
         </label>
         {resource === 'personajes' && (
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
             Filtrar por clase:
-            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
+            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
               <option value="">Todas</option>
               {refs.clases?.map(c => <option key={String(c.idClase)} value={String(c.idClase)}>{label(c)}</option>)}
             </select>
@@ -118,8 +126,13 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             Solo partidas activas
           </label>
         )}
+        {(search || classFilter || activeOnly) && (
+          <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setClassFilter(''); setActiveOnly(false); }}>
+            Limpiar filtros
+          </button>
+        )}
       </div>
-      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => <td key={k}>{display(r, k)}</td>)}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
+      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => { const val = display(r, k); return <td key={k} title={val.length > 25 ? val : undefined}><div className="table-cell-content truncate" style={{ maxWidth: 220 }}>{val}</div></td>; })}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)} aria-label={`Ver detalle de ${label(r) || 'registro'}`}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)} aria-label={`Editar ${label(r) || 'registro'}`}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }} aria-label={`Eliminar ${label(r) || 'registro'}`}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
       {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{config.fields.find(f => f.key === k)?.label ?? k}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
         <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} />
