@@ -138,6 +138,9 @@ export default function SesionesPage() {
                   <th>Partida</th>
                   <th>Sesión</th>
                   <th>Duración (min)</th>
+                  <th>Misión Realizada</th>
+                  <th>Oro Entregado</th>
+                  <th>XP Entregado</th>
                   <th>Jugadores</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -146,6 +149,11 @@ export default function SesionesPage() {
               <tbody>
                 {sesiones.map(s => {
                   const partidaNombre = partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? String(s.idPartida);
+                  const misionesSesion = misiones.filter(m => m.idPartida === s.idPartida && m.numSesion === s.numSesion);
+                  const misionRealizada = misionesSesion.find(m => m.estado);
+                  const oroTotal = misionesSesion.reduce((acc, m) => acc + (m.estado ? m.dineroOtorgadoAJugadores : 0), 0);
+                  const xpTotal = misionesSesion.reduce((acc, m) => acc + (m.estado ? m.xpOtorgadoJugadores : 0), 0);
+
                   return (
                     <tr key={`${s.idPartida}-${s.numSesion}`}>
                       <td style={{ fontWeight: 600, color: 'var(--text-h)', maxWidth: 200 }} className="truncate" title={partidaNombre}>
@@ -153,6 +161,25 @@ export default function SesionesPage() {
                       </td>
                       <td className="tabular-nums">#{s.numSesion}</td>
                       <td className="tabular-nums">{s.duracionSesion} min</td>
+                      <td>
+                        {misionRealizada ? (
+                          <span style={{ fontWeight: 500 }} title={misionRealizada.descripcion}>
+                            {misionRealizada.descripcion ? (misionRealizada.descripcion.length > 20 ? `${misionRealizada.descripcion.slice(0, 20)}…` : misionRealizada.descripcion) : `Misión #${misionRealizada.numMision}`}
+                          </span>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Sin misión</span>
+                        )}
+                      </td>
+                      <td className="tabular-nums">
+                        <span style={{ color: 'var(--success-text)', fontWeight: 600 }}>
+                          {oroTotal} 🪙
+                        </span>
+                      </td>
+                      <td className="tabular-nums">
+                        <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
+                          {xpTotal} XP
+                        </span>
+                      </td>
                       <td className="tabular-nums">{s.cantJugadores}</td>
                       <td>
                         {s.estadoSesion === 0 && <span className="badge badge-warning">Planificada</span>}
@@ -204,6 +231,24 @@ export default function SesionesPage() {
             <h2 style={{ marginTop: 0 }}>Detalle: Sesión {selected.numSesion}</h2>
             <p><strong>Partida:</strong> {partidas.find(p => p.idPartida === selected.idPartida)?.nombre}</p>
             
+            {/* Desglose de misiones de esta sesión */}
+            {(() => {
+              const misSes = misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion);
+              return misSes.length > 0 ? (
+                <div style={{ marginTop: '1rem', background: 'var(--bg-card-secondary)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                  <h4 style={{ margin: '0 0 0.5rem 0' }}>Desglose de Misiones y Recompensas</h4>
+                  {misSes.map(m => (
+                    <div key={m.numMision} style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
+                      <div><strong>Misión #{m.numMision}:</strong> {m.descripcion || 'Sin descripción'}</div>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
+                        Estado: {m.estado ? '✅ Completada' : '⏳ Pendiente'} | XP: <strong>{m.xpOtorgadoJugadores}</strong> | Oro: <strong>{m.dineroOtorgadoAJugadores} 🪙</strong>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null;
+            })()}
+
             {/* ESTADO 0: planificada */}
             {selected.estadoSesion === 0 && host && (
               <div style={{ marginTop: '1.25rem' }}>

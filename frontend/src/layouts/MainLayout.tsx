@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
 import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
+import Modal from '../components/ui/Modal';
 import ThemeToggle from '../components/ui/ThemeToggle';
 import './MainLayout.css';
 
@@ -9,10 +10,12 @@ export default function MainLayout() {
   const { usuarioLogueado, logout, mensaje, limpiarMensaje, cargandoSesion } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [mostrarModalLogout, setMostrarModalLogout] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [prevPath, setPrevPath] = useState(location.pathname);
   const navRef = useRef<HTMLElement>(null);
 
-  const [prevPath, setPrevPath] = useState(location.pathname);
   if (prevPath !== location.pathname) {
     setPrevPath(location.pathname);
     setOpenDropdown(null);
@@ -38,15 +41,23 @@ export default function MainLayout() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLogout = async () => {
-    try { await logout(); navigate('/login'); }
-    catch { window.alert('No se pudo cerrar la sesión. Reintentá.'); }
+  const handleLogoutClick = () => {
+    setMostrarModalLogout(true);
   };
 
-  if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
-  if (!usuarioLogueado) return <Navigate to="/login" replace />;
+  const confirmarLogout = async () => {
+    setMostrarModalLogout(false);
+    try {
+      await logout();
+      navigate('/login');
+    } catch {
+      window.alert('No se pudo cerrar la sesión. Reintentá.');
+    }
+  };
 
-  const isActive = (paths: string[]) => paths.includes(location.pathname) ? 'active' : '';
+  const toggleDropdown = (key: string) => {
+    setOpenDropdown(prev => (prev === key ? null : key));
+  };
 
   const closeDropdown = () => {
     setOpenDropdown(null);
@@ -58,16 +69,17 @@ export default function MainLayout() {
   const handleTriggerKeyDown = (key: string, e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
-      setOpenDropdown(prev => prev === key ? null : key);
+      toggleDropdown(key);
     } else if (e.key === 'Escape') {
       e.preventDefault();
       setOpenDropdown(null);
     }
   };
 
-  const toggleDropdown = (key: string) => {
-    setOpenDropdown(prev => prev === key ? null : key);
-  };
+  if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
+  if (!usuarioLogueado) return <Navigate to="/login" replace />;
+
+  const isActive = (paths: string[]) => paths.includes(location.pathname) ? 'active' : '';
 
   return (
     <div className="main-layout">
@@ -76,6 +88,17 @@ export default function MainLayout() {
           <Alert type="success" message={mensaje} onClose={limpiarMensaje} />
         </div>
       )}
+
+      <Modal
+        isOpen={mostrarModalLogout}
+        title="Cerrar Sesión"
+        message="¿Estás seguro de que deseas cerrar sesión?"
+        onConfirm={confirmarLogout}
+        onCancel={() => setMostrarModalLogout(false)}
+        confirmText="Cerrar Sesión"
+        cancelText="Cancelar"
+        type="confirm"
+      />
 
       <header className="top-navbar">
         <div className="navbar-brand">
@@ -87,7 +110,7 @@ export default function MainLayout() {
 
         <nav className="navbar-menu nav-menu" ref={navRef}>
           <ul className="nav-horizontal">
-            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])} ${openDropdown === 'juego' ? 'is-open' : ''}`}>
+            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])} ${openDropdown === 'juego' ? 'is-open open' : ''}`}>
               <span
                 className="nav-item"
                 role="button"
@@ -167,7 +190,7 @@ export default function MainLayout() {
         <div className="navbar-user">
           <ThemeToggle />
           <span className="user-greeting truncate" title={usuarioLogueado.nickname}>Hola, {usuarioLogueado.nickname}</span>
-          <button onClick={handleLogout} className="btn-logout">Cerrar Sesión</button>
+          <button onClick={handleLogoutClick} className="btn-logout">Cerrar Sesión</button>
         </div>
       </header>
 
