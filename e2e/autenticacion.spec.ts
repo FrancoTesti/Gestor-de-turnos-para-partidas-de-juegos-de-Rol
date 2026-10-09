@@ -83,8 +83,8 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByLabel('Raza *', { exact: true }).fill('Elfa');
     await player.getByRole('combobox', { name: 'Clase de personaje *', exact: true }).selectOption({ label: 'Explorador E2E' });
     const games = player.getByRole('combobox', { name: 'Partida *', exact: true });
-    const gameId = await games.locator('option').filter({ hasText: 'Aventura compartida' }).getAttribute('value');
-    await games.selectOption(gameId!);
+    await games.selectOption({ label: /Aventura compartida/ });
+    const gameId = await games.inputValue();
     await player.getByRole('button', { name: 'Crear Personaje', exact: true }).click();
     await expect(player.getByRole('status')).toContainText('Personaje creado correctamente');
 
@@ -161,8 +161,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.goto('/inventory');
     await player.getByRole('button', { name: 'Crear', exact: true }).click();
     const characterSelect = player.getByRole('combobox', { name: 'Personaje', exact: true });
-    const characterId = await characterSelect.locator('option').filter({ hasText: 'Arwen E2E' }).getAttribute('value');
-    await characterSelect.selectOption(characterId!);
+    await characterSelect.selectOption({ label: /Arwen E2E/ });
     await player.getByLabel('Número de inventario', { exact: true }).fill('2');
     await player.getByLabel('Capacidad', { exact: true }).fill('3');
     await player.getByRole('button', { name: 'Guardar', exact: true }).click();
@@ -178,8 +177,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).selectOption(String(idObjeto));
     await player.getByRole('spinbutton', { name: /^Precio de venta/ }).fill('28');
     const storeSelect = player.getByRole('combobox', { name: 'Tienda receptora', exact: true });
-    const storeId = await storeSelect.locator('option').filter({ hasText: 'Armería E2E' }).getAttribute('value');
-    await storeSelect.selectOption(storeId!);
+    await storeSelect.selectOption({ label: /Armería E2E/ });
     await player.getByRole('button', { name: 'Vender objeto', exact: true }).click();
     await expect(player.getByRole('heading', { name: 'Detalle', exact: true })).toHaveCount(0);
     await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();

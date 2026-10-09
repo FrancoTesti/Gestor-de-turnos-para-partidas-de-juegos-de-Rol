@@ -200,7 +200,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
         .catch(() => {});
     }
     return () => { active = false; };
-  }, [resource, row.idPersonaje]);
+  }, [resource, row.idPersonaje, row]);
 
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
