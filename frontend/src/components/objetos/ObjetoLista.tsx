@@ -26,7 +26,7 @@ export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSelec
             title={tooltipText}
           >
             <button className="objeto-card-contenido" type="button" onClick={() => onSeleccionar(objeto)} title={tooltipText}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div className="objeto-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span className="objeto-tipo">{objeto.tipoObjeto}</span>
                 <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>ID: #{objeto.idObjeto}</span>

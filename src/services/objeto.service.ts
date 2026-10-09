@@ -187,14 +187,30 @@ export class ObjetoService {
       if (objetoEnPosicion) throw new PosicionOcupadaError();
 
       personaje.dinero -= objeto.valor;
-      objeto.tienda = null;
-      objeto.inventario = inventario;
-      objeto.posicion = data.posicion;
+      let objetoComprado: Objeto;
+      if (objeto.esUnico) {
+        objeto.tienda = null;
+        objeto.inventario = inventario;
+        objeto.posicion = data.posicion;
+        objetoComprado = objeto;
+      } else {
+        objetoComprado = em.create(Objeto, {
+          nombre: objeto.nombre,
+          descripcion: objeto.descripcion,
+          tipoObjeto: objeto.tipoObjeto,
+          valor: objeto.valor,
+          nivelObjeto: objeto.nivelObjeto,
+          esUnico: false,
+          posicion: data.posicion,
+          inventario,
+          tienda: null,
+        });
+      }
 
       await em.flush();
 
       return {
-        objeto: this.aObjetoPublico(objeto),
+        objeto: this.aObjetoPublico(objetoComprado),
         idPersonaje: personaje.idPersonaje,
         numInventario: inventario.numInventario,
         dineroRestante: personaje.dinero,

@@ -42,6 +42,7 @@ describe('ObjetoService.comprarObjeto', () => {
         .mockResolvedValueOnce(inventario)
         .mockResolvedValueOnce(options?.posicionOcupada ?? null),
       count: vi.fn().mockResolvedValue(options?.cantidad ?? 0),
+      create: vi.fn((_cls, data) => Object.assign(new Objeto(), { idObjeto: 99, ...data })),
       flush: options?.errorFlush ? vi.fn().mockRejectedValue(options.errorFlush) : vi.fn().mockResolvedValue(undefined),
     };
     const em = {
@@ -52,7 +53,23 @@ describe('ObjetoService.comprarObjeto', () => {
     return { service: new ObjetoService(em), em, tx };
   }
 
-  it('compra el objeto, descuenta el dinero y lo mueve al inventario', async () => {
+  it('compra un objeto no único: descuenta el dinero, el catálogo permanece en la tienda y crea una instancia en el inventario', async () => {
+    const { service, em, tx } = crearServicio();
+
+    const resultado = await service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 });
+
+    expect(em.transactional).toHaveBeenCalledOnce();
+    expect(personaje.dinero).toBe(60);
+    expect(objeto.tienda).toBe(tienda);
+    expect(tx.create).toHaveBeenCalledOnce();
+    expect(tx.flush).toHaveBeenCalledOnce();
+    expect(resultado).toMatchObject({ idPersonaje: 10, numInventario: 1, dineroRestante: 60 });
+    expect(resultado.objeto.posicion).toBe(1);
+    expect(resultado.objeto.idTienda).toBeNull();
+  });
+
+  it('compra un objeto único: descuenta el dinero y lo traslada de la tienda al inventario', async () => {
+    objeto.esUnico = true;
     const { service, em, tx } = crearServicio();
 
     const resultado = await service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 });

@@ -55,9 +55,24 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const startEdit = (r?: Row) => {
     setSelected(r ?? null); setValues(Object.fromEntries(config.fields.map(f => [f.key, r?.[f.key] ?? f.initial ?? (f.type === 'boolean' ? false : '')]))); setEditing(true); setError('');
   };
-  const perform = async (work: () => Promise<unknown>) => {
+  const perform = async (work: () => Promise<unknown>, keepSelected = false) => {
     setBusy(true); setError('');
-    try { await work(); setEditing(false); setSelected(null); setLoading(true); setRevision(n => n + 1); }
+    try {
+      await work();
+      setEditing(false);
+      if (keepSelected && selected) {
+        try {
+          const updated = await api<Row>(url(selected));
+          setSelected(updated);
+        } catch {
+          setSelected(null);
+        }
+      } else {
+        setSelected(null);
+        setLoading(true);
+      }
+      setRevision(n => n + 1);
+    }
     catch (e) { setError(e instanceof Error ? e.message : 'No se pudo completar la operación'); }
     finally { setBusy(false); }
   };
@@ -182,13 +197,19 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   </section>;
 }
 
-function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; row: Row; refs: Record<string, Row[]>; busy: boolean; perform: (f: () => Promise<unknown>) => Promise<void> }) {
+function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; row: Row; refs: Record<string, Row[]>; busy: boolean; perform: (f: () => Promise<unknown>, keepSelected?: boolean) => Promise<void> }) {
   const [error, setError] = useState('');
   const [object, setObject] = useState('');
   const [position, setPosition] = useState('0');
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
   const [characterObjects, setCharacterObjects] = useState<Row[]>([]);
+  const [objetoSeleccionado, setObjetoSeleccionado] = useState<Row | null>(null);
+  const [modalVenta, setModalVenta] = useState<Row | null>(null);
+  const [tiendaVenta, setTiendaVenta] = useState<string>('');
+  const [precioVenta, setPrecioVenta] = useState<string>('');
+  const [errorVenta, setErrorVenta] = useState<string>('');
+  const [exitoVenta, setExitoVenta] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -218,38 +239,251 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
     return (
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
         <h3>Mochila / Inventario #{String(row.numInventario)}</h3>
-        {error && <p role="alert">{error}</p>}
+        {error && <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', padding: '0.65rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--error-border)' }}>⚠️ {error}</p>}
+        {exitoVenta && (
+          <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.65rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.75rem', fontWeight: 600 }}>
+            ✅ {exitoVenta}
+          </p>
+        )}
         <p style={{ fontSize: '0.9rem', color: 'var(--text)' }}>
           Capacidad: <strong>{objects.length} / {totalCapacity} espacios ocupados</strong> ({freePositions.length} libres)
         </p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.75rem' }}>
+          💡 Hacé clic en cualquier objeto de la mochila para seleccionarlo y acceder a la opción de <strong>Vender</strong>.
+        </p>
 
-        <div className="grid-posiciones" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.5rem', marginBottom: '1.25rem' }}>
+        <div className="grid-posiciones" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '0.6rem', marginBottom: '1.25rem' }}>
           {Array.from({ length: totalCapacity }, (_, idx) => {
             const item = objects.find(o => Number(o.posicion) === idx);
+            const isSelected = item && objetoSeleccionado && Number(objetoSeleccionado.idObjeto) === Number(item.idObjeto);
             return (
               <div
                 key={idx}
+                onClick={() => {
+                  if (item) {
+                    setObjetoSeleccionado(prev => (prev && Number(prev.idObjeto) === Number(item.idObjeto) ? null : item));
+                    setExitoVenta('');
+                  }
+                }}
                 style={{
-                  border: item ? '1px solid var(--border)' : '1px dashed var(--border)',
-                  background: item ? 'var(--bg-card)' : 'var(--bg-card-secondary)',
-                  padding: '0.5rem',
-                  borderRadius: '6px',
+                  border: item
+                    ? isSelected
+                      ? '2px solid var(--accent)'
+                      : '1px solid var(--border)'
+                    : '1px dashed var(--border)',
+                  background: item
+                    ? isSelected
+                      ? 'var(--accent-bg)'
+                      : 'var(--bg-card)'
+                    : 'var(--bg-card-secondary)',
+                  padding: '0.65rem 0.6rem',
+                  borderRadius: '8px',
                   fontSize: '0.85rem',
+                  cursor: item ? 'pointer' : 'default',
+                  boxShadow: isSelected ? '0 0 0 1px var(--accent)' : undefined,
+                  transition: 'all 0.15s ease',
                 }}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Casillero #{idx}</span>
+                  {isSelected && <span style={{ color: 'var(--accent)', fontWeight: 800 }}>✓</span>}
+                </div>
                 {item ? (
-                  <div style={{ marginTop: '0.2rem' }}>
-                    <strong>{label(item)}</strong>
-                    <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
+                  <div style={{ marginTop: '0.35rem' }}>
+                    <strong style={{ display: 'block', color: 'var(--text-h)', wordBreak: 'break-word', fontSize: '0.9rem' }}>{label(item)}</strong>
+                    <div style={{ color: 'var(--text)', fontSize: '0.8rem', marginTop: '0.2rem' }}>💰 ${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
+                    {isSelected && (
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        style={{
+                          marginTop: '0.5rem',
+                          width: '100%',
+                          fontSize: '0.775rem',
+                          padding: '0.3rem 0.5rem',
+                          fontWeight: 700,
+                        }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setModalVenta(item);
+                          const val = Number(item.valor);
+                          setPrecioVenta(String(Math.floor(val)));
+                          setTiendaVenta(refs.tiendas?.[0]?.idTienda ? String(refs.tiendas[0].idTienda) : '');
+                          setErrorVenta('');
+                        }}
+                      >
+                        🏷️ Vender
+                      </button>
+                    )}
                   </div>
                 ) : (
-                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>[ Libre ]</span>
+                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', display: 'block', marginTop: '0.25rem' }}>[ Libre ]</span>
                 )}
               </div>
             );
           })}
         </div>
+
+        {/* Modal superpuesto de venta */}
+        {modalVenta && (() => {
+          const val = Number(modalVenta.valor ?? 0);
+          const min = Math.ceil(val * 0.7);
+          const max = Math.floor(val);
+          const numPrecio = Number(precioVenta);
+          const precioValido = !isNaN(numPrecio) && numPrecio >= min && numPrecio <= max;
+
+          return (
+            <div
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="modal-venta-titulo"
+              style={{
+                position: 'fixed',
+                inset: 0,
+                backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '1rem',
+              }}
+              onClick={() => setModalVenta(null)}
+            >
+              <div
+                style={{
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '1.75rem',
+                  maxWidth: '500px',
+                  width: '100%',
+                  boxShadow: 'var(--shadow-lg)',
+                }}
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                  <h3 id="modal-venta-titulo" style={{ margin: 0, fontSize: '1.3rem', color: 'var(--text-h)' }}>
+                    Vender {label(modalVenta)}
+                  </h3>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ padding: '0.25rem 0.6rem', fontSize: '1rem', lineHeight: 1 }}
+                    onClick={() => setModalVenta(null)}
+                    aria-label="Cerrar modal"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <p style={{ margin: '0 0 0.75rem', color: 'var(--text)', fontSize: '0.9rem' }}>
+                  Valor base del objeto: <strong style={{ color: 'var(--text-h)' }}>${val}</strong>
+                </p>
+
+                {errorVenta && (
+                  <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
+                    ⚠️ {errorVenta}
+                  </p>
+                )}
+
+                <div style={{
+                  background: 'rgba(59, 130, 246, 0.1)',
+                  border: '1px solid rgba(59, 130, 246, 0.3)',
+                  borderRadius: '6px',
+                  padding: '0.75rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.875rem'
+                }}>
+                  <p style={{ margin: '0 0 0.25rem', fontWeight: 600, color: 'var(--info-text, #38bdf8)' }}>
+                    🏷️ Rango permitido: 70 % a 100 % del valor
+                  </p>
+                  <p style={{ margin: 0, color: 'var(--text)' }}>
+                    Mínimo: <strong>${min}</strong> — Máximo: <strong>${max}</strong>
+                  </p>
+                </div>
+
+                <form onSubmit={async (e) => {
+                  e.preventDefault();
+                  setErrorVenta('');
+                  if (!tiendaVenta) {
+                    setErrorVenta('Debés seleccionar una tienda receptora.');
+                    return;
+                  }
+                  if (!precioValido) {
+                    setErrorVenta(`El precio debe estar entre $${min} y $${max}.`);
+                    return;
+                  }
+                  try {
+                    await perform(
+                      () => api(`/objetos/${modalVenta.idObjeto}/vender`, 'POST', {
+                        idPersonaje: row.idPersonaje,
+                        idTienda: Number(tiendaVenta),
+                        precio: numPrecio,
+                      }),
+                      true
+                    );
+                    setExitoVenta(`¡Objeto "${label(modalVenta)}" vendido con éxito por $${numPrecio}!`);
+                    setModalVenta(null);
+                    setObjetoSeleccionado(null);
+                  } catch (err) {
+                    setErrorVenta(err instanceof Error ? err.message : 'Error al vender el objeto');
+                  }
+                }} style={{ display: 'grid', gap: '1rem' }}>
+                  <label style={{ display: 'block' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-h)' }}>Tienda receptora *</span>
+                    <select
+                      required
+                      value={tiendaVenta}
+                      onChange={(e) => setTiendaVenta(e.target.value)}
+                      style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                      disabled={busy}
+                    >
+                      <option value="">Seleccionar tienda receptora</option>
+                      {refs.tiendas?.map((t) => (
+                        <option key={String(t.idTienda)} value={String(t.idTienda)}>
+                          🏪 {label(t)} {t.claseTienda ? `(${t.claseTienda})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+
+                  <label style={{ display: 'block' }}>
+                    <span style={{ fontWeight: 600, color: 'var(--text-h)' }}>Precio de venta ($) *</span>
+                    <input
+                      required
+                      type="number"
+                      step="1"
+                      min={min}
+                      max={max}
+                      value={precioVenta}
+                      onChange={(e) => setPrecioVenta(e.target.value)}
+                      style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                      disabled={busy}
+                    />
+                  </label>
+
+                  <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => setModalVenta(null)}
+                      disabled={busy}
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="submit"
+                      className="btn-primary"
+                      disabled={busy || !tiendaVenta || !precioValido}
+                    >
+                      {busy ? 'Vendiendo…' : 'Confirmar Venta'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Mover objeto */}
         <form
@@ -261,7 +495,10 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               setError('La posición seleccionada ya está ocupada.');
               return;
             }
-            void perform(() => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: posNum }));
+            void perform(
+              () => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: posNum }),
+              true
+            );
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid var(--border)' }}
         >
@@ -304,11 +541,14 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
           <button className="btn-primary" disabled={busy || isFull}>Mover objeto</button>
         </form>
 
-        {/* Vender objeto */}
+        {/* Vender objeto (formulario adicional por lista) */}
         <form
           onSubmit={e => {
             e.preventDefault();
-            void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) }));
+            void perform(
+              () => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) }),
+              true
+            );
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
         >
