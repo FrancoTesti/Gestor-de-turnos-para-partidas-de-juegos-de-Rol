@@ -79,4 +79,35 @@ describe('MainLayout', () => {
 
     await waitFor(() => expect(mocks.logout).toHaveBeenCalled());
   });
+
+  it('despliega menú interactivo, permite navegar con teclado y cierra al seleccionar una opción', () => {
+    render(
+      <MemoryRouter initialEntries={['/dashboard']}>
+        <Routes>
+          <Route path="/" element={<MainLayout />}>
+            <Route path="dashboard" element={<div>Dashboard Content</div>} />
+            <Route path="profiles" element={<div>Profiles Content</div>} />
+          </Route>
+        </Routes>
+      </MemoryRouter>
+    );
+
+    const triggerSistema = screen.getByRole('button', { name: /Sistema/i });
+    expect(triggerSistema).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.keyDown(triggerSistema, { key: 'Enter' });
+    expect(triggerSistema).toHaveAttribute('aria-expanded', 'true');
+
+    const linkConfig = screen.getByRole('link', { name: 'Configuración' });
+    expect(linkConfig).toBeInTheDocument();
+
+    fireEvent.click(linkConfig);
+    expect(triggerSistema).toHaveAttribute('aria-expanded', 'false');
+
+    // Cerrar con Escape
+    fireEvent.click(triggerSistema);
+    expect(triggerSistema).toHaveAttribute('aria-expanded', 'true');
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(triggerSistema).toHaveAttribute('aria-expanded', 'false');
+  });
 });
