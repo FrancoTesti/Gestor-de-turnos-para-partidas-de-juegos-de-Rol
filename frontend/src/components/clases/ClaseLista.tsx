@@ -74,7 +74,7 @@ export default function ClaseLista({
               >
                 <div>
                   <div className="clase-icon-badge">🛡️</div>
-                  <h3 className="clase-title">{clase.nombreClase}</h3>
+                  <h3 className="clase-title truncate" title={clase.nombreClase}>{clase.nombreClase}</h3>
                   <p className="clase-desc">{clase.descripcionClase}</p>
                 </div>
 

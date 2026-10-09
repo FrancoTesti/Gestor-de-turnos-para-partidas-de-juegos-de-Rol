@@ -97,7 +97,7 @@ export default function PersonajeLista({
           </div>
 
           {onNuevo && (
-            <button type="button" className="btn-purple" onClick={onNuevo}>
+            <button type="button" className="btn-primary" onClick={onNuevo}>
               + Crear Personaje
             </button>
           )}
@@ -127,25 +127,25 @@ export default function PersonajeLista({
               >
                 <div>
                   <div className="personaje-top">
-                    <h3 className="personaje-nombre">{p.nombreFicticio}</h3>
-                    <span className="personaje-badge-id">ID: #{p.idPersonaje}</span>
+                    <h3 className="personaje-nombre truncate" style={{ maxWidth: '180px' }} title={p.nombreFicticio}>{p.nombreFicticio}</h3>
+                    <span className="personaje-badge-id tabular-nums">ID: #{p.idPersonaje}</span>
                   </div>
 
-                  <div className="personaje-clase-raza">
+                  <div className="personaje-clase-raza truncate" style={{ maxWidth: '240px' }} title={`${p.raza} • ${nombreClase}`}>
                     {p.raza} • {nombreClase}
                   </div>
 
                   <div className="personaje-stats">
                     <div className="stat-item">
-                      <span className="stat-val">{p.nivel}</span>
+                      <span className="stat-val tabular-nums">{p.nivel}</span>
                       <span className="stat-lbl">Nivel</span>
                     </div>
                     <div className="stat-item">
-                      <span className="stat-val">{p.xp}</span>
+                      <span className="stat-val tabular-nums">{p.xp}</span>
                       <span className="stat-lbl">XP</span>
                     </div>
                     <div className="stat-item">
-                      <span className="stat-val">🪙 {p.dinero}</span>
+                      <span className="stat-val tabular-nums">🪙 {p.dinero}</span>
                       <span className="stat-lbl">Dinero</span>
                     </div>
                   </div>

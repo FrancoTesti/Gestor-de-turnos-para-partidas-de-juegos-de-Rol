@@ -144,26 +144,33 @@ export default function SesionesPage() {
                 </tr>
               </thead>
               <tbody>
-                {sesiones.map(s => (
-                  <tr key={`${s.idPartida}-${s.numSesion}`}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>
-                      {partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? s.idPartida}
-                    </td>
-                    <td>#{s.numSesion}</td>
-                    <td>{s.duracionSesion} min</td>
-                    <td>{s.cantJugadores}</td>
-                    <td>
-                      {s.estadoSesion === 0 && <span className="badge badge-warning">Planificada</span>}
-                      {s.estadoSesion === 1 && <span className="badge badge-info">En Curso</span>}
-                      {s.estadoSesion === 2 && <span className="badge badge-success">Finalizada</span>}
-                    </td>
-                    <td>
-                      <button className="btn-secondary btn-small" onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}>
-                        Ver detalle
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {sesiones.map(s => {
+                  const partidaNombre = partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? String(s.idPartida);
+                  return (
+                    <tr key={`${s.idPartida}-${s.numSesion}`}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-h)', maxWidth: 200 }} className="truncate" title={partidaNombre}>
+                        {partidaNombre}
+                      </td>
+                      <td className="tabular-nums">#{s.numSesion}</td>
+                      <td className="tabular-nums">{s.duracionSesion} min</td>
+                      <td className="tabular-nums">{s.cantJugadores}</td>
+                      <td>
+                        {s.estadoSesion === 0 && <span className="badge badge-warning">Planificada</span>}
+                        {s.estadoSesion === 1 && <span className="badge badge-info">En Curso</span>}
+                        {s.estadoSesion === 2 && <span className="badge badge-success">Finalizada</span>}
+                      </td>
+                      <td>
+                        <button
+                          className="btn-secondary btn-small"
+                          onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}
+                          aria-label={`Ver detalle de sesión ${s.numSesion} de ${partidaNombre}`}
+                        >
+                          Ver detalle
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

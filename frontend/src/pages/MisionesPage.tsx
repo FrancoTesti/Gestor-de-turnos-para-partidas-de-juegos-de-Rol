@@ -178,31 +178,58 @@ export default function MisionesPage() {
                 </tr>
               </thead>
               <tbody>
-                {misiones.map(m => (
-                  <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre}</td>
-                    <td>S{m.numSesion}</td>
-                    <td>M{m.numMision}</td>
-                    <td>{m.descripcion}</td>
-                    <td style={{ fontWeight: 600, color: 'var(--accent-text)' }}>${m.dineroTotal} | {m.xpTotal}XP</td>
-                    <td>
-                      {m.estado ? (
-                        <span className="badge badge-success">Completada</span>
-                      ) : (
-                        <span className="badge badge-warning">Pendiente</span>
-                      )}
-                    </td>
-                    <td>
-                      {!m.estado && host && (
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
-                          <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
-                          <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)}>X</button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {misiones.map(m => {
+                  const partidaNombre = partidas.find(p => p.idPartida === m.idPartida)?.nombre ?? String(m.idPartida);
+                  return (
+                    <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-h)', maxWidth: 180 }} className="truncate" title={partidaNombre}>
+                        {partidaNombre}
+                      </td>
+                      <td className="tabular-nums">S{m.numSesion}</td>
+                      <td className="tabular-nums">M{m.numMision}</td>
+                      <td className="truncate" style={{ maxWidth: 220 }} title={m.descripcion}>
+                        {m.descripcion}
+                      </td>
+                      <td style={{ fontWeight: 700, color: 'var(--accent)' }} className="tabular-nums">
+                        ${m.dineroTotal} | {m.xpTotal}XP
+                      </td>
+                      <td>
+                        {m.estado ? (
+                          <span className="badge badge-success">Completada</span>
+                        ) : (
+                          <span className="badge badge-warning">Pendiente</span>
+                        )}
+                      </td>
+                      <td>
+                        {!m.estado && host && (
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <button
+                              className="btn-primary btn-small"
+                              onClick={() => void handleSeleccionar(m)}
+                              aria-label={`Repartir botín de misión ${m.numMision}`}
+                            >
+                              Repartir
+                            </button>
+                            <button
+                              className="btn-secondary btn-small"
+                              onClick={() => handleEditar(m)}
+                              aria-label={`Editar misión ${m.numMision}`}
+                            >
+                              Editar
+                            </button>
+                            <button
+                              className="btn-danger btn-small"
+                              onClick={() => void handleEliminar(m)}
+                              aria-label={`Eliminar misión ${m.numMision}`}
+                            >
+                              X
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
