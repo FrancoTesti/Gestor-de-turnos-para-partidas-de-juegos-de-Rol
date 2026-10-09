@@ -495,14 +495,14 @@ export default function TiendasPage() {
 
       {/* Panel de detalle y Catálogo de objetos de la tienda */}
       {seleccionada && (
-        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', maxWidth: '680px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', maxWidth: '680px', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ marginTop: 0 }}>🏪 Tienda #{seleccionada.idTienda}: {seleccionada.nombre}</h3>
             <button type="button" className="btn-secondary" onClick={() => setSeleccionada(null)}>
               ✕ Cerrar
             </button>
           </div>
-          <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem', margin: '1rem 0' }}>
+          <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', margin: '1rem 0' }}>
             <div><dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Tipo de tienda</dt><dd style={{ margin: 0, color: 'var(--text)' }}>{seleccionada.claseTienda}</dd></div>
             <div><dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Partida</dt><dd style={{ margin: 0, color: 'var(--text)' }}>{nombrePartida(seleccionada.idPartida)}</dd></div>
             <div><dt style={{ fontWeight: 600, color: 'var(--text-h)' }}>Clase vinculada</dt><dd style={{ margin: 0, color: 'var(--text)' }}>{nombreClase(seleccionada.idClase)}</dd></div>

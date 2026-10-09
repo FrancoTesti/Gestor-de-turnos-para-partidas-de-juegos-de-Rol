@@ -200,7 +200,7 @@ export default function PersonajesPage() {
       </header>
 
       {tieneAmbosRoles && (
-        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
           <button
             type="button"
             className={modoRol === 'jugador' ? 'btn-purple' : 'btn-secondary'}
@@ -213,7 +213,7 @@ export default function PersonajesPage() {
             className={modoRol === 'anfitrion' ? 'btn-purple' : 'btn-secondary'}
             onClick={() => { setModoRol('anfitrion'); setSeleccionado(null); }}
           >
-            👑 Navegación de Partidas (Rol Anfitrión: Partidas → Jugadores → Personajes)
+            👑 Navegación de Partidas (Rol Anfitrión)
           </button>
         </div>
       )}

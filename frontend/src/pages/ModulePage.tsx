@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
@@ -41,12 +41,12 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const [soloMisPartidas, setSoloMisPartidas] = useState(false);
   const [revision, setRevision] = useState(0);
 
-  const estaInscripto = (r: Row) => {
+  const estaInscripto = useCallback((r: Row) => {
     const idPartida = Number(r.idPartida);
     const tienePersonaje = (refs.personajes ?? []).some(p => Number(p.idPartida) === idPartida && Number(p.idUsuarioJugador) === userId);
     const esHost = Number(r.idUsuarioAnfitrion) === userId;
     return Boolean(tienePersonaje || esHost);
-  };
+  }, [refs.personajes, userId]);
 
   const url = (r: Row) => `/${resource}/${config.keys.map(k => r[k]).join('/')}`;
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     }
 
     return res;
-  }, [rows, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, refs.personajes, userId]);
+  }, [rows, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
   const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
@@ -344,7 +344,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
         <form
           onSubmit={e => {
             e.preventDefault();
-            const precioVenta = selling ? Number(selling.valor) : Number(price || 0);
+            const precioVenta = price ? Number(price) : (selling ? Number(selling.valor) : 0);
             void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: precioVenta }));
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
@@ -367,7 +367,17 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               ))}
             </select>
           </label>
-          {selling && (
+          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+            Precio de venta
+            <input
+              type="number"
+              value={price}
+              placeholder={selling ? String(selling.valor) : '0'}
+              onChange={e => setPrice(e.target.value)}
+              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+            />
+          </label>
+          {selling && !price && (
             <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: 'var(--success-text)' }}>
               ⚡ Precio de venta: <strong>${String(selling.valor)}</strong> (venta instantánea al valor máximo)
             </p>
