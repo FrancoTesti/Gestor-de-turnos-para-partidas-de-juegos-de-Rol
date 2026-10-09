@@ -20,18 +20,24 @@
   box-shadow: var(--shadow-lg);
   max-width: 520px;
   width: 100%;
-  animation: modalSlideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalScaleIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
   overflow: hidden;
 }
 
-@keyframes modalSlideIn {
+@keyframes modalScaleIn {
   from {
-    transform: translateY(-20px) scale(0.96);
+    transform: scale(0.97);
     opacity: 0;
   }
   to {
-    transform: translateY(0) scale(1);
+    transform: scale(1);
     opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-content {
+    animation: none;
   }
 }
 

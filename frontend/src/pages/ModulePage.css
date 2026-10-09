@@ -96,6 +96,11 @@
   color: var(--text-h);
 }
 
+.table-cell-content {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .module-page dl > div {
   display: flex;
   justify-content: space-between;
