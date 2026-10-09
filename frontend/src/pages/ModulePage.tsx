@@ -188,20 +188,22 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
   const [position, setPosition] = useState('0');
   const [store, setStore] = useState('');
   const [price, setPrice] = useState('');
+  const [characterObjects, setCharacterObjects] = useState<Row[]>([]);
+
+  useEffect(() => {
+    let active = true;
+    if (resource === 'inventarios' && row.idPersonaje) {
+      api<Row[]>('/objetos')
+        .then(list => {
+          if (active) setCharacterObjects(list.filter(o => Number(o.idPersonaje) === Number(row.idPersonaje)));
+        })
+        .catch(() => {});
+    }
+    return () => { active = false; };
+  }, [resource, row.idPersonaje]);
+
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
-    const [characterObjects, setCharacterObjects] = useState<Row[]>([]);
-    useEffect(() => {
-      let active = true;
-      if (row.idPersonaje) {
-        api<Row[]>('/objetos')
-          .then(list => {
-            if (active) setCharacterObjects(list.filter(o => Number(o.idPersonaje) === Number(row.idPersonaje)));
-          })
-          .catch(() => {});
-      }
-      return () => { active = false; };
-    }, [row.idPersonaje]);
 
     const totalCapacity = Number(row.cantidadEspacio);
     const occupiedPositions = new Set(objects.map(o => Number(o.posicion)));

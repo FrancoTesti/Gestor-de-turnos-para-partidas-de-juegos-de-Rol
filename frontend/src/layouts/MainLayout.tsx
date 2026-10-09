@@ -13,11 +13,13 @@ export default function MainLayout() {
 
   const [mostrarModalLogout, setMostrarModalLogout] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [prevPath, setPrevPath] = useState(location.pathname);
   const navRef = useRef<HTMLElement | null>(null);
 
-  useEffect(() => {
+  if (prevPath !== location.pathname) {
+    setPrevPath(location.pathname);
     setOpenDropdown(null);
-  }, [location.pathname]);
+  }
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
