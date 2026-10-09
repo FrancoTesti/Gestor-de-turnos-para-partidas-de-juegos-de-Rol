@@ -14,13 +14,8 @@ CREATE TABLE `clases` (
   `descripcionClase` text not null
 ) ENGINE = InnoDB;
 
-CREATE TABLE `tiendas` (
-  `idTienda` int unsigned not null auto_increment primary key,
-  `claseTienda` varchar(50) not null,
-  `nombre` varchar(100) not null,
-  `idClase` int unsigned null,
-  FOREIGN KEY (`idClase`) REFERENCES `clases` (`idClase`) ON UPDATE CASCADE ON DELETE SET NULL
-) ENGINE = InnoDB;
+
+
 
 CREATE TABLE `usuarios` (
   `idUsuario` int unsigned not null auto_increment primary key,
@@ -54,6 +49,16 @@ CREATE TABLE `partidas` (
   `contrasena` varchar(100) not null,
   `idUsuarioAnfitrion` int unsigned not null,
   FOREIGN KEY (`idUsuarioAnfitrion`) REFERENCES `anfitriones` (`idUsuario`) ON UPDATE CASCADE
+) ENGINE = InnoDB;
+
+CREATE TABLE `tiendas` (
+  `idTienda` int unsigned not null auto_increment primary key,
+  `claseTienda` varchar(50) not null,
+  `nombre` varchar(100) not null,
+  `idClase` int unsigned null,
+  `idPartida` int unsigned null,
+  FOREIGN KEY (`idClase`) REFERENCES `clases` (`idClase`) ON UPDATE CASCADE ON DELETE SET NULL,
+  FOREIGN KEY (`idPartida`) REFERENCES `partidas` (`idPartida`) ON UPDATE CASCADE ON DELETE SET NULL
 ) ENGINE = InnoDB;
 
 CREATE TABLE `sesiones` (
@@ -158,8 +163,8 @@ INSERT INTO `personajes` (`idPersonaje`, `nombreFicticio`, `raza`, `xp`, `nivel`
 INSERT INTO `inventarios` (`idPersonaje`, `numInventario`, `cantidadEspacio`) VALUES
 (1, 1, 10);
 
-INSERT INTO `tiendas` (`idTienda`, `claseTienda`, `nombre`, `idClase`) VALUES 
-(1, 'Armeria', 'El Yunque', 1);
+INSERT INTO `tiendas` (`idTienda`, `claseTienda`, `nombre`, `idClase`, `idPartida`) VALUES 
+(1, 'Armeria', 'El Yunque', 1, 1);
 
 INSERT INTO `objetos` (`idObjeto`, `valor`, `descripcion`, `nombre`, `nivelObjeto`, `tipoObjeto`, `idTienda`, `idPersonaje`, `numInventario`, `posicion`) VALUES 
 (1, 50, 'Espada de hierro básica', 'Espada Corta', 1, 'Arma', 1, NULL, NULL, 0);

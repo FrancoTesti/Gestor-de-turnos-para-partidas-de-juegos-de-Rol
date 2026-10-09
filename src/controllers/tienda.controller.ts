@@ -24,9 +24,11 @@ export class TiendaController {
     this.tiendaService = tiendaService;
   }
 
-  async obtenerTodos(_req: Request, res: Response): Promise<void> {
+  async obtenerTodos(req: Request, res: Response): Promise<void> {
     try {
-      const tiendas = await this.tiendaService.obtenerTodos();
+      const idPartidaQuery = req.query.idPartida ? Number(req.query.idPartida) : undefined;
+      const filtros = idPartidaQuery && !isNaN(idPartidaQuery) ? { idPartida: idPartidaQuery } : undefined;
+      const tiendas = await this.tiendaService.obtenerTodos(filtros);
       res.json(tiendas);
     } catch (error) {
       console.error('Error al obtener tiendas:', error);

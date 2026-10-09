@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
 import './ModulePage.css';
@@ -37,7 +38,16 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const [activeOnly, setActiveOnly] = useState(false);
   const [sortField, setSortField] = useState<string>('idPartida');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [soloMisPartidas, setSoloMisPartidas] = useState(false);
   const [revision, setRevision] = useState(0);
+
+  const estaInscripto = (r: Row) => {
+    const idPartida = Number(r.idPartida);
+    const tienePersonaje = (refs.personajes ?? []).some(p => Number(p.idPartida) === idPartida && Number(p.idUsuarioJugador) === userId);
+    const esHost = Number(r.idUsuarioAnfitrion) === userId;
+    return Boolean(tienePersonaje || esHost);
+  };
+
   const url = (r: Row) => `/${resource}/${config.keys.map(k => r[k]).join('/')}`;
   useEffect(() => {
     let active = true;
@@ -81,10 +91,17 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       const matchesSearch = !term || Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
       const matchesClass = !classFilter || String(r.idClase) === classFilter;
       const matchesActive = !activeOnly || r.estado === 'activa';
-      return matchesSearch && matchesClass && matchesActive;
+      const matchesMisPartidas = !soloMisPartidas || resource !== 'partidas' || estaInscripto(r);
+      return matchesSearch && matchesClass && matchesActive && matchesMisPartidas;
     });
 
-    if (resource === 'partidas' && sortField) {
+    if (resource === 'partidas' && sortField === 'inscripto') {
+      res = [...res].sort((a, b) => {
+        const valA = estaInscripto(a) ? 1 : 0;
+        const valB = estaInscripto(b) ? 1 : 0;
+        return sortDir === 'asc' ? valB - valA : valA - valB;
+      });
+    } else if (resource === 'partidas' && sortField) {
       res = [...res].sort((a, b) => {
         let valA = a[sortField];
         let valB = b[sortField];
@@ -100,7 +117,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     }
 
     return res;
-  }, [rows, search, classFilter, activeOnly, resource, sortField, sortDir]);
+  }, [rows, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, refs.personajes, userId]);
   const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
@@ -146,6 +163,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
               Ordenar por:
               <select value={sortField} onChange={e => setSortField(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
                 <option value="idPartida">Id de Partida</option>
+                <option value="inscripto">Partidas en las que estoy inscripto</option>
                 <option value="nombre">Nombre</option>
                 <option value="limiteJugadores">Límite de Jugadores</option>
                 <option value="estado">Estado</option>
@@ -160,14 +178,22 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             >
               {sortDir === 'asc' ? '▲ Asc' : '▼ Desc'}
             </button>
+            <button
+              type="button"
+              className={soloMisPartidas ? "btn-primary" : "btn-secondary"}
+              style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
+              onClick={() => setSoloMisPartidas(v => !v)}
+            >
+              {soloMisPartidas ? '🎮 Ver todas las partidas' : '🎮 Mis partidas (inscripto/dirigiendo)'}
+            </button>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
               <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
               Solo partidas activas
             </label>
           </>
         )}
-        {(search || classFilter || activeOnly) && (
-          <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setClassFilter(''); setActiveOnly(false); }}>
+        {(search || classFilter || activeOnly || soloMisPartidas) && (
+          <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setClassFilter(''); setActiveOnly(false); setSoloMisPartidas(false); }}>
             Limpiar filtros
           </button>
         )}
@@ -175,6 +201,16 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => { const val = display(r, k); return <td key={k} title={val.length > 25 ? val : undefined}><div className="table-cell-content truncate" style={{ maxWidth: 220 }}>{val}</div></td>; })}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)} aria-label={`Ver detalle de ${label(r) || 'registro'}`}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)} aria-label={`Editar ${label(r) || 'registro'}`}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }} aria-label={`Eliminar ${label(r) || 'registro'}`}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
       {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{config.fields.find(f => f.key === k)?.label ?? k}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
+        {resource === 'partidas' && (
+          <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
+            <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
+              📜 Ver misiones de esta partida
+            </Link>
+            <Link to={`/stores?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
+              🏪 Ver tiendas de esta partida
+            </Link>
+          </div>
+        )}
         <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} />
         <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
       </article>}
@@ -308,18 +344,19 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
         <form
           onSubmit={e => {
             e.preventDefault();
-            void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: Number(price) }));
+            const precioVenta = selling ? Number(selling.valor) : Number(price || 0);
+            void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: precioVenta }));
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
         >
           <h4 style={{ marginTop: 0 }}>Vender objeto de este inventario</h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Elegí un precio entero entre el 70 % y el 100 % del valor base.</p>
+          <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Venta instantánea a la tienda por su valor máximo.</p>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto a vender
             <select
               required
               value={object}
-              onChange={e => { setObject(e.target.value); setPrice(''); }}
+              onChange={e => { setObject(e.target.value); }}
               style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
             >
               <option value="">Seleccionar objeto</option>
@@ -330,19 +367,11 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               ))}
             </select>
           </label>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Precio de venta {selling && `(permitido: $${selling.minimo ?? Math.ceil(Number(selling.valor) * 0.7)} a $${selling.maximo ?? Math.floor(Number(selling.valor))})`}
-            <input
-              required
-              type="number"
-              step="1"
-              min={Number(selling?.minimo ?? Math.ceil(Number(selling?.valor ?? 0) * 0.7))}
-              max={Number(selling?.maximo ?? Math.floor(Number(selling?.valor ?? 0)))}
-              value={price}
-              onChange={e => setPrice(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            />
-          </label>
+          {selling && (
+            <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: 'var(--success-text)' }}>
+              ⚡ Precio de venta: <strong>${String(selling.valor)}</strong> (venta instantánea al valor máximo)
+            </p>
+          )}
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Tienda receptora
             <select

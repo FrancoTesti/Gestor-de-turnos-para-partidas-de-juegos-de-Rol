@@ -25,16 +25,13 @@ export default function VentaObjetoFormulario({
   onVender,
   onCancelar,
 }: VentaObjetoFormularioProps) {
-  const rango = rangoVenta(objeto.valor);
-  const [precio, setPrecio] = useState<number | ''>(rango.maximo);
+  const precioFijo = objeto.valor;
   const [idTienda, setIdTienda] = useState<number | ''>(tiendas[0]?.idTienda ?? '');
   const [vendiendo, setVendiendo] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const saldoActual = personaje ? personaje.dinero : 0;
-  const precioNumerico = typeof precio === 'number' ? precio : 0;
-  const saldoResultante = saldoActual + precioNumerico;
-  const precioValido = typeof precio === 'number' && precio >= rango.minimo && precio <= rango.maximo;
+  const saldoResultante = saldoActual + precioFijo;
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -44,11 +41,7 @@ export default function VentaObjetoFormulario({
       return;
     }
     if (!idTienda) {
-      setError('Debés seleccionar una tienda destino.');
-      return;
-    }
-    if (!precioValido) {
-      setError(`El precio debe estar dentro del rango permitido (${rango.minimo} a ${rango.maximo}).`);
+      setError('Debés seleccionar una tienda receptora.');
       return;
     }
 
@@ -57,7 +50,7 @@ export default function VentaObjetoFormulario({
       await onVender({
         idPersonaje: personaje.idPersonaje,
         idTienda: Number(idTienda),
-        precio: precioNumerico,
+        precio: precioFijo,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error al vender el objeto');
@@ -69,7 +62,9 @@ export default function VentaObjetoFormulario({
   return (
     <form className="compra-formulario" onSubmit={(e) => void enviar(e)}>
       <h3>Vender {objeto.nombre}</h3>
-      <p className="compra-precio">Valor base del objeto: <strong>${objeto.valor}</strong></p>
+      <p className="compra-precio">
+        Precio de venta: <strong>${precioFijo}</strong>
+      </p>
 
       {error && (
         <p role="alert" className="detalle-error">
@@ -85,10 +80,10 @@ export default function VentaObjetoFormulario({
         border: '1px solid rgba(59, 130, 246, 0.35)'
       }}>
         <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: 'var(--info-text, #38bdf8)', fontWeight: 600 }}>
-          🏷️ Rango de precio permitido: 70 % a 100 %
+          ⚡ Venta instantánea a la tienda
         </p>
         <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-          Mínimo: <strong>${rango.minimo}</strong> — Máximo: <strong>${rango.maximo}</strong>
+          Se vende de manera instantánea al valor máximo (${precioFijo}).
         </p>
       </div>
 
@@ -125,28 +120,13 @@ export default function VentaObjetoFormulario({
         </select>
       </label>
 
-      <label style={{ display: 'block', marginBottom: '0.75rem' }}>
-        Precio de venta ($) *
-        <input
-          required
-          type="number"
-          step="1"
-          min={rango.minimo}
-          max={rango.maximo}
-          value={precio}
-          onChange={(e) => setPrecio(e.target.value ? Number(e.target.value) : '')}
-          disabled={vendiendo}
-          style={{ display: 'block', width: '100%', padding: '0.5rem', marginTop: '0.25rem' }}
-        />
-      </label>
-
       <div className="compra-acciones">
         <button
           className="btn-primary"
           type="submit"
-          disabled={vendiendo || !idTienda || !precioValido}
+          disabled={vendiendo || !idTienda}
         >
-          {vendiendo ? 'Vendiendo...' : 'Confirmar venta'}
+          {vendiendo ? 'Vendiendo...' : `Confirmar venta por $${precioFijo}`}
         </button>
         <button type="button" onClick={onCancelar} disabled={vendiendo}>
           Cancelar

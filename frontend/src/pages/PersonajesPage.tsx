@@ -39,6 +39,7 @@ interface PartidaSimple {
   estado: string;
   limiteJugadores: number;
   esPrivada: boolean;
+  idUsuarioAnfitrion?: number;
 }
 
 function mensajeError(e: unknown): string {
@@ -46,9 +47,18 @@ function mensajeError(e: unknown): string {
 }
 
 export default function PersonajesPage() {
-  const { usuarioLogueado, jugadores } = useUser();
-  const userId = usuarioLogueado!.idUsuario;
-  const esJugador = jugadores.some(jugador => jugador.idUsuario === userId);
+  const { usuarioLogueado, jugadores, anfitriones, esJugador: ctxEsJugador, esAnfitrion: ctxEsAnfitrion, rolDe } = useUser();
+  const userId = usuarioLogueado?.idUsuario ?? 0;
+  const esJugador = Boolean(ctxEsJugador || (jugadores ?? []).some(jugador => jugador.idUsuario === userId) || (rolDe && rolDe(userId) === 'jugador'));
+  const esAnfitrion = Boolean(ctxEsAnfitrion || (anfitriones ?? []).some(anf => anf.idUsuario === userId) || (rolDe && rolDe(userId) === 'anfitrion'));
+  const tieneAmbosRoles = esJugador && esAnfitrion;
+
+  // Pestaña o modo activo según el rol
+  const [modoRol, setModoRol] = useState<'jugador' | 'anfitrion'>(esJugador ? 'jugador' : 'anfitrion');
+
+  // Navegabilidad Anfitrión: Partidas -> Jugadores -> Personajes
+  const [partidaAnfitrionId, setPartidaAnfitrionId] = useState<number | ''>('');
+  const [jugadorAnfitrionId, setJugadorAnfitrionId] = useState<number | ''>('');
 
   const [personajes, setPersonajes] = useState<Personaje[]>([]);
   const [clases, setClases] = useState<Clase[]>([]);
@@ -189,6 +199,25 @@ export default function PersonajesPage() {
         )}
       </header>
 
+      {tieneAmbosRoles && (
+        <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          <button
+            type="button"
+            className={modoRol === 'jugador' ? 'btn-purple' : 'btn-secondary'}
+            onClick={() => { setModoRol('jugador'); setSeleccionado(null); }}
+          >
+            🛡️ Mis Personajes (Rol Jugador)
+          </button>
+          <button
+            type="button"
+            className={modoRol === 'anfitrion' ? 'btn-purple' : 'btn-secondary'}
+            onClick={() => { setModoRol('anfitrion'); setSeleccionado(null); }}
+          >
+            👑 Navegación de Partidas (Rol Anfitrión: Partidas → Jugadores → Personajes)
+          </button>
+        </div>
+      )}
+
       {mensaje && (
         <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
           ✅ {mensaje}
@@ -325,18 +354,125 @@ export default function PersonajesPage() {
         </div>
       )}
 
-      <PersonajeLista
-        personajes={personajes}
-        clases={clases}
-        personajeSeleccionadoId={seleccionado?.idPersonaje}
-        cargando={cargando}
-        onSeleccionar={(p) => setSeleccionado(p)}
-        onEditar={esJugador ? (p) => { if (p.idUsuarioJugador === userId) abrirFormularioEditar(p); } : undefined}
-        onEliminar={esJugador ? (id) => {
-          const p = personajes.find((x) => x.idPersonaje === id);
-          if (p && p.idUsuarioJugador === userId) void handleEliminar(id);
-        } : undefined}
-      />
+      {modoRol === 'anfitrion' && esAnfitrion ? (
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.25rem' }}>
+            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: 'var(--text-h)' }}>
+              👑 Navegabilidad de Anfitrión
+            </h2>
+            <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              Navegación jerárquica: <strong>Anfitrión</strong> ➔ <strong>Partidas</strong> ➔ <strong>Jugadores</strong> ➔ <strong>Personajes</strong>
+            </p>
+
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+              <div>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                  1. Seleccionar Partida
+                </label>
+                <select
+                  value={partidaAnfitrionId}
+                  onChange={(e) => {
+                    const id = e.target.value ? Number(e.target.value) : '';
+                    setPartidaAnfitrionId(id);
+                    setJugadorAnfitrionId('');
+                    setSeleccionado(null);
+                  }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                >
+                  <option value="">Seleccionar partida...</option>
+                  {partidas
+                    .filter((p) => !p.idUsuarioAnfitrion || p.idUsuarioAnfitrion === userId)
+                    .map((p) => (
+                      <option key={p.idPartida} value={p.idPartida}>
+                        🎲 {p.nombre} (#{p.idPartida}) — {p.estado}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {partidaAnfitrionId !== '' && (
+                <div>
+                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                    2. Seleccionar Jugador de la partida
+                  </label>
+                  {(() => {
+                    const pjsDePartida = personajes.filter((p) => p.idPartida === Number(partidaAnfitrionId));
+                    const idsJugadores = Array.from(new Set(pjsDePartida.map((p) => p.idUsuarioJugador)));
+                    if (idsJugadores.length === 0) {
+                      return <p style={{ margin: '0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hay jugadores con personajes en esta partida.</p>;
+                    }
+                    return (
+                      <select
+                        value={jugadorAnfitrionId}
+                        onChange={(e) => {
+                          const id = e.target.value ? Number(e.target.value) : '';
+                          setJugadorAnfitrionId(id);
+                          setSeleccionado(null);
+                        }}
+                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                      >
+                        <option value="">Seleccionar jugador...</option>
+                        {idsJugadores.map((idJug) => {
+                          const pjsDelJugador = pjsDePartida.filter((p) => p.idUsuarioJugador === idJug);
+                          const primerPj = pjsDelJugador[0];
+                          const nombreJugador = (primerPj as any)?.jugadorNombre || `Jugador #${idJug}`;
+                          return (
+                            <option key={idJug} value={idJug}>
+                              👤 {nombreJugador} ({pjsDelJugador.length} personaje{pjsDelJugador.length > 1 ? 's' : ''})
+                            </option>
+                          );
+                        })}
+                      </select>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {partidaAnfitrionId !== '' && jugadorAnfitrionId !== '' ? (
+            <div>
+              <h3 style={{ margin: '0.5rem 0 1rem 0' }}>
+                3. Personajes del jugador seleccionado en esta partida
+              </h3>
+              <PersonajeLista
+                personajes={personajes.filter(
+                  (p) => p.idPartida === Number(partidaAnfitrionId) && p.idUsuarioJugador === Number(jugadorAnfitrionId),
+                )}
+                clases={clases}
+                personajeSeleccionadoId={seleccionado?.idPersonaje}
+                cargando={cargando}
+                onSeleccionar={(p) => setSeleccionado(p)}
+              />
+            </div>
+          ) : partidaAnfitrionId !== '' ? (
+            <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--bg-card-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                👆 Seleccioná un jugador de la partida arriba para navegar sus personajes.
+              </p>
+            </div>
+          ) : (
+            <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--bg-card-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                👆 Seleccioná una de tus partidas arriba para ver sus jugadores y personajes.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <PersonajeLista
+          personajes={personajes.filter((p) => p.idUsuarioJugador === userId)}
+          clases={clases}
+          personajeSeleccionadoId={seleccionado?.idPersonaje}
+          cargando={cargando}
+          onSeleccionar={(p) => setSeleccionado(p)}
+          onEditar={esJugador ? (p) => { if (p.idUsuarioJugador === userId) abrirFormularioEditar(p); } : undefined}
+          onEliminar={esJugador ? (id) => {
+            const p = personajes.find((x) => x.idPersonaje === id);
+            if (p && p.idUsuarioJugador === userId) void handleEliminar(id);
+          } : undefined}
+        />
+      )}
 
       {seleccionado && (
         <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '540px', boxShadow: 'var(--shadow)' }}>

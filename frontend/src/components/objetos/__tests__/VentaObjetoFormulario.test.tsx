@@ -38,7 +38,7 @@ const tienda: Tienda = {
 };
 
 describe('VentaObjetoFormulario', () => {
-  it('calcula y muestra el rango del 70 % al 100 % (70 a 100 para un valor de 100)', () => {
+  it('muestra la venta instantánea al valor máximo y el saldo resultante', () => {
     const { container } = render(
       <VentaObjetoFormulario
         objeto={objeto}
@@ -49,13 +49,13 @@ describe('VentaObjetoFormulario', () => {
       />,
     );
 
-    expect(container.textContent).toContain('Mínimo: $70');
-    expect(container.textContent).toContain('Máximo: $100');
+    expect(container.textContent).toContain('Precio de venta: $100');
+    expect(container.textContent).toContain('Se vende de manera instantánea al valor máximo ($100)');
     expect(container.textContent).toContain('Saldo actual: $200');
     expect(container.textContent).toContain('Saldo después de la venta: $300');
   });
 
-  it('permite enviar una venta válida con precio dentro del rango', async () => {
+  it('permite enviar una venta instantánea al valor máximo sin selector de rango', async () => {
     const onVender = vi.fn().mockResolvedValue(undefined);
 
     render(
@@ -68,14 +68,13 @@ describe('VentaObjetoFormulario', () => {
       />,
     );
 
-    fireEvent.change(screen.getByLabelText(/Precio de venta/), { target: { value: '85' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Confirmar venta' }));
+    fireEvent.click(screen.getByRole('button', { name: /Confirmar venta/ }));
 
     await waitFor(() => {
       expect(onVender).toHaveBeenCalledWith({
         idPersonaje: 10,
         idTienda: 1,
-        precio: 85,
+        precio: 100,
       });
     });
   });
