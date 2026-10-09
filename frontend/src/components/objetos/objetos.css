@@ -52,11 +52,14 @@
 
 .objeto-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 1.15rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
 }
 
 .objeto-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   overflow: hidden;
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -78,13 +81,15 @@
 }
 
 .objeto-card-contenido {
+  flex: 1;
   width: 100%;
   border: 0;
-  padding: 1.25rem;
+  padding: 1.35rem 1.25rem;
   color: inherit;
   background: transparent;
   text-align: left;
   cursor: pointer;
+  line-height: 1.45;
 }
 
 .objeto-tipo {
@@ -96,7 +101,15 @@
 }
 
 .objeto-acciones {
-  padding: 0 1.25rem 1.25rem;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1.25rem;
+  margin-top: auto;
+}
+
+.objeto-acciones:empty {
+  display: none;
+  padding: 0;
 }
 
 .objeto-acciones button {

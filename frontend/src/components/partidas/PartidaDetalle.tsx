@@ -3,8 +3,18 @@
 import type { PartidaPublica } from '../../services/partida.service';
 import './partidas.css';
 
+export interface PersonajeUnido {
+  idPersonaje: number;
+  nombreFicticio: string;
+  raza?: string;
+  nivel?: number;
+  jugadorNombre?: string;
+  nickname?: string;
+}
+
 export interface PartidaDetalleProps {
   partida?: PartidaPublica | null;
+  personajesUnidos?: PersonajeUnido[];
   cargando?: boolean;
   error?: string | null;
   onCerrar?: () => void;
@@ -14,6 +24,7 @@ export interface PartidaDetalleProps {
 
 export default function PartidaDetalle({
   partida,
+  personajesUnidos = [],
   cargando = false,
   error = null,
   onCerrar,
@@ -110,6 +121,25 @@ export default function PartidaDetalle({
           </div>
 
         </div>
+
+        {personajesUnidos.length > 0 ? (
+          <div className="detalle-jugadores-unidos" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
+            <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', color: 'var(--text-h)' }}>
+              👥 Jugadores y Personajes unidos ({personajesUnidos.length} / {partida.limiteJugadores}):
+            </h4>
+            <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
+              {personajesUnidos.map((p) => (
+                <li key={p.idPersonaje} style={{ margin: '0.25rem 0', fontSize: '0.875rem' }}>
+                  <strong>{p.nombreFicticio}</strong> {p.raza ? `(${p.raza})` : ''} {p.nivel ? `— Nivel ${p.nivel}` : ''} {p.jugadorNombre || p.nickname ? `[@${p.jugadorNombre || p.nickname}]` : ''}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ) : (
+          <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            👥 Aún no hay personajes unidos a esta partida.
+          </div>
+        )}
       </div>
 
       <div className="detalle-footer">

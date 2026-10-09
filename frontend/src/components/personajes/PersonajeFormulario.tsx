@@ -151,11 +151,38 @@ export default function PersonajeFormulario({
             <input
               id="raza"
               type="text"
+              list="razas-estandar-list"
               placeholder="Ej: Enano, Elfo, Humano, Orco..."
               value={raza}
               onChange={(e) => setRaza(e.target.value)}
               disabled={guardando}
             />
+            <datalist id="razas-estandar-list">
+              {['Humano', 'Elfo', 'Enano', 'Orco', 'Gnomo', 'Mediano', 'Tiefling', 'Dracónido', 'Semielfo', 'Semiorco'].map((r) => (
+                <option key={r} value={r} />
+              ))}
+            </datalist>
+            <div style={{ marginTop: '0.4rem', display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
+              {['Humano', 'Elfo', 'Enano', 'Orco', 'Gnomo', 'Mediano', 'Tiefling', 'Dracónido', 'Semielfo', 'Semiorco'].map((r) => (
+                <button
+                  key={r}
+                  type="button"
+                  style={{
+                    padding: '0.2rem 0.5rem',
+                    fontSize: '0.75rem',
+                    borderRadius: '12px',
+                    border: raza === r ? '1px solid var(--accent)' : '1px solid var(--border)',
+                    background: raza === r ? 'var(--accent-bg)' : 'var(--bg-card-secondary)',
+                    color: raza === r ? 'var(--accent-text)' : 'var(--text-muted)',
+                    cursor: 'pointer',
+                  }}
+                  onClick={() => setRaza(r)}
+                  disabled={guardando}
+                >
+                  {r}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
