@@ -39,7 +39,7 @@ describe('MainLayout', () => {
       <MemoryRouter initialEntries={['/dashboard']}>
         <Routes>
           <Route element={<MainLayout />}>
-            <Route path="/dashboard" element={<div>Contenido Dashboard</div>} />
+            <Route path="*" element={<div>Contenido Dashboard</div>} />
           </Route>
         </Routes>
       </MemoryRouter>
@@ -63,6 +63,21 @@ describe('MainLayout', () => {
     // Abrir con Enter
     fireEvent.keyDown(menuJuego, { key: 'Enter' });
     expect(menuJuego).toHaveAttribute('aria-expanded', 'true');
+
+    // Cerrar al hacer clic en un enlace del menú
+    const linkPartidas = screen.getByText('Partidas');
+    fireEvent.click(linkPartidas);
+    expect(menuJuego).toHaveAttribute('aria-expanded', 'false');
+
+    // Desplegar menú Sistema y verificar enlace a Configuración
+    const menuSistema = screen.getByText('Sistema ▾');
+    fireEvent.click(menuSistema);
+    expect(menuSistema).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Configuración')).toBeInTheDocument();
+
+    // Cerrar al hacer clic fuera
+    fireEvent.mouseDown(document.body);
+    expect(menuSistema).toHaveAttribute('aria-expanded', 'false');
   });
 
   it('permite cerrar sesión haciendo clic en el botón correspondiente', async () => {

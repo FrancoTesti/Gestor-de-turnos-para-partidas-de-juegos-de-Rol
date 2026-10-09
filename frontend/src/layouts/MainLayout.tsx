@@ -28,6 +28,16 @@ export default function MainLayout() {
     return () => window.removeEventListener('keydown', handleGlobalKeyDown);
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (navRef.current && !navRef.current.contains(e.target as Node)) {
+        setOpenDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleLogout = async () => {
     try { await logout(); navigate('/login'); }
     catch { window.alert('No se pudo cerrar la sesión. Reintentá.'); }
@@ -37,6 +47,13 @@ export default function MainLayout() {
   if (!usuarioLogueado) return <Navigate to="/login" replace />;
 
   const isActive = (paths: string[]) => paths.includes(location.pathname) ? 'active' : '';
+
+  const closeDropdown = () => {
+    setOpenDropdown(null);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+  };
 
   const handleTriggerKeyDown = (key: string, e: KeyboardEvent) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -83,9 +100,9 @@ export default function MainLayout() {
                 Juego ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/games" onClick={() => setOpenDropdown(null)}>Partidas</Link>
-                <Link to="/sessions" onClick={() => setOpenDropdown(null)}>Sesiones</Link>
-                <Link to="/missions" onClick={() => setOpenDropdown(null)}>Misiones</Link>
+                <Link to="/games" onClick={closeDropdown}>Partidas</Link>
+                <Link to="/sessions" onClick={closeDropdown}>Sesiones</Link>
+                <Link to="/missions" onClick={closeDropdown}>Misiones</Link>
               </div>
             </li>
 
@@ -102,8 +119,8 @@ export default function MainLayout() {
                 Personajes ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/characters" onClick={() => setOpenDropdown(null)}>Personajes</Link>
-                <Link to="/inventory" onClick={() => setOpenDropdown(null)}>Inventarios</Link>
+                <Link to="/characters" onClick={closeDropdown}>Personajes</Link>
+                <Link to="/inventory" onClick={closeDropdown}>Inventarios</Link>
               </div>
             </li>
 
@@ -120,9 +137,9 @@ export default function MainLayout() {
                 Catálogo ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/classes" onClick={() => setOpenDropdown(null)}>Clases</Link>
-                <Link to="/objects" onClick={() => setOpenDropdown(null)}>Objetos</Link>
-                <Link to="/stores" onClick={() => setOpenDropdown(null)}>Tiendas</Link>
+                <Link to="/classes" onClick={closeDropdown}>Clases</Link>
+                <Link to="/objects" onClick={closeDropdown}>Objetos</Link>
+                <Link to="/stores" onClick={closeDropdown}>Tiendas</Link>
               </div>
             </li>
 
@@ -139,9 +156,9 @@ export default function MainLayout() {
                 Sistema ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/dashboard" onClick={() => setOpenDropdown(null)}>Dashboard</Link>
-                <Link to="/users" onClick={() => setOpenDropdown(null)}>Usuarios</Link>
-                <Link to="/profiles" onClick={() => setOpenDropdown(null)}>Mis Perfiles</Link>
+                <Link to="/dashboard" onClick={closeDropdown}>Dashboard</Link>
+                <Link to="/users" onClick={closeDropdown}>Usuarios</Link>
+                <Link to="/profiles" onClick={closeDropdown}>Configuración</Link>
               </div>
             </li>
           </ul>

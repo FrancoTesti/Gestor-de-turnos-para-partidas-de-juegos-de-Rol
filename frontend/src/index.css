@@ -12,7 +12,7 @@
   --bg-card-hover: #27272a;
   --border: #27272a;
   --border-subtle: #1f1f23;
-  --border-focus: #f59e0b;
+  --border-focus: #a855f7;
   --code-bg: #141417;
   
   --text: #e4e4e7;
@@ -20,16 +20,16 @@
   --text-muted: #a1a1aa;
   --text-inverse: #09090b;
 
-  /* Brand / Accent Colors (TTRPG Master Command Hub: Forged Amber / Gold & Slate) */
-  --accent: #fbbf24;
-  --accent-solid: #f59e0b;
-  --accent-hover: #d97706;
-  --accent-text: #fef3c7;
-  --accent-bg: rgba(245, 158, 11, 0.12);
-  --accent-border: rgba(245, 158, 11, 0.35);
-  --accent-glow: 0 0 16px rgba(245, 158, 11, 0.18);
-  --border-focus: #f59e0b;
-  --border-active: #94a3b8;
+  /* Default Brand / Accent Colors: Violeta Arcano */
+  --accent: #c084fc;
+  --accent-solid: #9333ea;
+  --accent-hover: #7e22ce;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(147, 51, 234, 0.12);
+  --accent-border: rgba(147, 51, 234, 0.35);
+  --accent-glow: 0 0 16px rgba(147, 51, 234, 0.25);
+  --border-focus: #a855f7;
+  --border-active: #c084fc;
 
   /* Status Colors (WCAG AA Compliant) */
   --success-bg: rgba(16, 185, 129, 0.12);
@@ -56,7 +56,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.35);
   --shadow: 0 4px 12px -1px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.05);
   --shadow-lg: 0 12px 32px -4px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  --shadow-glow: 0 0 20px -3px rgba(245, 158, 11, 0.2);
+  --shadow-glow: 0 0 20px -3px var(--accent-glow);
 
   --radius-sm: 6px;
   --radius-md: 8px;
@@ -88,7 +88,7 @@
   --bg-card-hover: #e2e8f0;
   --border: #e2e8f0;
   --border-subtle: #edf2f7;
-  --border-focus: #d97706;
+  --border-focus: #7c3aed;
   --border-active: #64748b;
   --code-bg: #f1f5f9;
 
@@ -97,13 +97,13 @@
   --text-muted: #334155; /* WCAG AA > 5:1 contrast */
   --text-inverse: #ffffff;
 
-  --accent: #d97706;
-  --accent-solid: #b45309;
-  --accent-hover: #92400e;
-  --accent-text: #78350f;
-  --accent-bg: rgba(217, 119, 6, 0.08);
-  --accent-border: rgba(217, 119, 6, 0.3);
-  --accent-glow: 0 0 16px rgba(217, 119, 6, 0.12);
+  --accent: #7c3aed;
+  --accent-solid: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(124, 58, 237, 0.08);
+  --accent-border: rgba(124, 58, 237, 0.3);
+  --accent-glow: 0 0 16px rgba(124, 58, 237, 0.15);
 
   --success-bg: #ecfdf5;
   --success-border: #a7f3d0;
@@ -128,7 +128,7 @@
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
   --shadow: 0 2px 8px -1px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04);
   --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
-  --shadow-glow: 0 0 20px -4px rgba(217, 119, 6, 0.15);
+  --shadow-glow: 0 0 20px -4px rgba(124, 58, 237, 0.15);
 
   color-scheme: light;
 }
@@ -136,6 +136,130 @@
 /* Explicit Dark Theme Selector */
 [data-theme='dark'] {
   color-scheme: dark;
+}
+
+/* ==========================================================================
+   Accent Color Themes (Configurable via [data-accent])
+   ========================================================================== */
+
+/* Violeta Arcano (Default) */
+[data-accent='violet'] {
+  --accent: #c084fc;
+  --accent-solid: #9333ea;
+  --accent-hover: #7e22ce;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(147, 51, 234, 0.12);
+  --accent-border: rgba(147, 51, 234, 0.35);
+  --accent-glow: 0 0 16px rgba(147, 51, 234, 0.25);
+  --border-focus: #a855f7;
+  --border-active: #c084fc;
+}
+
+[data-theme='light'][data-accent='violet'] {
+  --accent: #7c3aed;
+  --accent-solid: #7c3aed;
+  --accent-hover: #6d28d9;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(124, 58, 237, 0.08);
+  --accent-border: rgba(124, 58, 237, 0.3);
+  --accent-glow: 0 0 16px rgba(124, 58, 237, 0.15);
+  --border-focus: #7c3aed;
+}
+
+/* Ámbar Forja */
+[data-accent='amber'] {
+  --accent: #fbbf24;
+  --accent-solid: #f59e0b;
+  --accent-hover: #d97706;
+  --accent-text: #09090b;
+  --accent-bg: rgba(245, 158, 11, 0.12);
+  --accent-border: rgba(245, 158, 11, 0.35);
+  --accent-glow: 0 0 16px rgba(245, 158, 11, 0.25);
+  --border-focus: #f59e0b;
+  --border-active: #fbbf24;
+}
+
+[data-theme='light'][data-accent='amber'] {
+  --accent: #d97706;
+  --accent-solid: #d97706;
+  --accent-hover: #b45309;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(217, 119, 6, 0.08);
+  --accent-border: rgba(217, 119, 6, 0.3);
+  --accent-glow: 0 0 16px rgba(217, 119, 6, 0.12);
+  --border-focus: #d97706;
+}
+
+/* Esmeralda Épica */
+[data-accent='emerald'] {
+  --accent: #34d399;
+  --accent-solid: #10b981;
+  --accent-hover: #059669;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(16, 185, 129, 0.12);
+  --accent-border: rgba(16, 185, 129, 0.35);
+  --accent-glow: 0 0 16px rgba(16, 185, 129, 0.25);
+  --border-focus: #10b981;
+  --border-active: #34d399;
+}
+
+[data-theme='light'][data-accent='emerald'] {
+  --accent: #059669;
+  --accent-solid: #059669;
+  --accent-hover: #047857;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(16, 185, 129, 0.08);
+  --accent-border: rgba(16, 185, 129, 0.3);
+  --accent-glow: 0 0 16px rgba(16, 185, 129, 0.12);
+  --border-focus: #059669;
+}
+
+/* Azul Místico */
+[data-accent='blue'] {
+  --accent: #60a5fa;
+  --accent-solid: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(59, 130, 246, 0.12);
+  --accent-border: rgba(59, 130, 246, 0.35);
+  --accent-glow: 0 0 16px rgba(59, 130, 246, 0.25);
+  --border-focus: #3b82f6;
+  --border-active: #60a5fa;
+}
+
+[data-theme='light'][data-accent='blue'] {
+  --accent: #2563eb;
+  --accent-solid: #2563eb;
+  --accent-hover: #1d4ed8;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(37, 99, 235, 0.08);
+  --accent-border: rgba(37, 99, 235, 0.3);
+  --accent-glow: 0 0 16px rgba(37, 99, 235, 0.12);
+  --border-focus: #2563eb;
+}
+
+/* Carmesí Dragón */
+[data-accent='crimson'] {
+  --accent: #fb7185;
+  --accent-solid: #e11d48;
+  --accent-hover: #be123c;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(225, 29, 72, 0.12);
+  --accent-border: rgba(225, 29, 72, 0.35);
+  --accent-glow: 0 0 16px rgba(225, 29, 72, 0.25);
+  --border-focus: #e11d48;
+  --border-active: #fb7185;
+}
+
+[data-theme='light'][data-accent='crimson'] {
+  --accent: #e11d48;
+  --accent-solid: #e11d48;
+  --accent-hover: #be123c;
+  --accent-text: #ffffff;
+  --accent-bg: rgba(225, 29, 72, 0.08);
+  --accent-border: rgba(225, 29, 72, 0.3);
+  --accent-glow: 0 0 16px rgba(225, 29, 72, 0.12);
+  --border-focus: #e11d48;
 }
 
 /* ==========================================================================
@@ -255,7 +379,7 @@ select:focus,
 textarea:focus {
   border-color: var(--border-focus);
   background-color: var(--bg-card);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 0 3px var(--accent-bg);
 }
 
 input::placeholder,
@@ -320,13 +444,13 @@ button:disabled,
   transform: none !important;
 }
 
-/* Primary Button (Forged Amber - TTRPG Hub style) */
+/* Primary Button (Configurable Accent Color: Violet default) */
 .btn-primary,
 .btn-purple,
 .btn-nuevo,
 .auth-primario {
   background-color: var(--accent-solid);
-  color: #09090b !important;
+  color: var(--accent-text) !important;
   font-weight: 700;
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.25);
@@ -337,8 +461,8 @@ button:disabled,
 .btn-nuevo:hover:not(:disabled),
 .auth-primario:hover:not(:disabled) {
   background-color: var(--accent-hover);
-  color: #09090b !important;
-  box-shadow: 0 4px 12px -2px rgba(245, 158, 11, 0.4);
+  color: var(--accent-text) !important;
+  box-shadow: 0 4px 12px -2px var(--accent-glow);
 }
 
 /* Secondary Button */

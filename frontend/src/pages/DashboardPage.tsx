@@ -100,7 +100,7 @@ export default function DashboardPage() {
               Acceso a reglas y combate en tiempo real
             </span>
             <Link to="/profiles" className="btn btn-secondary btn-small">
-              Gestionar mi Perfil →
+              Configuración →
             </Link>
           </div>
         </div>
