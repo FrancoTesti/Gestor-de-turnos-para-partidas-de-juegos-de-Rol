@@ -255,7 +255,7 @@
 
 .campo-valor.badge {
   background: var(--accent-solid);
-  color: #09090b;
+  color: var(--accent-text);
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
   font-size: 0.9rem;
@@ -273,7 +273,7 @@
 
 .btn-editar {
   background: var(--accent-solid);
-  color: #09090b;
+  color: var(--accent-text);
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;

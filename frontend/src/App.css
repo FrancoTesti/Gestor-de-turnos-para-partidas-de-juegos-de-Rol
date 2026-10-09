@@ -33,10 +33,10 @@
 
 .modulo-nav button.activo {
   border-color: var(--accent-solid);
-  color: #09090b;
+  color: var(--accent-text);
   font-weight: 700;
   background: var(--accent-solid);
-  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.35);
+  box-shadow: 0 2px 8px var(--accent-glow);
 }
 
 .app-header {
@@ -62,7 +62,7 @@
 }
 
 .btn-nuevo {
-  color: #09090b !important;
+  color: var(--accent-text) !important;
   font-weight: 700;
   background-color: var(--accent-solid);
   border: 1px solid rgba(255, 255, 255, 0.12);
@@ -71,8 +71,8 @@
 
 .btn-nuevo:hover {
   background-color: var(--accent-hover);
-  color: #09090b !important;
-  box-shadow: 0 4px 14px rgba(245, 158, 11, 0.35);
+  color: var(--accent-text) !important;
+  box-shadow: 0 4px 14px var(--accent-glow);
 }
 
 .mensaje {
