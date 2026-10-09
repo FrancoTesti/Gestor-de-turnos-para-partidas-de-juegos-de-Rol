@@ -53,8 +53,11 @@ export default function PersonajesPage() {
   const esAnfitrion = Boolean(ctxEsAnfitrion || (anfitriones ?? []).some(anf => anf.idUsuario === userId) || (rolDe && rolDe(userId) === 'anfitrion'));
   const tieneAmbosRoles = esJugador && esAnfitrion;
 
-  // Pestaña o modo activo según el rol
-  const [modoRol, setModoRol] = useState<'jugador' | 'anfitrion'>(esJugador ? 'jugador' : 'anfitrion');
+  // Modo activo según el rol (si tiene ambos roles, permite alternar)
+  const [rolManual, setRolManual] = useState<'jugador' | 'anfitrion' | null>(null);
+  const modoRol: 'jugador' | 'anfitrion' = tieneAmbosRoles
+    ? (rolManual ?? (esJugador ? 'jugador' : 'anfitrion'))
+    : (esAnfitrion ? 'anfitrion' : 'jugador');
 
   // Navegabilidad Anfitrión: Partidas -> Jugadores -> Personajes
   const [partidaAnfitrionId, setPartidaAnfitrionId] = useState<number | ''>('');
@@ -204,14 +207,14 @@ export default function PersonajesPage() {
           <button
             type="button"
             className={modoRol === 'jugador' ? 'btn-purple' : 'btn-secondary'}
-            onClick={() => { setModoRol('jugador'); setSeleccionado(null); }}
+            onClick={() => { setRolManual('jugador'); setSeleccionado(null); }}
           >
             🛡️ Mis Personajes (Rol Jugador)
           </button>
           <button
             type="button"
             className={modoRol === 'anfitrion' ? 'btn-purple' : 'btn-secondary'}
-            onClick={() => { setModoRol('anfitrion'); setSeleccionado(null); }}
+            onClick={() => { setRolManual('anfitrion'); setSeleccionado(null); }}
           >
             👑 Navegación de Partidas (Rol Anfitrión)
           </button>
@@ -231,7 +234,7 @@ export default function PersonajesPage() {
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '640px', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '640px', width: '100%', boxSizing: 'border-box', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje'}</h2>
           {errorForm && (
             <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
@@ -366,10 +369,12 @@ export default function PersonajesPage() {
 
             <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
               <div>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                <label htmlFor="select-partida-anfitrion" style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                   1. Seleccionar Partida
                 </label>
                 <select
+                  id="select-partida-anfitrion"
+                  aria-label="1. Seleccionar Partida"
                   value={partidaAnfitrionId}
                   onChange={(e) => {
                     const id = e.target.value ? Number(e.target.value) : '';
@@ -392,7 +397,7 @@ export default function PersonajesPage() {
 
               {partidaAnfitrionId !== '' && (
                 <div>
-                  <label style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                  <label htmlFor="select-jugador-anfitrion" style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
                     2. Seleccionar Jugador de la partida
                   </label>
                   {(() => {
@@ -403,6 +408,8 @@ export default function PersonajesPage() {
                     }
                     return (
                       <select
+                        id="select-jugador-anfitrion"
+                        aria-label="2. Seleccionar Jugador de la partida"
                         value={jugadorAnfitrionId}
                         onChange={(e) => {
                           const id = e.target.value ? Number(e.target.value) : '';
@@ -475,7 +482,7 @@ export default function PersonajesPage() {
       )}
 
       {seleccionado && (
-        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '540px', boxShadow: 'var(--shadow)' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '540px', width: '100%', boxSizing: 'border-box', boxShadow: 'var(--shadow)' }}>
           <PersonajeDetalle personaje={seleccionado} clases={clases} onVolver={() => setSeleccionado(null)} />
         </aside>
       )}

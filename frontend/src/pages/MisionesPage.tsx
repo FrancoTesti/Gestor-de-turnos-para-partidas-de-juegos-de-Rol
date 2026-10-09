@@ -207,21 +207,23 @@ export default function MisionesPage() {
 
       {/* Selector de Partida */}
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem', background: 'var(--bg-card)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', boxSizing: 'border-box', width: '100%' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
+        <label htmlFor="filtro-partida-misiones" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
           <span>🎲 Partida:</span>
-          <select
-            value={filtroPartida}
-            onChange={(e) => setFiltroPartida(e.target.value)}
-            style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)' }}
-          >
-            <option value="">Todas las partidas visibles ({partidasDelUsuario.length > 0 ? partidasDelUsuario.length : partidas.length})</option>
-            {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
-              <option key={p.idPartida} value={String(p.idPartida)}>
-                {p.nombre} (#{p.idPartida})
-              </option>
-            ))}
-          </select>
         </label>
+        <select
+          id="filtro-partida-misiones"
+          aria-label="Filtrar por Partida"
+          value={filtroPartida}
+          onChange={(e) => setFiltroPartida(e.target.value)}
+          style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+        >
+          <option value="">Todas las partidas visibles ({partidasDelUsuario.length > 0 ? partidasDelUsuario.length : partidas.length})</option>
+          {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
+            <option key={p.idPartida} value={String(p.idPartida)}>
+              {p.nombre} (#{p.idPartida})
+            </option>
+          ))}
+        </select>
         {filtroPartida && (
           <button
             type="button"
@@ -234,7 +236,7 @@ export default function MisionesPage() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
         <div style={{ minWidth: 0 }}>
           <div className="tabla-scroll">
             <table className="app-table">

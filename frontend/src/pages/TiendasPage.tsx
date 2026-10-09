@@ -282,7 +282,7 @@ export default function TiendasPage() {
       )}
 
       {mostrarFormulario && (
-        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '560px', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
+        <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', padding: '1.75rem', borderRadius: 'var(--radius-md)', maxWidth: '560px', width: '100%', boxSizing: 'border-box', marginBottom: '1.5rem', boxShadow: 'var(--shadow-lg)' }}>
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Tienda' : 'Nueva Tienda'}</h2>
           {errorForm && (
             <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
@@ -365,36 +365,44 @@ export default function TiendasPage() {
 
       {/* Filtros */}
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <label htmlFor="filtro-buscar-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span>🔍 Buscar:</span>
-          <input
-            type="search"
-            placeholder="Nombre o tipo"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-            style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '200px' }}
-          />
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <input
+          id="filtro-buscar-tienda"
+          aria-label="Buscar por nombre o tipo"
+          type="search"
+          placeholder="Nombre o tipo"
+          value={busqueda}
+          onChange={(e) => setBusqueda(e.target.value)}
+          style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '200px', maxWidth: '100%', boxSizing: 'border-box' }}
+        />
+        <label htmlFor="filtro-tipo-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span>Tipo:</span>
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value)}
-            style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)' }}
-          >
-            <option value="">Todos los tipos</option>
-            {tiposTienda.map((t) => (
-              <option key={t} value={t}>{t}</option>
-            ))}
-          </select>
         </label>
+        <select
+          id="filtro-tipo-tienda"
+          aria-label="Filtrar por tipo"
+          value={filtroTipo}
+          onChange={(e) => setFiltroTipo(e.target.value)}
+          style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+        >
+          <option value="">Todos los tipos</option>
+          {tiposTienda.map((t) => (
+            <option key={t} value={t}>{t}</option>
+          ))}
+        </select>
         {partidas.length > 0 && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span>🎲 Partida:</span>
+          <>
+            <label htmlFor="filtro-partida-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span>🎲 Partida:</span>
+            </label>
             <select
+              id="filtro-partida-tienda"
+              aria-label="Filtrar por partida"
               value={filtroPartida}
               onChange={(e) => setFiltroPartida(e.target.value)}
-              style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)' }}
+              style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
             >
               <option value="">Todas las partidas</option>
               {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
@@ -403,7 +411,7 @@ export default function TiendasPage() {
                 </option>
               ))}
             </select>
-          </label>
+          </>
         )}
         {(busqueda || filtroTipo || filtroPartida) && (
           <button type="button" className="btn-secondary" onClick={() => { setBusqueda(''); setFiltroTipo(''); setFiltroPartida(''); }}>
@@ -519,21 +527,23 @@ export default function TiendasPage() {
 
           {misPersonajes.length > 0 && (
             <div style={{ background: 'var(--bg-card-secondary)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-subtle)' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <label htmlFor="comprar-como-personaje" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span>👤 Comprar como:</span>
-                <select
-                  value={personajeCompradorId}
-                  onChange={(e) => setPersonajeCompradorId(e.target.value ? Number(e.target.value) : '')}
-                  style={{ padding: '0.35rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-h)' }}
-                >
-                  <option value="">Seleccionar personaje...</option>
-                  {misPersonajes.map((pj) => (
-                    <option key={pj.idPersonaje} value={pj.idPersonaje}>
-                      🛡️ {pj.nombreFicticio} (Saldo: ${pj.dinero})
-                    </option>
-                  ))}
-                </select>
               </label>
+              <select
+                id="comprar-como-personaje"
+                aria-label="Comprar como personaje"
+                value={personajeCompradorId}
+                onChange={(e) => setPersonajeCompradorId(e.target.value ? Number(e.target.value) : '')}
+                style={{ padding: '0.35rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+              >
+                <option value="">Seleccionar personaje...</option>
+                {misPersonajes.map((pj) => (
+                  <option key={pj.idPersonaje} value={pj.idPersonaje}>
+                    🛡️ {pj.nombreFicticio} (Saldo: ${pj.dinero})
+                  </option>
+                ))}
+              </select>
             </div>
           )}
 

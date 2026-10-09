@@ -367,9 +367,11 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               ))}
             </select>
           </label>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+          <label htmlFor="input-precio-venta" style={{ display: 'block', marginBottom: '0.5rem' }}>
             Precio de venta
             <input
+              id="input-precio-venta"
+              aria-label="Precio de venta"
               type="number"
               value={price}
               placeholder={selling ? String(selling.valor) : '0'}
