@@ -52,6 +52,7 @@ test('cerrar sesión impide volver a las páginas privadas', async ({ page }) =>
   await registrar(page, 'logout_e2e');
   await ingresar(page, 'logout_e2e');
   await page.getByRole('button', { name: 'Cerrar Sesión', exact: true }).click();
+  await page.locator('.modal-content').getByRole('button', { name: 'Cerrar Sesión' }).click();
   await expect(page).toHaveURL(/\/login$/);
   await page.goto('/games');
   await expect(page).toHaveURL(/\/login$/);
@@ -167,7 +168,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByRole('button', { name: 'Guardar', exact: true }).click();
     const inventoryRow = player.locator('tbody tr').filter({ has: player.locator('td:nth-child(2)', { hasText: /^2$/ }) });
     await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
-    await player.getByLabel('Objeto del personaje', { exact: true }).fill(String(idObjeto));
+    await player.getByRole('combobox', { name: 'Objeto del personaje', exact: true }).selectOption(String(idObjeto));
     await player.getByRole('combobox', { name: /^Posición destino/ }).selectOption('2');
     await player.getByRole('button', { name: 'Mover objeto', exact: true }).click();
     await expect(player.getByRole('heading', { name: 'Detalle', exact: true })).toHaveCount(0);
