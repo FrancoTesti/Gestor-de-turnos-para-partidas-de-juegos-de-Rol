@@ -115,10 +115,10 @@ export default function UsuarioLista({
                 </div>
               )}
 
-              <div className="usuario-datos" style={{ textAlign: 'center', width: '100%' }}>
-                <h3 className="truncate" style={{ maxWidth: '100%', margin: '0.25rem 0' }} title={usuario.nickname}>{usuario.nickname}</h3>
-                <p className="truncate" style={{ maxWidth: '100%', margin: '0.15rem 0' }} title={usuario.nombreUsuario}>{usuario.nombreUsuario}</p>
-                <small className="tabular-nums">Usuario #{usuario.idUsuario}</small>
+              <div className="usuario-datos">
+                <h3>{usuario.nickname}</h3>
+                <p>{usuario.nombreUsuario}</p>
+                <small>Usuario #{usuario.idUsuario}</small>
               </div>
 
               {(onEditar || onEliminar) && (

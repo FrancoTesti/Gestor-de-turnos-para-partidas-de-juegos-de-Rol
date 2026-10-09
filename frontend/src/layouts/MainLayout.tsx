@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import { Alert } from '../components/ui';
@@ -14,22 +14,12 @@ export default function MainLayout() {
   const [mostrarModalLogout, setMostrarModalLogout] = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [prevPath, setPrevPath] = useState(location.pathname);
-  const navRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   if (prevPath !== location.pathname) {
     setPrevPath(location.pathname);
     setOpenDropdown(null);
   }
-
-  useEffect(() => {
-    const handleGlobalKeyDown = (e: globalThis.KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpenDropdown(null);
-      }
-    };
-    window.addEventListener('keydown', handleGlobalKeyDown);
-    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -55,25 +45,8 @@ export default function MainLayout() {
     }
   };
 
-  const toggleDropdown = (key: string) => {
-    setOpenDropdown(prev => (prev === key ? null : key));
-  };
-
-  const closeDropdown = () => {
-    setOpenDropdown(null);
-    if (document.activeElement instanceof HTMLElement) {
-      document.activeElement.blur();
-    }
-  };
-
-  const handleTriggerKeyDown = (key: string, e: KeyboardEvent) => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      toggleDropdown(key);
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      setOpenDropdown(null);
-    }
+  const toggleDropdown = (menu: string) => {
+    setOpenDropdown(prev => (prev === menu ? null : menu));
   };
 
   if (cargandoSesion) return <p role="status">Recuperando sesión…</p>;
@@ -110,7 +83,7 @@ export default function MainLayout() {
 
         <nav className="navbar-menu nav-menu" ref={navRef}>
           <ul className="nav-horizontal">
-            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])} ${openDropdown === 'juego' ? 'is-open open' : ''}`}>
+            <li className={`nav-dropdown ${isActive(['/games', '/sessions', '/missions'])} ${openDropdown === 'juego' ? 'open' : ''}`}>
               <span
                 className="nav-item"
                 role="button"
@@ -118,18 +91,18 @@ export default function MainLayout() {
                 aria-haspopup="true"
                 aria-expanded={openDropdown === 'juego'}
                 onClick={() => toggleDropdown('juego')}
-                onKeyDown={(e) => handleTriggerKeyDown('juego', e)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('juego'); } }}
               >
                 Juego ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/games" onClick={closeDropdown}>Partidas</Link>
-                <Link to="/sessions" onClick={closeDropdown}>Sesiones</Link>
-                <Link to="/missions" onClick={closeDropdown}>Misiones</Link>
+                <Link to="/games" onClick={() => setOpenDropdown(null)}>Partidas</Link>
+                <Link to="/sessions" onClick={() => setOpenDropdown(null)}>Sesiones</Link>
+                <Link to="/missions" onClick={() => setOpenDropdown(null)}>Misiones</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])} ${openDropdown === 'personajes' ? 'is-open' : ''}`}>
+            <li className={`nav-dropdown ${isActive(['/characters', '/inventory'])} ${openDropdown === 'personajes' ? 'open' : ''}`}>
               <span
                 className="nav-item"
                 role="button"
@@ -137,17 +110,17 @@ export default function MainLayout() {
                 aria-haspopup="true"
                 aria-expanded={openDropdown === 'personajes'}
                 onClick={() => toggleDropdown('personajes')}
-                onKeyDown={(e) => handleTriggerKeyDown('personajes', e)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('personajes'); } }}
               >
                 Personajes ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/characters" onClick={closeDropdown}>Personajes</Link>
-                <Link to="/inventory" onClick={closeDropdown}>Inventarios</Link>
+                <Link to="/characters" onClick={() => setOpenDropdown(null)}>Personajes</Link>
+                <Link to="/inventory" onClick={() => setOpenDropdown(null)}>Inventarios</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])} ${openDropdown === 'catalogo' ? 'is-open' : ''}`}>
+            <li className={`nav-dropdown ${isActive(['/classes', '/objects', '/stores'])} ${openDropdown === 'catalogo' ? 'open' : ''}`}>
               <span
                 className="nav-item"
                 role="button"
@@ -155,18 +128,18 @@ export default function MainLayout() {
                 aria-haspopup="true"
                 aria-expanded={openDropdown === 'catalogo'}
                 onClick={() => toggleDropdown('catalogo')}
-                onKeyDown={(e) => handleTriggerKeyDown('catalogo', e)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('catalogo'); } }}
               >
                 Catálogo ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/classes" onClick={closeDropdown}>Clases</Link>
-                <Link to="/objects" onClick={closeDropdown}>Objetos</Link>
-                <Link to="/stores" onClick={closeDropdown}>Tiendas</Link>
+                <Link to="/classes" onClick={() => setOpenDropdown(null)}>Clases</Link>
+                <Link to="/objects" onClick={() => setOpenDropdown(null)}>Objetos</Link>
+                <Link to="/stores" onClick={() => setOpenDropdown(null)}>Tiendas</Link>
               </div>
             </li>
 
-            <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])} ${openDropdown === 'sistema' ? 'is-open' : ''}`}>
+            <li className={`nav-dropdown ${isActive(['/dashboard', '/users', '/profiles'])} ${openDropdown === 'sistema' ? 'open' : ''}`}>
               <span
                 className="nav-item"
                 role="button"
@@ -174,14 +147,14 @@ export default function MainLayout() {
                 aria-haspopup="true"
                 aria-expanded={openDropdown === 'sistema'}
                 onClick={() => toggleDropdown('sistema')}
-                onKeyDown={(e) => handleTriggerKeyDown('sistema', e)}
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown('sistema'); } }}
               >
                 Sistema ▾
               </span>
               <div className="dropdown-content">
-                <Link to="/dashboard" onClick={closeDropdown}>Dashboard</Link>
-                <Link to="/users" onClick={closeDropdown}>Usuarios</Link>
-                <Link to="/profiles" onClick={closeDropdown}>Configuración</Link>
+                <Link to="/dashboard" onClick={() => setOpenDropdown(null)}>Dashboard</Link>
+                <Link to="/users" onClick={() => setOpenDropdown(null)}>Usuarios</Link>
+                <Link to="/profiles" onClick={() => setOpenDropdown(null)}>Mis Perfiles</Link>
               </div>
             </li>
           </ul>

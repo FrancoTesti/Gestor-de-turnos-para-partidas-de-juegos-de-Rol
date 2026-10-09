@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
-import { useTheme, type Theme, type AccentColor } from '../context/ThemeContext';
+import { useTheme, type Theme } from '../context/ThemeContext';
 import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
 import { actualizarUsuario } from '../services/usuario.service';
 import { actualizarJugador, crearJugador, eliminarJugador } from '../services/jugador.service';
@@ -12,7 +12,7 @@ import './ProfilesPage.css';
 // ofrecen acciones sobre cuentas ajenas.
 export default function ProfilesPage() {
   const { usuarioLogueado, jugadores, anfitriones, recargar, logout } = useUser();
-  const { theme, setTheme, accentColor, setAccentColor } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [busy, setBusy] = useState(false);
@@ -56,8 +56,8 @@ export default function ProfilesPage() {
   return (
     <section className="profiles-page">
       <div className="profiles-header">
-        <p className="app-eyebrow">Ajustes del Sistema</p>
-        <h1>Configuración</h1>
+        <p className="app-eyebrow">Ajustes de Cuenta</p>
+        <h1>Mis perfiles</h1>
       </div>
 
       {error && <p className="perfil-error" role="alert">{error}</p>}
@@ -69,10 +69,6 @@ export default function ProfilesPage() {
         <p className="perfil-nota" style={{ marginBottom: '1rem' }}>
           Personalizá el aspecto visual de la aplicación. Los cambios se guardan automáticamente en tu dispositivo.
         </p>
-
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '1.25rem 0 0.5rem', color: 'var(--text-h)' }}>
-          Modo de Iluminación
-        </h3>
         <div className="theme-options-grid">
           {(
             [
@@ -92,54 +88,6 @@ export default function ProfilesPage() {
               {theme === t && <span className="theme-option-check">✓ Activo</span>}
             </button>
           ))}
-        </div>
-
-        <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: '1.75rem 0 0.5rem', color: 'var(--text-h)' }}>
-          Color de Botones y Acentos
-        </h3>
-        <p className="perfil-nota" style={{ marginBottom: '1rem' }}>
-          Elegí el tono característico para botones principales, badges activos y resaltados de combate.
-        </p>
-        <div className="accent-options-grid">
-          {(
-            [
-              ['violet', 'Violeta Arcano (Por defecto)', '#9333ea', 'El clásico tono místico rolero'],
-              ['amber', 'Ámbar Forja', '#f59e0b', 'Dorado forja y pergamino antiguo'],
-              ['emerald', 'Esmeralda Épica', '#10b981', 'Verde runa para aventureros de la naturaleza'],
-              ['blue', 'Azul Hechicero', '#3b82f6', 'Zafiro de maná y control arcano'],
-              ['crimson', 'Carmesí Dragón', '#e11d48', 'Rojo furia de combate y dragones'],
-            ] as [AccentColor, string, string, string][]
-          ).map(([c, label, hex, desc]) => (
-            <button
-              key={c}
-              type="button"
-              className={`accent-option-card ${accentColor === c ? 'active' : ''}`}
-              onClick={() => setAccentColor(c)}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem', marginBottom: '0.35rem' }}>
-                <span
-                  style={{
-                    display: 'inline-block',
-                    width: 14,
-                    height: 14,
-                    borderRadius: '50%',
-                    background: hex,
-                    boxShadow: `0 0 8px ${hex}88`,
-                  }}
-                />
-                <span className="theme-option-title" style={{ margin: 0 }}>{label}</span>
-              </div>
-              <div className="theme-option-desc">{desc}</div>
-              {accentColor === c && <span className="theme-option-check">✓ Activo</span>}
-            </button>
-          ))}
-        </div>
-
-        <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', background: 'var(--bg-card-secondary)', padding: '0.85rem 1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Vista previa del botón:</span>
-          <button type="button" className="btn-primary" style={{ pointerEvents: 'none' }}>
-            ⚔️ Botón de Acción ({accentColor === 'violet' ? 'Violeta' : accentColor === 'amber' ? 'Ámbar' : accentColor === 'emerald' ? 'Esmeralda' : accentColor === 'blue' ? 'Azul' : 'Carmesí'})
-          </button>
         </div>
       </article>
 

@@ -3,17 +3,15 @@ import { render, screen, act, fireEvent } from '@testing-library/react';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 
 function TestConsumer() {
-  const { theme, resolvedTheme, setTheme, toggleTheme, accentColor, setAccentColor } = useTheme();
+  const { theme, resolvedTheme, setTheme, toggleTheme } = useTheme();
   return (
     <div>
       <span data-testid="theme">{theme}</span>
       <span data-testid="resolved">{resolvedTheme}</span>
-      <span data-testid="accent">{accentColor}</span>
       <button onClick={() => setTheme('light')}>Set Light</button>
       <button onClick={() => setTheme('dark')}>Set Dark</button>
       <button onClick={() => setTheme('system')}>Set System</button>
       <button onClick={toggleTheme}>Toggle</button>
-      <button onClick={() => setAccentColor('amber')}>Set Amber</button>
     </div>
   );
 }
@@ -22,7 +20,6 @@ describe('ThemeContext', () => {
   beforeEach(() => {
     localStorage.clear();
     document.documentElement.removeAttribute('data-theme');
-    document.documentElement.removeAttribute('data-accent');
     document.body.className = '';
   });
 
@@ -47,21 +44,6 @@ describe('ThemeContext', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('proporciona el color de acento violeta por defecto y permite cambiarlo', () => {
-    render(
-      <ThemeProvider>
-        <TestConsumer />
-      </ThemeProvider>
-    );
-
-    expect(screen.getByTestId('accent').textContent).toBe('violet');
-    expect(document.documentElement.getAttribute('data-accent')).toBe('violet');
-
-    fireEvent.click(screen.getByText('Set Amber'));
-    expect(screen.getByTestId('accent').textContent).toBe('amber');
-    expect(document.documentElement.getAttribute('data-accent')).toBe('amber');
-  });
-
   it('soporta tema del sistema y actualiza documentElement', () => {
     render(
       <ThemeProvider>
@@ -78,13 +60,11 @@ describe('ThemeContext', () => {
     render(<TestConsumer />);
     expect(screen.getByTestId('theme').textContent).toBe('dark');
     expect(screen.getByTestId('resolved').textContent).toBe('dark');
-    expect(screen.getByTestId('accent').textContent).toBe('violet');
 
-    // Comprobar que setTheme, toggleTheme y setAccentColor no lanzan error
+    // Comprobar que setTheme y toggleTheme no lanzan error
     act(() => {
       screen.getByText('Set Light').click();
       screen.getByText('Toggle').click();
-      screen.getByText('Set Amber').click();
     });
   });
 });

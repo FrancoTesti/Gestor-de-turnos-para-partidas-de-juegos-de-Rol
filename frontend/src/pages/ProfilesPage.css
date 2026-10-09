@@ -87,16 +87,14 @@
 }
 
 /* Theme selector cards inside Profiles */
-.theme-options-grid,
-.accent-options-grid {
+.theme-options-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
   margin-top: 0.5rem;
 }
 
-.theme-option-card,
-.accent-option-card {
+.theme-option-card {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -111,15 +109,13 @@
   width: 100%;
 }
 
-.theme-option-card:hover,
-.accent-option-card:hover {
+.theme-option-card:hover {
   border-color: var(--accent);
   background: var(--bg-card-hover);
   transform: translateY(-2px);
 }
 
-.theme-option-card.active,
-.accent-option-card.active {
+.theme-option-card.active {
   border-color: var(--accent);
   background: var(--accent-bg);
   box-shadow: 0 0 0 1px var(--accent), var(--accent-glow);

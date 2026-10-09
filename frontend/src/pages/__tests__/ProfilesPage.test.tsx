@@ -103,15 +103,4 @@ describe('ProfilesPage', () => {
     expect(screen.getByText('Todavía no tenés perfil de jugador.')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Crear perfil de jugador' })).toBeInTheDocument();
   });
-
-  it('muestra la cabecera de Configuración y permite seleccionar el color de acento', () => {
-    render(<ProfilesPage />);
-
-    expect(screen.getByRole('heading', { level: 1, name: 'Configuración' })).toBeInTheDocument();
-    expect(screen.getByText(/Color de Botones y Acentos/i)).toBeInTheDocument();
-
-    const btnAmbar = screen.getByText(/Ámbar Forja/i);
-    expect(btnAmbar).toBeInTheDocument();
-    fireEvent.click(btnAmbar);
-  });
 });

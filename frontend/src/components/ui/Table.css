@@ -35,16 +35,7 @@
 .table td {
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text);
-  transition: background-color 0.15s ease, color 0.15s ease;
-  font-variant-numeric: tabular-nums;
-}
-
-.table tbody tr {
-  transition: box-shadow 0.15s ease;
-}
-
-.table tbody tr:hover {
-  box-shadow: inset 3px 0 0 var(--accent);
+  transition: background-color 0.15s ease;
 }
 
 .table tbody tr:hover td {
@@ -71,17 +62,13 @@
   font-size: 1.1rem;
   padding: 0.25rem 0.5rem;
   border-radius: var(--radius-sm);
-  transition: all 0.15s ease, transform 0.08s ease;
+  transition: all 0.2s ease;
   color: var(--text);
 }
 
 .btn-icon:hover {
-  transform: scale(1.1);
+  transform: scale(1.15);
   background: var(--bg-card-secondary);
-}
-
-.btn-icon:active {
-  transform: scale(0.97);
 }
 
 .btn-edit:hover {

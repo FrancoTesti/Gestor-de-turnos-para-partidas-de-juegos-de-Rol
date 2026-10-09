@@ -28,7 +28,7 @@
 .module-page select:focus {
   border-color: var(--border-focus);
   background: var(--bg-card);
-  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
 }
 
 .module-page button {
@@ -88,16 +88,7 @@
   border-bottom: 1px solid var(--border-subtle);
   color: var(--text);
   white-space: nowrap;
-  transition: background-color 0.15s ease, color 0.15s ease;
-  font-variant-numeric: tabular-nums;
-}
-
-.module-table tbody tr {
-  transition: box-shadow 0.15s ease, background-color 0.15s ease;
-}
-
-.module-table tbody tr:hover {
-  box-shadow: inset 3px 0 0 var(--accent);
+  transition: background-color 0.15s ease;
 }
 
 .module-table tbody tr:hover td {

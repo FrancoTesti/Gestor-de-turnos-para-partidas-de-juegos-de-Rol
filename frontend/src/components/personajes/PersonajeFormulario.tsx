@@ -282,7 +282,7 @@ export default function PersonajeFormulario({
         </div>
 
         <div className="personaje-acciones">
-          <button type="submit" className="btn-primary" disabled={guardando}>
+          <button type="submit" className="btn-purple" disabled={guardando}>
             {guardando ? 'Guardando...' : esEdicion ? 'Actualizar Personaje' : 'Crear Personaje'}
           </button>
           <button type="button" className="btn-secondary" onClick={onCancelar} disabled={guardando}>

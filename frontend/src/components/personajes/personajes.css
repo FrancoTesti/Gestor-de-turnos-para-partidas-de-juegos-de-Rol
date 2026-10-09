@@ -111,7 +111,7 @@
 }
 
 .personaje-clase-raza {
-  color: var(--accent);
+  color: var(--accent-text, #a855f7);
   font-weight: 600;
   font-size: 0.9rem;
   margin-bottom: 0.85rem;
@@ -136,8 +136,7 @@
 
 .stat-val {
   font-weight: 800;
-  font-variant-numeric: tabular-nums;
-  color: var(--accent);
+  color: var(--accent-text, var(--text-h));
   font-size: 1.1rem;
 }
 

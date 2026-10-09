@@ -83,7 +83,7 @@ export default function PersonajeDetalle({
 
       {onEditar && (
         <div className="personaje-acciones" style={{ marginTop: '1.5rem' }}>
-          <button type="button" className="btn-primary" onClick={() => onEditar(personaje)}>
+          <button type="button" className="btn-purple" onClick={() => onEditar(personaje)}>
             Editar este Personaje
           </button>
         </div>
