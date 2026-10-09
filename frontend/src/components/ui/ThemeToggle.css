@@ -19,13 +19,13 @@
 .theme-toggle-btn:hover {
   background: var(--accent-bg);
   border-color: var(--accent);
-  color: var(--accent-text);
+  color: var(--accent);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
 }
 
 .theme-toggle-btn:active {
-  transform: translateY(0);
+  transform: scale(0.97);
 }
 
 .theme-toggle-icon {

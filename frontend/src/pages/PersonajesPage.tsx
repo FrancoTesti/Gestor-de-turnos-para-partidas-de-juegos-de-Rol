@@ -183,7 +183,7 @@ export default function PersonajesPage() {
           <h1 style={{ margin: '0.25rem 0 0' }}>Personajes</h1>
         </div>
         {!mostrarFormulario && esJugador && (
-          <button type="button" className="btn-purple" onClick={abrirFormularioCrear}>
+          <button type="button" className="btn-primary" onClick={abrirFormularioCrear}>
             + Crear Personaje
           </button>
         )}
@@ -309,7 +309,7 @@ export default function PersonajesPage() {
               </label>
             )}
             <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-              <button type="submit" className="btn-purple" disabled={guardando}>
+              <button type="submit" className="btn-primary" disabled={guardando}>
                 {guardando ? 'Guardando…' : enEdicion ? 'Actualizar' : 'Crear Personaje'}
               </button>
               <button

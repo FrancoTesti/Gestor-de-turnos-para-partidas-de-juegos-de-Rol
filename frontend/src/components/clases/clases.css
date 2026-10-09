@@ -55,7 +55,7 @@
 .clase-icon-badge {
   font-size: 1.8rem;
   background: var(--accent-bg);
-  color: var(--accent-text, #a855f7);
+  color: var(--accent);
   width: 50px;
   height: 50px;
   border-radius: var(--radius-md);
@@ -129,7 +129,7 @@
   outline: none;
   border-color: var(--border-focus);
   background: var(--bg-card);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.2);
 }
 
 .mensaje-error {

@@ -1,12 +1,15 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 
 export type Theme = 'dark' | 'light' | 'system';
+export type AccentColor = 'violet' | 'amber' | 'emerald' | 'blue' | 'crimson';
 
 interface ThemeContextType {
   theme: Theme;
   resolvedTheme: 'dark' | 'light';
   setTheme: (theme: Theme) => void;
   toggleTheme: () => void;
+  accentColor: AccentColor;
+  setAccentColor: (accent: AccentColor) => void;
 }
 
 function getSystemTheme(): 'dark' | 'light' {
@@ -44,6 +47,15 @@ const defaultThemeContext: ThemeContextType = {
       } catch {}
     }
   },
+  accentColor: 'violet',
+  setAccentColor: (a: AccentColor) => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('app-accent', a);
+        document.documentElement.setAttribute('data-accent', a);
+      } catch {}
+    }
+  },
 };
 
 const ThemeContext = createContext<ThemeContextType>(defaultThemeContext);
@@ -59,6 +71,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       } catch {}
     }
     return 'dark'; // Default to dark for RPG app
+  });
+
+  const [accentColor, setAccentColorState] = useState<AccentColor>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('app-accent') as AccentColor | null;
+        if (saved && ['violet', 'amber', 'emerald', 'blue', 'crimson'].includes(saved)) {
+          return saved;
+        }
+      } catch {}
+    }
+    return 'violet'; // Default to violet as requested
   });
 
   const [systemTheme, setSystemTheme] = useState<'dark' | 'light'>(getSystemTheme);
@@ -85,10 +109,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
   }, [resolvedTheme]);
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      document.documentElement.setAttribute('data-accent', accentColor);
+    }
+  }, [accentColor]);
+
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     try {
       localStorage.setItem('app-theme', newTheme);
+    } catch {}
+  };
+
+  const setAccentColor = (newAccent: AccentColor) => {
+    setAccentColorState(newAccent);
+    try {
+      localStorage.setItem('app-accent', newAccent);
     } catch {}
   };
 
@@ -98,7 +135,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme, toggleTheme, accentColor, setAccentColor }}>
       {children}
     </ThemeContext.Provider>
   );

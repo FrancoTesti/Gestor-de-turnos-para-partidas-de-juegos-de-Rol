@@ -148,6 +148,7 @@ export default function SesionesPage() {
               </thead>
               <tbody>
                 {sesiones.map(s => {
+                  const partidaNombre = partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? String(s.idPartida);
                   const misionesSesion = misiones.filter(m => m.idPartida === s.idPartida && m.numSesion === s.numSesion);
                   const misionRealizada = misionesSesion.find(m => m.estado);
                   const oroTotal = misionesSesion.reduce((acc, m) => acc + (m.estado ? m.dineroOtorgadoAJugadores : 0), 0);
@@ -155,11 +156,11 @@ export default function SesionesPage() {
 
                   return (
                     <tr key={`${s.idPartida}-${s.numSesion}`}>
-                      <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>
-                        {partidas.find(p => p.idPartida === s.idPartida)?.nombre ?? s.idPartida}
+                      <td style={{ fontWeight: 600, color: 'var(--text-h)', maxWidth: 200 }} className="truncate" title={partidaNombre}>
+                        {partidaNombre}
                       </td>
-                      <td>#{s.numSesion}</td>
-                      <td>{s.duracionSesion} min</td>
+                      <td className="tabular-nums">#{s.numSesion}</td>
+                      <td className="tabular-nums">{s.duracionSesion} min</td>
                       <td>
                         {misionRealizada ? (
                           <span style={{ fontWeight: 500 }} title={misionRealizada.descripcion}>
@@ -169,24 +170,28 @@ export default function SesionesPage() {
                           <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Sin misión</span>
                         )}
                       </td>
-                      <td>
+                      <td className="tabular-nums">
                         <span style={{ color: 'var(--success-text)', fontWeight: 600 }}>
                           {oroTotal} 🪙
                         </span>
                       </td>
-                      <td>
+                      <td className="tabular-nums">
                         <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
                           {xpTotal} XP
                         </span>
                       </td>
-                      <td>{s.cantJugadores}</td>
+                      <td className="tabular-nums">{s.cantJugadores}</td>
                       <td>
                         {s.estadoSesion === 0 && <span className="badge badge-warning">Planificada</span>}
                         {s.estadoSesion === 1 && <span className="badge badge-info">En Curso</span>}
                         {s.estadoSesion === 2 && <span className="badge badge-success">Finalizada</span>}
                       </td>
                       <td>
-                        <button className="btn-secondary btn-small" onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}>
+                        <button
+                          className="btn-secondary btn-small"
+                          onClick={() => void handleVerDetalle(s.idPartida, s.numSesion)}
+                          aria-label={`Ver detalle de sesión ${s.numSesion} de ${partidaNombre}`}
+                        >
                           Ver detalle
                         </button>
                       </td>
