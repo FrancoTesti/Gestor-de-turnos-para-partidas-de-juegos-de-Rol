@@ -190,6 +190,19 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
   const [price, setPrice] = useState('');
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
+    const [characterObjects, setCharacterObjects] = useState<Row[]>([]);
+    useEffect(() => {
+      let active = true;
+      if (row.idPersonaje) {
+        api<Row[]>('/objetos')
+          .then(list => {
+            if (active) setCharacterObjects(list.filter(o => Number(o.idPersonaje) === Number(row.idPersonaje)));
+          })
+          .catch(() => {});
+      }
+      return () => { active = false; };
+    }, [row.idPersonaje]);
+
     const totalCapacity = Number(row.cantidadEspacio);
     const occupiedPositions = new Set(objects.map(o => Number(o.posicion)));
     const freePositions: number[] = [];
@@ -198,6 +211,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
     }
     const isFull = freePositions.length === 0;
     const selling = objects.find(o => String(o.idObjeto) === object);
+    const moveOptions = characterObjects.length > 0 ? characterObjects : objects;
 
     return (
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
@@ -251,22 +265,23 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
         >
           <h4 style={{ marginTop: 0 }}>Mover objeto a este inventario</h4>
           {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>⚠️ Capacidad insuficiente: Este inventario está lleno.</p>}
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
+          <label htmlFor="select-objeto-mover" style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto del personaje
-            <select
-              required
-              value={object}
-              onChange={e => setObject(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            >
-              <option value="">Seleccionar objeto...</option>
-              {objects.map(o => (
-                <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
-                  {label(o)} (ID: #{String(o.idObjeto)}) — Casillero #{String(o.posicion)}
-                </option>
-              ))}
-            </select>
           </label>
+          <select
+            id="select-objeto-mover"
+            required
+            value={object}
+            onChange={e => setObject(e.target.value)}
+            style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem', marginBottom: '0.5rem' }}
+          >
+            <option value="">Seleccionar objeto...</option>
+            {moveOptions.map(o => (
+              <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
+                {label(o)} (ID: #{String(o.idObjeto)}) — Inv #{String(o.numInventario ?? 1)} Casillero #{String(o.posicion)}
+              </option>
+            ))}
+          </select>
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
             Posición destino (0 a {totalCapacity - 1})
             <select
