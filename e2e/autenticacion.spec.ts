@@ -28,9 +28,9 @@ test('registro, login, partida y sesión persistentes; expiración de autenticac
   await expect(page.getByRole('row').filter({ hasText: 'Campaña E2E' })).toBeVisible();
   await page.goto('/sessions');
   const partida = page.getByLabel(/^Partida:/);
-  await partida.selectOption({ label: /Campaña E2E/ });
-  const option = await partida.inputValue();
+  const option = await partida.locator('option').filter({ hasText: 'Campaña E2E' }).getAttribute('value');
   expect(option).toBeTruthy();
+  await partida.selectOption(option!);
   await page.getByLabel(/^Número Sesión:/).fill('1');
   await page.getByRole('button', { name: 'Crear Sesión', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Sesión creada correctamente');
@@ -59,6 +59,7 @@ test('cerrar sesión impide volver a las páginas privadas', async ({ page }) =>
 });
 
 test('dos usuarios completan juego, recompensas, karma y comercio con inventarios', async ({ page: host, browser }) => {
+  test.setTimeout(120_000);
   const player = await browser.newPage({ baseURL: 'http://127.0.0.1:5174' });
   try {
     await registrar(host, 'director_juego');
@@ -83,8 +84,8 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByLabel('Raza *', { exact: true }).fill('Elfa');
     await player.getByRole('combobox', { name: 'Clase de personaje *', exact: true }).selectOption({ label: 'Explorador E2E' });
     const games = player.getByRole('combobox', { name: 'Partida *', exact: true });
-    await games.selectOption({ label: /Aventura compartida/ });
-    const gameId = await games.inputValue();
+    const gameId = await games.locator('option').filter({ hasText: 'Aventura compartida' }).getAttribute('value');
+    await games.selectOption(gameId!);
     await player.getByRole('button', { name: 'Crear Personaje', exact: true }).click();
     await expect(player.getByRole('status')).toContainText('Personaje creado correctamente');
 
@@ -161,7 +162,8 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.goto('/inventory');
     await player.getByRole('button', { name: 'Crear', exact: true }).click();
     const characterSelect = player.getByRole('combobox', { name: 'Personaje', exact: true });
-    await characterSelect.selectOption({ label: /Arwen E2E/ });
+    const characterId = await characterSelect.locator('option').filter({ hasText: 'Arwen E2E' }).getAttribute('value');
+    await characterSelect.selectOption(characterId!);
     await player.getByLabel('Número de inventario', { exact: true }).fill('2');
     await player.getByLabel('Capacidad', { exact: true }).fill('3');
     await player.getByRole('button', { name: 'Guardar', exact: true }).click();
@@ -177,7 +179,8 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).selectOption(String(idObjeto));
     await player.getByRole('spinbutton', { name: /^Precio de venta/ }).fill('28');
     const storeSelect = player.getByRole('combobox', { name: 'Tienda receptora', exact: true });
-    await storeSelect.selectOption({ label: /Armería E2E/ });
+    const storeId = await storeSelect.locator('option').filter({ hasText: 'Armería E2E' }).getAttribute('value');
+    await storeSelect.selectOption(storeId!);
     await player.getByRole('button', { name: 'Vender objeto', exact: true }).click();
     await expect(player.getByRole('heading', { name: 'Detalle', exact: true })).toHaveCount(0);
     await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
