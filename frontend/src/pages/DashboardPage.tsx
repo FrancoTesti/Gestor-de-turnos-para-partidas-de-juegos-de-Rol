@@ -27,14 +27,15 @@ export default function DashboardPage() {
         <div className="bento-card bento-col-8" style={{ justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
             <div>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em', fontWeight: 600 }}>
-                Sesión Activa
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.75rem', fontWeight: 600, color: 'var(--success-text)', background: 'var(--success-bg)', padding: '0.2rem 0.6rem', borderRadius: '9999px', border: '1px solid var(--success-border)', marginBottom: '0.6rem' }}>
+                <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'var(--success-solid)', boxShadow: '0 0 8px var(--success-solid)' }}></span>
+                Conexión activa
               </span>
-              <h3 style={{ margin: '0.35rem 0 0.25rem', fontSize: '1.4rem', color: 'var(--text-h)' }}>
+              <h3 style={{ margin: '0.1rem 0 0.25rem', fontSize: '1.6rem', fontWeight: 800, color: 'var(--text-h)', letterSpacing: '-0.02em' }}>
                 {usuarioLogueado.nickname}
               </h3>
               <p style={{ margin: 0, fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                Perfil conectado al sistema de rol
+                Panel de control de partidas y personajes
               </p>
             </div>
             <span className={`badge badge-${rol}`}>
@@ -42,7 +43,7 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
             <div style={{ fontSize: '0.85rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>ID Usuario: </span>
               <strong style={{ color: 'var(--text-h)', fontFamily: 'var(--mono)' }}>#{usuarioLogueado.idUsuario}</strong>
