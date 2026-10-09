@@ -1,3 +1,4 @@
+require('dotenv/config');
 require('reflect-metadata');
 const { randomBytes } = require('node:crypto');
 const path = require('node:path');
@@ -8,7 +9,8 @@ const { createApp } = require('../dist/app');
 const { default: config, enEsquema, sslDb } = require('../dist/mikro-orm.config');
 
 module.exports = async function setup() {
-  if (!process.env.TEST_DB_URL) throw new Error('Indicá TEST_DB_URL para habilitar las pruebas E2E con PostgreSQL.');
+  const dbUrl = process.env.TEST_DB_URL || process.env.SUPABASE_DB_URL;
+  if (!dbUrl) throw new Error('Indicá TEST_DB_URL o SUPABASE_DB_URL para habilitar las pruebas E2E con PostgreSQL.');
   // Esquema único por ejecución dentro de la base de TEST_DB_URL; nunca se toca public.
   const schema = `rpg_e2e_${randomBytes(12).toString('hex')}`;
   let connection, orm, server, vite, created = false;
@@ -47,11 +49,11 @@ module.exports = async function setup() {
     }
   };
   try {
-    connection = new Client({ connectionString: process.env.TEST_DB_URL, ssl: sslDb });
+    connection = new Client({ connectionString: dbUrl, ssl: sslDb });
     await connection.connect();
     await connection.query(`CREATE SCHEMA "${schema}"`);
     created = true;
-    orm = await MikroORM.init({ ...config, clientUrl: process.env.TEST_DB_URL, ...enEsquema(schema), debug: false });
+    orm = await MikroORM.init({ ...config, clientUrl: dbUrl, ...enEsquema(schema), debug: false });
     await orm.schema.createSchema();
     process.env.CORS_ORIGIN = 'http://127.0.0.1:5174';
     server = createApp(orm).listen(3101, '127.0.0.1');

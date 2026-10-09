@@ -28,9 +28,9 @@ test('registro, login, partida y sesión persistentes; expiración de autenticac
   await expect(page.getByRole('row').filter({ hasText: 'Campaña E2E' })).toBeVisible();
   await page.goto('/sessions');
   const partida = page.getByLabel(/^Partida:/);
-  const option = await partida.locator('option').filter({ hasText: 'Campaña E2E' }).getAttribute('value');
+  await partida.selectOption({ label: /Campaña E2E/ });
+  const option = await partida.inputValue();
   expect(option).toBeTruthy();
-  await partida.selectOption(option!);
   await page.getByLabel(/^Número Sesión:/).fill('1');
   await page.getByRole('button', { name: 'Crear Sesión', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Sesión creada correctamente');
