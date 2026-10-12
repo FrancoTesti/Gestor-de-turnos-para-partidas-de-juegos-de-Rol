@@ -2,6 +2,7 @@
 El mismo componente sirve para las dos operaciones (igual que UsuarioFormulario). */
 import { useState } from 'react';
 import type { PartidaPublica, CrearPartidaData, EstadoPartida } from '../../services/partida.service';
+import { AvisoModal } from '../ui';
 import './partidas.css';
 
 // tipo del formulario interno (todos string para los inputs)
@@ -49,6 +50,7 @@ function PartidaFormularioBody({
   const [errores, setErrores] = useState<Errores>({});
   const [guardando, setGuardando] = useState(false);
   const [errorServidor, setErrorServidor] = useState<string | null>(null);
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
 
   // actualizamos un campo del form y limpia su error
   function handleChange(campo: keyof PartidaFormData, valor: string | boolean | number) {
@@ -59,7 +61,7 @@ function PartidaFormularioBody({
   }
 
   // validacion del lado del cliente antes de enviar
-  function validar(): boolean {
+  function validar(): { esValido: boolean; errores: Errores } {
     const nuevosErrores: Errores = {};
 
     if (!form.nombre.trim()) {
@@ -71,6 +73,8 @@ function PartidaFormularioBody({
     // limiteJugadores debe ser entero positivo (regla de negocio del plan)
     if (!Number.isInteger(form.limiteJugadores) || form.limiteJugadores <= 0) {
       nuevosErrores.limiteJugadores = 'El límite de jugadores debe ser un número entero positivo.';
+    } else if (form.limiteJugadores > 2147483647) {
+      nuevosErrores.limiteJugadores = 'El límite de jugadores es demasiado grande (máximo 2.147.483.647).';
     }
 
     // REGLA: solo las partidas privadas requieren contraseña
@@ -83,12 +87,17 @@ function PartidaFormularioBody({
     }
 
     setErrores(nuevosErrores);
-    return Object.keys(nuevosErrores).length === 0;
+    return { esValido: Object.keys(nuevosErrores).length === 0, errores: nuevosErrores };
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!validar()) return;
+    const { esValido, errores: errs } = validar();
+    if (!esValido) {
+      const primerError = Object.values(errs)[0];
+      if (primerError) setErrorAvisoModal(primerError);
+      return;
+    }
 
     setGuardando(true);
     try {
@@ -108,8 +117,9 @@ function PartidaFormularioBody({
 
       await onGuardar(datos);
     } catch (error) {
-      // Antes solo se registraba en consola y la pantalla no avisaba nada.
-      setErrorServidor(error instanceof Error ? error.message : 'No se pudo guardar la partida.');
+      const msg = error instanceof Error ? error.message : 'No se pudo guardar la partida.';
+      setErrorServidor(msg);
+      setErrorAvisoModal(msg);
     } finally {
       setGuardando(false);
     }
@@ -145,8 +155,8 @@ function PartidaFormularioBody({
           onChange={(e) => handleChange('estado', e.target.value as EstadoPartida)}
           disabled={guardando}
         >
-          <option value="activa">▶ Activa</option>
-          <option value="finalizada">■ Finalizada</option>
+          <option value="activa">Activa</option>
+          <option value="finalizada">Finalizada</option>
         </select>
       </div>
 
@@ -159,6 +169,7 @@ function PartidaFormularioBody({
           id="limiteJugadores"
           type="number"
           min={1}
+          max={2147483647}
           value={form.limiteJugadores}
           onChange={(e) => handleChange('limiteJugadores', parseInt(e.target.value, 10))}
           disabled={guardando}
@@ -224,6 +235,7 @@ function PartidaFormularioBody({
           Cancelar
         </button>
       </div>
+      <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </form>
   );
 }

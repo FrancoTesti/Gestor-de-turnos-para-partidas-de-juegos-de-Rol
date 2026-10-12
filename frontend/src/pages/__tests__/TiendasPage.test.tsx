@@ -60,7 +60,7 @@ describe('TiendasPage', () => {
 
   it('muestra el listado de tiendas al cargar', async () => {
     render(<TiendasPage />);
-    expect(screen.getByText(/⏳ Cargando tiendas…/i)).toBeInTheDocument();
+    expect(screen.getByText(/Cargando tiendas/i)).toBeInTheDocument();
 
     await waitFor(() => {
       expect(screen.getByText(/Armería Real/i)).toBeInTheDocument();

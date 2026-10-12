@@ -1,12 +1,15 @@
-import { useState, type MouseEvent } from 'react';
+import { useState, useEffect, type MouseEvent } from 'react';
 import type { Personaje, Clase } from '../../interfaces';
+import Loading from '../ui/Loading';
+import { CoinIcon, UserIcon, SwordsIcon, PlusIcon } from '../ui/Icons';
 import './personajes.css';
 
 export interface PersonajeListaProps {
   personajes: Personaje[];
   clases: Clase[];
+  partidas?: Array<{ idPartida: number; nombre: string }>;
   personajeSeleccionadoId?: number | null;
-  onSeleccionar?: (personaje: Personaje) => void;
+  onSeleccionar?: (personaje: Personaje | null) => void;
   onEditar?: (personaje: Personaje) => void;
   onEliminar?: (idPersonaje: number) => void;
   onNuevo?: () => void;
@@ -16,6 +19,7 @@ export interface PersonajeListaProps {
 export default function PersonajeLista({
   personajes,
   clases,
+  partidas = [],
   personajeSeleccionadoId,
   onSeleccionar,
   onEditar,
@@ -28,6 +32,15 @@ export default function PersonajeLista({
   const personajesFiltrados = filtroClase === 'todas'
     ? personajes
     : personajes.filter((p) => p.idClase === filtroClase);
+
+  useEffect(() => {
+    if (
+      personajeSeleccionadoId &&
+      !personajesFiltrados.some((p) => p.idPersonaje === personajeSeleccionadoId)
+    ) {
+      onSeleccionar?.(null);
+    }
+  }, [personajeSeleccionadoId, personajesFiltrados, onSeleccionar]);
 
   function handleEditar(event: MouseEvent<HTMLButtonElement>, personaje: Personaje) {
     event.stopPropagation();
@@ -46,15 +59,18 @@ export default function PersonajeLista({
     return clase ? clase.nombreClase : `Clase #${idClase}`;
   }
 
+  function obtenerNombrePartida(idPartida: number): string {
+    const pt = partidas.find((x) => x.idPartida === idPartida);
+    return pt ? pt.nombre : `Partida #${idPartida}`;
+  }
+
   if (cargando) {
     return (
       <section className="personaje-container">
         <div className="personaje-header">
           <h2>Personajes de Juego</h2>
         </div>
-        <div className="lista-vacia">
-          <span>⏳ Cargando personajes...</span>
-        </div>
+        <Loading message="Cargando personajes..." />
       </section>
     );
   }
@@ -97,8 +113,8 @@ export default function PersonajeLista({
           </div>
 
           {onNuevo && (
-            <button type="button" className="btn-purple" onClick={onNuevo}>
-              + Crear Personaje
+            <button type="button" className="btn-purple" onClick={onNuevo} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.35rem' }}>
+              <PlusIcon size={15} /> Crear Personaje
             </button>
           )}
         </div>
@@ -118,12 +134,13 @@ export default function PersonajeLista({
             const esSeleccionado = personajeSeleccionadoId === p.idPersonaje;
             const nombreClase = (p as any).claseNombre || obtenerNombreClase(p.idClase);
             const jugadorNombre = (p as any).jugadorNombre || `Jugador #${p.idUsuarioJugador}`;
+            const nombrePartida = (p as any).partidaNombre || obtenerNombrePartida(p.idPartida);
 
             return (
               <div
                 key={p.idPersonaje}
                 className={`personaje-card ${esSeleccionado ? 'seleccionado' : ''}`}
-                onClick={() => onSeleccionar?.(p)}
+                onClick={() => onSeleccionar?.(esSeleccionado ? null : p)}
               >
                 <div>
                   <div className="personaje-top">
@@ -145,15 +162,20 @@ export default function PersonajeLista({
                       <span className="stat-lbl">XP</span>
                     </div>
                     <div className="stat-item">
-                      <span className="stat-val">🪙 {p.dinero}</span>
+                      <span className="stat-val" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
+                        <CoinIcon size={16} /> {p.dinero}
+                      </span>
                       <span className="stat-lbl">Dinero</span>
                     </div>
                   </div>
 
                   <div className="personaje-meta">
-                    👤 <strong>Jugador:</strong> {jugadorNombre}
-                    <br />
-                    ⚔️ <strong>Partida ID:</strong> #{p.idPartida}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', marginBottom: '0.25rem' }}>
+                      <UserIcon size={14} /> <span><strong>Jugador:</strong> {jugadorNombre}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <SwordsIcon size={14} /> <span><strong>Partida:</strong> {nombrePartida} <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>(#{p.idPartida})</span></span>
+                    </div>
                   </div>
                 </div>
 

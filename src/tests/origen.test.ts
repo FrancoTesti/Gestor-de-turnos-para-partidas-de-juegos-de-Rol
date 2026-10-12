@@ -46,6 +46,12 @@ describe('origen de las peticiones que modifican datos', () => {
     expect(await postLogin(port, 'http://localhost:5173')).not.toBe(403);
   });
 
+  it('acepta 127.0.0.1:5173 además de localhost:5173', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const port = await levantar();
+    expect(await postLogin(port, 'http://127.0.0.1:5173')).not.toBe(403);
+  });
+
   it('no exige Origin cuando la petición no lo trae (clientes que no son navegador)', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const port = await levantar();

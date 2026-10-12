@@ -105,6 +105,12 @@ export default function ClasesPage() {
       )
     : clases;
 
+  useEffect(() => {
+    if (seleccionada && !clasesFiltradas.some((c) => c.idClase === seleccionada.idClase)) {
+      setSeleccionada(null);
+    }
+  }, [clasesFiltradas, seleccionada]);
+
   return (
     <section style={{ padding: '0.5rem 0' }}>
       <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
@@ -127,12 +133,12 @@ export default function ClasesPage() {
 
       {mensaje && (
         <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
-          ✅ {mensaje}
+          {mensaje}
         </p>
       )}
       {error && (
         <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <span>⚠️ {error}</span>
+          <span>{error}</span>
           {vista === 'listado' && (
             <button type="button" onClick={recargar} className="btn-secondary" style={{ marginLeft: '1rem' }}>
               Reintentar
@@ -154,7 +160,7 @@ export default function ClasesPage() {
         <>
           <div style={{ marginBottom: '1.25rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <label htmlFor="buscarClase" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>🔍 Buscar:</span>
+              <span>Buscar:</span>
               <input
                 id="buscarClase"
                 type="search"
@@ -188,7 +194,7 @@ export default function ClasesPage() {
 
           {seleccionada && (
             <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '520px', boxShadow: 'var(--shadow)' }}>
-              <ClaseDetalle clase={seleccionada} />
+              <ClaseDetalle clase={seleccionada} onVolver={() => setSeleccionada(null)} />
               <button
                 type="button"
                 className="btn-secondary"

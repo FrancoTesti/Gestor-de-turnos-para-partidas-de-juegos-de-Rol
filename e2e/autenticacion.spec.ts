@@ -121,7 +121,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.reload();
     const stats = player.locator('.personaje-card').filter({ hasText: 'Arwen E2E' });
     await expect(stats.locator('.stat-item').filter({ hasText: 'XP' }).locator('.stat-val')).toHaveText('50');
-    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toHaveText('🪙 200');
+    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toContainText('200');
     await host.goto('/sessions');
     await sessionRow.getByRole('button', { name: 'Ver detalle' }).click();
     await host.getByRole('button', { name: 'Finalizar Sesión', exact: true }).click();
@@ -186,7 +186,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
     await expect(player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).locator('option', { hasText: 'Arco E2E' })).toHaveCount(0);
     await player.goto('/characters');
-    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toHaveText('🪙 188');
+    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toContainText('188');
   } finally {
     await player.close();
   }

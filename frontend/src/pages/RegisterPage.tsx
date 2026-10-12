@@ -64,9 +64,8 @@ export default function RegisterPage() {
       </div>
       <main className="auth-page">
         <div className="auth-header">
-          <div className="auth-brand-badge" aria-hidden="true">🛡️</div>
           <h2>Registrarse</h2>
-          <p className="auth-subtitle">Crea tu cuenta de Aventurero o Director de Juego</p>
+          <p className="auth-subtitle">Crea tu cuenta de jugador o anfitrión</p>
         </div>
 
         {error && <Alert type="error" message={error} onClose={() => setError('')} />}

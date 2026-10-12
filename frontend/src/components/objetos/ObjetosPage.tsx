@@ -260,7 +260,7 @@ export default function ObjetosPage() {
                   style={{ marginTop: '0.75rem', width: '100%' }}
                   onClick={() => { setCompraAbierta(false); setVenderAbierto(true); }}
                 >
-                  💰 Vender este objeto
+                  Vender este objeto
                 </button>
               )}
               {seleccionado && compraAbierta && (

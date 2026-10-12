@@ -19,6 +19,8 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Clase, Partida, Personaje, Tienda } from '../interfaces';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
+import Loading from '../components/ui/Loading';
+import { AvisoModal, CoinIcon, CloseIcon } from '../components/ui';
 import { obtenerClases } from '../services/clase.service';
 import {
   actualizarTienda,
@@ -74,6 +76,7 @@ export default function TiendasPage() {
   const [idPartida, setIdPartida] = useState<number | ''>('');
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
 
   // Acciones de compra
   const [personajeCompradorId, setPersonajeCompradorId] = useState<number | ''>('');
@@ -172,7 +175,9 @@ export default function TiendasPage() {
       setMostrarFormulario(false);
       setEnEdicion(null);
     } catch (err) {
-      setErrorForm(mensajeError(err));
+      const msg = mensajeError(err);
+      setErrorForm(msg);
+      setErrorAvisoModal(msg);
     } finally {
       setGuardando(false);
     }
@@ -188,13 +193,17 @@ export default function TiendasPage() {
       if (seleccionada?.idTienda === idTienda) setSeleccionada(null);
       setMensaje('Tienda eliminada.');
     } catch (e) {
-      setError(mensajeError(e));
+      const msg = mensajeError(e);
+      setError(msg);
+      setErrorAvisoModal(msg);
     }
   }
 
   async function handleComprar(idObjeto: number) {
     if (!personajeCompradorId) {
-      setError('Seleccioná un personaje para realizar la compra.');
+      const msg = 'Seleccioná un personaje para realizar la compra.';
+      setError(msg);
+      setErrorAvisoModal(msg);
       return;
     }
     setComprandoId(idObjeto);
@@ -209,7 +218,9 @@ export default function TiendasPage() {
       setMensaje('¡Objeto comprado con éxito!');
       cargar();
     } catch (e) {
-      setError(mensajeError(e));
+      const msg = mensajeError(e);
+      setError(msg);
+      setErrorAvisoModal(msg);
     } finally {
       setComprandoId(null);
     }
@@ -271,12 +282,12 @@ export default function TiendasPage() {
 
       {mensaje && (
         <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
-          ✅ {mensaje}
+          {mensaje}
         </p>
       )}
       {error && (
         <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <span>⚠️ {error}</span>
+          <span>{error}</span>
           <button type="button" onClick={cargar} className="btn-secondary">Reintentar</button>
         </div>
       )}
@@ -286,7 +297,7 @@ export default function TiendasPage() {
           <h2 style={{ marginTop: 0 }}>{enEdicion ? 'Editar Tienda' : 'Nueva Tienda'}</h2>
           {errorForm && (
             <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
-              ⚠️ {errorForm}
+              {errorForm}
             </p>
           )}
           <form onSubmit={(e) => { e.preventDefault(); void handleGuardar(e); }} style={{ display: 'grid', gap: '1rem' }}>
@@ -327,7 +338,7 @@ export default function TiendasPage() {
                 <option value="">Sin partida específica</option>
                 {partidas.map((p) => (
                   <option key={p.idPartida} value={p.idPartida}>
-                    🎲 {p.nombre} (#{p.idPartida})
+                    {p.nombre} (#{p.idPartida})
                   </option>
                 ))}
               </select>
@@ -366,7 +377,7 @@ export default function TiendasPage() {
       {/* Filtros */}
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
         <label htmlFor="filtro-buscar-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span>🔍 Buscar:</span>
+          <span>Buscar:</span>
         </label>
         <input
           id="filtro-buscar-tienda"
@@ -395,7 +406,7 @@ export default function TiendasPage() {
         {partidas.length > 0 && (
           <>
             <label htmlFor="filtro-partida-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span>🎲 Partida:</span>
+              <span>Partida:</span>
             </label>
             <select
               id="filtro-partida-tienda"
@@ -420,7 +431,7 @@ export default function TiendasPage() {
         )}
       </div>
 
-      {cargando && <p role="status" style={{ color: 'var(--text-muted)' }}>⏳ Cargando tiendas…</p>}
+      {cargando && <Loading message="Cargando tiendas..." />}
 
       {!cargando && !error && tiendasFiltradas.length === 0 && (
         <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', padding: '1rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px dashed var(--border)' }}>
@@ -455,14 +466,14 @@ export default function TiendasPage() {
                   onClick={() => setSeleccionada(t)}
                 >
                   <td style={{ color: 'var(--text-muted)' }}>#{t.idTienda}</td>
-                  <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>🏪 {t.nombre}</td>
+                  <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{t.nombre}</td>
                   <td>
                     <span className="badge badge-info">
                       {t.claseTienda}
                     </span>
                   </td>
                   <td style={{ color: 'var(--text)' }}>
-                    {t.idPartida ? `🎲 ${nombrePartida(t.idPartida)}` : '🌐 Global'}
+                    {t.idPartida ? nombrePartida(t.idPartida) : 'Global'}
                   </td>
                   <td style={{ color: 'var(--text)' }}>{nombreClase(t.idClase)}</td>
                   <td>
@@ -505,9 +516,9 @@ export default function TiendasPage() {
       {seleccionada && (
         <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', maxWidth: '680px', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ marginTop: 0 }}>🏪 Tienda #{seleccionada.idTienda}: {seleccionada.nombre}</h3>
-            <button type="button" className="btn-secondary" onClick={() => setSeleccionada(null)}>
-              ✕ Cerrar
+            <h3 style={{ marginTop: 0 }}>Tienda #{seleccionada.idTienda}: {seleccionada.nombre}</h3>
+            <button type="button" className="btn-secondary" onClick={() => setSeleccionada(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+              <CloseIcon size={14} /> Cerrar
             </button>
           </div>
           <dl style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '0.75rem', margin: '1rem 0' }}>
@@ -519,7 +530,7 @@ export default function TiendasPage() {
           <hr style={{ borderColor: 'var(--border-subtle)', margin: '1.25rem 0' }} />
 
           <h4 style={{ margin: '0 0 0.5rem 0', color: 'var(--text-h)' }}>
-            📦 Catálogo de Objetos ({objetosDeTienda.length})
+            Catálogo de Objetos ({objetosDeTienda.length})
           </h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
             Venta según tipo de tienda ({seleccionada.claseTienda}). Los objetos únicos solo pueden existir en un lugar por partida (en tienda o en inventario).
@@ -528,7 +539,7 @@ export default function TiendasPage() {
           {misPersonajes.length > 0 && (
             <div style={{ background: 'var(--bg-card-secondary)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-subtle)' }}>
               <label htmlFor="comprar-como-personaje" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>👤 Comprar como:</span>
+                <span>Comprar como:</span>
               </label>
               <select
                 id="comprar-como-personaje"
@@ -540,7 +551,7 @@ export default function TiendasPage() {
                 <option value="">Seleccionar personaje...</option>
                 {misPersonajes.map((pj) => (
                   <option key={pj.idPersonaje} value={pj.idPersonaje}>
-                    🛡️ {pj.nombreFicticio} (Saldo: ${pj.dinero})
+                    {pj.nombreFicticio} (Saldo: ${pj.dinero})
                   </option>
                 ))}
               </select>
@@ -578,7 +589,7 @@ export default function TiendasPage() {
                         <strong style={{ color: 'var(--text-h)' }}>{obj.nombre}</strong>
                         {obj.esUnico && (
                           <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(168, 85, 247, 0.2)', color: 'var(--accent, #a855f7)', fontWeight: 700 }}>
-                            ⭐ Único
+                            Único
                           </span>
                         )}
                         <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
@@ -592,11 +603,11 @@ export default function TiendasPage() {
                         <p style={{ margin: '0.2rem 0', fontSize: '0.8rem', fontWeight: 600 }}>
                           {countEnInventarios === 1 ? (
                             <span style={{ color: 'var(--error-text)' }}>
-                              🔒 No se puede vender — En posesión de {pjDueno?.nombreFicticio} (Inventario #{obj.numInventario ?? 1})
+                              No se puede vender — En posesión de {pjDueno?.nombreFicticio} (Inventario #{obj.numInventario ?? 1})
                             </span>
                           ) : (
                             <span style={{ color: 'var(--success-text)' }}>
-                              ✨ Se puede vender — Disponible en tienda (COUNT = 0)
+                              Se puede vender — Disponible en tienda (COUNT = 0)
                             </span>
                           )}
                         </p>
@@ -604,8 +615,8 @@ export default function TiendasPage() {
                     </div>
 
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--accent-text)', fontSize: '1rem' }}>
-                        ${obj.valor}
+                      <span style={{ fontWeight: 700, color: 'var(--accent-text)', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                        <CoinIcon size={14} /> {obj.valor}
                       </span>
                       <button
                         type="button"
@@ -628,6 +639,8 @@ export default function TiendasPage() {
           )}
         </aside>
       )}
+
+      <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </section>
   );
 }

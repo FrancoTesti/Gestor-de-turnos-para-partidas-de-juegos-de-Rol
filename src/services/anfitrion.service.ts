@@ -31,7 +31,7 @@ export class AnfitrionService {
   // trae todos los anfitriones con los datos de su Usuario
   async obtenerTodos(): Promise<AnfitrionPublicoDTO[]> {
     const anfitriones = await this.em.find(Anfitrion, {}, { populate: ['usuario'] });
-    return Promise.all(anfitriones.map((a) => this.aAnfitrionPublico(a)));
+    return Promise.all(anfitriones.filter((a) => !!a.usuario).map((a) => this.aAnfitrionPublico(a)));
   }
 
   // busca un anfitrion por el idUsuario

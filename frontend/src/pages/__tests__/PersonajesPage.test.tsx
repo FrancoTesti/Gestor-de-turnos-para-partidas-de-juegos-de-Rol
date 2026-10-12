@@ -153,4 +153,20 @@ describe('PersonajesPage', () => {
       expect(screen.getByText(/Personaje creado correctamente/i)).toBeInTheDocument();
     });
   });
+
+  it('deselecciona y cierra la ficha de personaje al filtrar por una clase diferente', async () => {
+    render(<PersonajesPage />);
+    await waitFor(() => expect(screen.getByText('Thorin')).toBeInTheDocument());
+
+    // Seleccionamos Thorin (Guerrero, idClase: 1)
+    fireEvent.click(screen.getByText('Thorin'));
+    expect(screen.getByText('Ficha de Personaje #1')).toBeInTheDocument();
+
+    // Filtramos por Mago (idClase: 2)
+    const selectFiltro = screen.getByLabelText(/Filtrar por Clase:/i);
+    fireEvent.change(selectFiltro, { target: { value: '2' } });
+
+    // La ficha de Thorin debe cerrarse automáticamente
+    expect(screen.queryByText('Ficha de Personaje #1')).not.toBeInTheDocument();
+  });
 });

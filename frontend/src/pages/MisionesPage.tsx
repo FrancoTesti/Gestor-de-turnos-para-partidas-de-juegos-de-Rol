@@ -9,9 +9,35 @@ import type { SesionDetalleDTO } from '../services/sesion.service';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
 import Modal from '../components/ui/Modal';
+import { AvisoModal, CoinIcon, ZapIcon, CloseIcon } from '../components/ui';
 
 function mensajeError(e: unknown): string {
   return e instanceof Error ? e.message : 'No se pudo completar la operación';
+}
+
+function formatearErrorMision(mensaje: string): string {
+  if (/(idPartida|numSesion).*Too small/i.test(mensaje) || /(idPartida|numSesion).*>0/i.test(mensaje) || /sesión.*(válida|curso)/i.test(mensaje)) {
+    return 'Debes seleccionar una sesión en curso para crear la misión.';
+  }
+  if (/numMision.*(Too big|demasiado grande|2147483647)/i.test(mensaje)) {
+    return 'El número de misión es demasiado grande. Debe ser un número entero menor o igual a 2.147.483.647.';
+  }
+  if (/numMision.*(Too small|>0|mayor a 0)/i.test(mensaje)) {
+    return 'El número de misión debe ser un número entero mayor a 0.';
+  }
+  if (/descripcion.*(Too small|required|vacía)/i.test(mensaje)) {
+    return 'Debes ingresar una descripción para la misión.';
+  }
+  if (/(dineroTotal|xpTotal).*(Too big|demasiado grande)/i.test(mensaje)) {
+    return 'El monto de recompensa es demasiado grande (máximo 2.147.483.647).';
+  }
+  if (/Ese número de misión ya existe/i.test(mensaje) || /ya existe/i.test(mensaje)) {
+    return 'Ese número de misión ya existe en esta sesión. Elegí otro número de misión.';
+  }
+  if (/La sesión está finalizada/i.test(mensaje) || /finalizada/i.test(mensaje)) {
+    return 'No se pueden crear ni modificar misiones en una sesión que ya fue finalizada.';
+  }
+  return mensaje;
 }
 
 export default function MisionesPage() {
@@ -30,12 +56,13 @@ export default function MisionesPage() {
     return '';
   });
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
   const [aviso, setAviso] = useState('');
   const [revision, setRevision] = useState(0);
   
   const estadoInicialMision = { idPartida: '', numSesion: '', numMision: '', descripcion: '', dineroTotal: 0, xpTotal: 0, asistenciaGrupoGrande: 0 };
   const [nuevaMision, setNuevaMision] = useState(estadoInicialMision);
+  const [errorFormulario, setErrorFormulario] = useState('');
   const [editando, setEditando] = useState(false);
   const [misionAEliminar, setMisionAEliminar] = useState<Mision | null>(null);
 
@@ -59,41 +86,92 @@ export default function MisionesPage() {
           setPersonajes(pjs);
         }
       })
-      .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
+      .catch((e: unknown) => { if (activo) setErrorAvisoModal(mensajeError(e)); })
       .finally(() => { if (activo) setLoading(false); });
     return () => { activo = false; };
   }, [revision]);
 
   function recargar() {
     setLoading(true);
-    setError('');
+    setErrorFormulario('');
+    setErrorAvisoModal(null);
     setRevision(value => value + 1);
   }
 
   const handleCrearOActualizar = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorFormulario('');
+    setAviso('');
+
+    const idPartidaNum = Number(nuevaMision.idPartida);
+    const numSesionNum = Number(nuevaMision.numSesion);
+
+    if (!nuevaMision.idPartida || !nuevaMision.numSesion || !idPartidaNum || !numSesionNum || idPartidaNum <= 0 || numSesionNum <= 0) {
+      const msg = 'Debes seleccionar una sesión en curso para crear la misión.';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    const numMisionNum = Number(nuevaMision.numMision);
+    if (!nuevaMision.numMision || isNaN(numMisionNum) || !Number.isInteger(numMisionNum) || numMisionNum <= 0) {
+      const msg = 'El número de misión debe ser un número entero mayor a 0.';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    if (numMisionNum > 2147483647) {
+      const msg = 'El número de misión es demasiado grande. Debe ser un número entero entre 1 y 2.147.483.647.';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    if (!nuevaMision.descripcion.trim()) {
+      const msg = 'Debes ingresar una descripción para la misión.';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    const dineroNum = Number(nuevaMision.dineroTotal);
+    if (isNaN(dineroNum) || !Number.isInteger(dineroNum) || dineroNum < 0 || dineroNum > 2147483647) {
+      const msg = 'El dinero total debe ser un valor entero positivo (máximo 2.147.483.647).';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    const xpNum = Number(nuevaMision.xpTotal);
+    if (isNaN(xpNum) || !Number.isInteger(xpNum) || xpNum < 0 || xpNum > 2147483647) {
+      const msg = 'El XP total debe ser un valor entero positivo (máximo 2.147.483.647).';
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
     try {
-      setError('');
       if (editando) {
         await actualizarMision(
-          Number(nuevaMision.idPartida),
-          Number(nuevaMision.numSesion),
-          Number(nuevaMision.numMision),
+          idPartidaNum,
+          numSesionNum,
+          numMisionNum,
           {
-            descripcion: nuevaMision.descripcion,
-            dineroTotal: Number(nuevaMision.dineroTotal),
-            xpTotal: Number(nuevaMision.xpTotal),
+            descripcion: nuevaMision.descripcion.trim(),
+            dineroTotal: dineroNum,
+            xpTotal: xpNum,
             asistenciaGrupoGrande: Number(nuevaMision.asistenciaGrupoGrande)
           }
         );
       } else {
         await crearMision({
-          idPartida: Number(nuevaMision.idPartida),
-          numSesion: Number(nuevaMision.numSesion),
-          numMision: Number(nuevaMision.numMision),
-          descripcion: nuevaMision.descripcion,
-          dineroTotal: Number(nuevaMision.dineroTotal),
-          xpTotal: Number(nuevaMision.xpTotal),
+          idPartida: idPartidaNum,
+          numSesion: numSesionNum,
+          numMision: numMisionNum,
+          descripcion: nuevaMision.descripcion.trim(),
+          dineroTotal: dineroNum,
+          xpTotal: xpNum,
           asistenciaGrupoGrande: Number(nuevaMision.asistenciaGrupoGrande)
         });
       }
@@ -102,11 +180,14 @@ export default function MisionesPage() {
       setNuevaMision(estadoInicialMision);
       setEditando(false);
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      const msg = formatearErrorMision(mensajeError(e));
+      setErrorFormulario(msg);
+      setErrorAvisoModal(msg);
     }
   };
 
   const handleEditar = (m: Mision) => {
+    setErrorFormulario('');
     setNuevaMision({
       idPartida: String(m.idPartida),
       numSesion: String(m.numSesion),
@@ -126,12 +207,11 @@ export default function MisionesPage() {
   const confirmarEliminacion = async () => {
     if (!misionAEliminar) return;
     try {
-      setError('');
       await eliminarMision(misionAEliminar.idPartida, misionAEliminar.numSesion, misionAEliminar.numMision);
       recargar();
       setAviso('Misión eliminada.');
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     } finally {
       setMisionAEliminar(null);
     }
@@ -140,12 +220,11 @@ export default function MisionesPage() {
   const handleSeleccionar = async (mision: Mision) => {
     setSelectedMision(mision);
     try {
-      setError('');
       const sesionDetalle = await obtenerSesion(mision.idPartida, mision.numSesion);
       setParticipantes(sesionDetalle.participantes ?? []);
       setRecompensas((sesionDetalle.participantes ?? []).map(p => ({ idPersonaje: p.idPersonaje, dinero: 0, xp: 0 })));
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
@@ -156,13 +235,12 @@ export default function MisionesPage() {
   const handleCompletar = async () => {
     if (!selectedMision) return;
     try {
-      setError('');
       await completarMision(selectedMision.idPartida, selectedMision.numSesion, selectedMision.numMision, recompensas);
       recargar();
       setAviso('Misión completada y recompensas acreditadas.');
       setSelectedMision(null);
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
@@ -202,13 +280,12 @@ export default function MisionesPage() {
         <h1>Gestión de Misiones</h1>
       </div>
       
-      {error && <Alert type="error" message={error} onClose={() => setError('')} />}
       {aviso && <p role="status" className="mensaje-exito">{aviso}</p>}
 
       {/* Selector de Partida */}
       <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem', background: 'var(--bg-card)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', boxSizing: 'border-box', width: '100%' }}>
         <label htmlFor="filtro-partida-misiones" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 600 }}>
-          <span>🎲 Partida:</span>
+          <span>Partida:</span>
         </label>
         <select
           id="filtro-partida-misiones"
@@ -258,7 +335,15 @@ export default function MisionesPage() {
                     <td>S{m.numSesion}</td>
                     <td>M{m.numMision}</td>
                     <td>{m.descripcion}</td>
-                    <td style={{ fontWeight: 600, color: 'var(--accent-text)' }}>${m.dineroTotal} | {m.xpTotal}XP</td>
+                    <td style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--success-text)' }}>
+                        <CoinIcon size={14} /> {m.dineroTotal}
+                      </span>
+                      {' | '}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--accent-text)' }}>
+                        <ZapIcon size={14} /> {m.xpTotal} XP
+                      </span>
+                    </td>
                     <td>
                       {m.estado ? (
                         <span className="badge badge-success">Completada</span>
@@ -271,7 +356,9 @@ export default function MisionesPage() {
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
                           <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
-                          <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)}>X</button>
+                          <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)} aria-label="Eliminar misión" title="Eliminar misión">
+                            <CloseIcon size={13} />
+                          </button>
                         </div>
                       )}
                     </td>
@@ -286,11 +373,21 @@ export default function MisionesPage() {
               <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form">
                 <h3 style={{ marginTop: 0 }}>{editando ? 'Editar Misión' : 'Crear Misión'}</h3>
                 <label>Sesión en Curso:
-                  <select required disabled={editando} value={`${nuevaMision.idPartida}-${nuevaMision.numSesion}`} onChange={e => {
-                    const [p, s] = e.target.value.split('-');
-                    setNuevaMision({ ...nuevaMision, idPartida: p, numSesion: s });
-                  }}>
-                    <option value="-">Seleccionar...</option>
+                  <select
+                    required
+                    disabled={editando}
+                    value={nuevaMision.idPartida && nuevaMision.numSesion ? `${nuevaMision.idPartida}-${nuevaMision.numSesion}` : ''}
+                    onChange={e => {
+                      setErrorFormulario('');
+                      if (!e.target.value) {
+                        setNuevaMision({ ...nuevaMision, idPartida: '', numSesion: '' });
+                      } else {
+                        const [p, s] = e.target.value.split('-');
+                        setNuevaMision({ ...nuevaMision, idPartida: p, numSesion: s });
+                      }
+                    }}
+                  >
+                    <option value="">Seleccionar...</option>
                     {sesiones.filter(s => s.estadoSesion === 1 || editando).map(s => (
                       <option key={`${s.idPartida}-${s.numSesion}`} value={`${s.idPartida}-${s.numSesion}`}>
                         Partida {partidas.find(p => p.idPartida === s.idPartida)?.nombre} - S{s.numSesion}
@@ -299,19 +396,65 @@ export default function MisionesPage() {
                   </select>
                 </label>
                 <label>Número Misión:
-                  <input type="number" min="1" disabled={editando} required value={nuevaMision.numMision} onChange={e => setNuevaMision({ ...nuevaMision, numMision: e.target.value })} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="2147483647"
+                    disabled={editando}
+                    required
+                    value={nuevaMision.numMision}
+                    onChange={e => { setNuevaMision({ ...nuevaMision, numMision: e.target.value }); setErrorFormulario(''); }}
+                  />
                 </label>
                 <label>Descripción:
-                  <input type="text" required value={nuevaMision.descripcion} onChange={e => setNuevaMision({ ...nuevaMision, descripcion: e.target.value })} />
+                  <input
+                    type="text"
+                    required
+                    value={nuevaMision.descripcion}
+                    onChange={e => { setNuevaMision({ ...nuevaMision, descripcion: e.target.value }); setErrorFormulario(''); }}
+                  />
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <label>Dinero Total: <input type="number" min="0" required value={nuevaMision.dineroTotal} onChange={e => setNuevaMision({ ...nuevaMision, dineroTotal: Number(e.target.value) })} /></label>
-                  <label>XP Total: <input type="number" min="0" required value={nuevaMision.xpTotal} onChange={e => setNuevaMision({ ...nuevaMision, xpTotal: Number(e.target.value) })} /></label>
+                  <label>
+                    Dinero Total:
+                    <input
+                      type="number"
+                      min="0"
+                      max="2147483647"
+                      required
+                      value={nuevaMision.dineroTotal}
+                      onChange={e => { setNuevaMision({ ...nuevaMision, dineroTotal: Number(e.target.value) }); setErrorFormulario(''); }}
+                    />
+                  </label>
+                  <label>
+                    XP Total:
+                    <input
+                      type="number"
+                      min="0"
+                      max="2147483647"
+                      required
+                      value={nuevaMision.xpTotal}
+                      onChange={e => { setNuevaMision({ ...nuevaMision, xpTotal: Number(e.target.value) }); setErrorFormulario(''); }}
+                    />
+                  </label>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem', marginTop: '1rem' }}>
                   <button type="submit" className="btn-primary">{editando ? 'Guardar Cambios' : 'Crear Misión'}</button>
-                  {editando && <button type="button" className="btn-secondary" onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); }}>Cancelar</button>}
+                  {editando && (
+                    <button
+                      type="button"
+                      className="btn-secondary"
+                      onClick={() => { setEditando(false); setNuevaMision(estadoInicialMision); setErrorFormulario(''); }}
+                    >
+                      Cancelar
+                    </button>
+                  )}
                 </div>
+                {errorFormulario && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <Alert type="warning" message={errorFormulario} onClose={() => setErrorFormulario('')} />
+                  </div>
+                )}
               </form>
             </div>
           )}
@@ -322,8 +465,13 @@ export default function MisionesPage() {
             <h2 style={{ marginTop: 0 }}>Completar Misión {selectedMision.numMision}</h2>
             <p style={{ color: 'var(--text)' }}>
               <strong>A Repartir:</strong>{' '}
-              <span style={{ color: 'var(--success-text)', fontWeight: 700 }}>{selectedMision.dineroTotal} Monedas</span> |{' '}
-              <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>{selectedMision.xpTotal} Experiencia</span>
+              <span style={{ color: 'var(--success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                <CoinIcon size={14} /> {selectedMision.dineroTotal} Monedas
+              </span>{' '}
+              |{' '}
+              <span style={{ color: 'var(--accent-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                <ZapIcon size={14} /> {selectedMision.xpTotal} Experiencia
+              </span>
             </p>
             <hr />
             
@@ -332,8 +480,14 @@ export default function MisionesPage() {
               return (
                 <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong style={{ minWidth: '110px', color: 'var(--text-h)' }}>{p.nombre}</strong>
-                  <label style={{ margin: 0 }}>$$: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} /></label>
-                  <label style={{ margin: 0 }}>XP: <input type="number" min="0" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} /></label>
+                  <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <CoinIcon size={13} /> $$:
+                    <input aria-label="$$:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
+                  </label>
+                  <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <ZapIcon size={13} /> XP:
+                    <input aria-label="XP:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
+                  </label>
                 </div>
               );
             })}
@@ -342,7 +496,7 @@ export default function MisionesPage() {
               <p style={{ margin: 0, fontWeight: 600, color: esCorrecto ? 'var(--success-text)' : 'var(--error-text)' }}>
                 Sumas actuales: Dinero ({sumaDinero}) | XP ({sumaXp})
               </p>
-              {!esCorrecto && <p style={{ color: 'var(--error-text)', margin: '0.35rem 0 0', fontSize: '0.85rem' }}>⚠️ El reparto debe coincidir **exactamente** con los totales de la misión.</p>}
+              {!esCorrecto && <p style={{ color: 'var(--error-text)', margin: '0.35rem 0 0', fontSize: '0.85rem' }}>El reparto debe coincidir exactamente con los totales de la misión.</p>}
             </div>
 
             <button className="btn-primary" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%' }}>
@@ -363,6 +517,8 @@ export default function MisionesPage() {
         onCancel={() => setMisionAEliminar(null)}
         type="confirm"
       />
+
+      <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </div>
   );
 }

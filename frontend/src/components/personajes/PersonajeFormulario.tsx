@@ -6,6 +6,7 @@ import type { JugadorExtendido } from '../../services/jugador.service';
 import { obtenerJugadores } from '../../services/jugador.service';
 import { obtenerPartidas } from '../../services/partida.service';
 import { obtenerClases } from '../../services/clase.service';
+import Loading from '../ui/Loading';
 import './personajes.css';
 
 export interface PersonajeFormularioProps {
@@ -130,7 +131,7 @@ export default function PersonajeFormulario({
       <h3>{esEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje (Caso de Uso)'}</h3>
 
       {error && <div className="mensaje-error">{error}</div>}
-      {cargandoRef && <div style={{ marginBottom: '1rem', color: 'var(--text-muted)' }}>Cargando clases, jugadores y partidas...</div>}
+      {cargandoRef && <Loading message="Cargando clases, jugadores y partidas..." />}
 
       <form onSubmit={handleSubmit}>
         <div className="form-grid-2">

@@ -1,6 +1,31 @@
-import type { KeyboardEvent, MouseEvent } from 'react';
+import { useState, type KeyboardEvent, type MouseEvent } from 'react';
 import type { Usuario } from '../../interfaces';
+import Loading from '../ui/Loading';
 import './usuarios.css';
+
+function AvatarUsuario({ imagen, nickname }: { imagen?: string; nickname: string }) {
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
+  const urlLimpia = imagen?.trim() || '';
+  const fallo = Boolean(urlLimpia && errorUrl === urlLimpia);
+  const inicial = nickname?.trim() ? nickname.trim().charAt(0).toUpperCase() : '?';
+
+  if (!urlLimpia || fallo) {
+    return (
+      <div className="usuario-imagen usuario-imagen-vacia" aria-hidden="true">
+        {inicial}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      className="usuario-imagen"
+      src={urlLimpia}
+      alt={inicial}
+      onError={() => setErrorUrl(urlLimpia)}
+    />
+  );
+}
 
 export interface UsuarioListaProps {
   usuarios: Usuario[];
@@ -49,14 +74,7 @@ export default function UsuarioLista({
     return (
       <section className="usuario-lista-container">
         <h2>Listado de usuarios</h2>
-
-        <div className="estado-cargando" role="status">
-          <span className="spinner" aria-hidden="true">
-            ⏳
-          </span>
-
-          <span>Cargando usuarios...</span>
-        </div>
+        <Loading message="Cargando usuarios..." />
       </section>
     );
   }
@@ -100,24 +118,11 @@ export default function UsuarioLista({
                 onSeleccionar ? esSeleccionado : undefined
               }
             >
-              {usuario.imagen ? (
-                <img
-                  className="usuario-imagen"
-                  src={usuario.imagen}
-                  alt={usuario.nickname.charAt(0).toUpperCase()}
-                />
-              ) : (
-                <div
-                  className="usuario-imagen usuario-imagen-vacia"
-                  aria-hidden="true"
-                >
-                  {usuario.nickname.charAt(0).toUpperCase()}
-                </div>
-              )}
+              <AvatarUsuario imagen={usuario.imagen} nickname={usuario.nickname} />
 
               <div className="usuario-datos">
-                <h3>{usuario.nickname}</h3>
-                <p>{usuario.nombreUsuario}</p>
+                <h3 title={usuario.nickname}>{usuario.nickname}</h3>
+                <p title={usuario.nombreUsuario}>{usuario.nombreUsuario}</p>
                 <small>Usuario #{usuario.idUsuario}</small>
               </div>
 

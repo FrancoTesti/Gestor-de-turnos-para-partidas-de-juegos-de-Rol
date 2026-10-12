@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
+import Loading from '../components/ui/Loading';
+import { AvisoModal, TrendingUpIcon } from '../components/ui';
 import './ModulePage.css';
 
 type Row = Record<string, unknown>;
@@ -31,6 +33,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const [editing, setEditing] = useState(false);
   const [values, setValues] = useState<Row>({});
   const [error, setError] = useState('');
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [search, setSearch] = useState('');
@@ -53,7 +56,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     let active = true;
     Promise.all([api<Row[]>(`/${resource}`), ...['clases', 'partidas', 'personajes', 'tiendas'].map(r => api<Row[]>(`/${r}`))])
       .then(([list, classes, games, characters, stores]) => { if (active) { setRows(list); setRefs({ clases: classes, partidas: games, personajes: characters, tiendas: stores }); } })
-      .catch(e => { if (active) setError(e.message); }).finally(() => { if (active) setLoading(false); });
+      .catch(e => { if (active) { const msg = e.message; setError(msg); setErrorAvisoModal(msg); } }).finally(() => { if (active) setLoading(false); });
     return () => { active = false; };
   }, [resource, revision]);
   const allowed = (r?: Row) => {
@@ -68,7 +71,11 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const perform = async (work: () => Promise<unknown>) => {
     setBusy(true); setError('');
     try { await work(); setEditing(false); setSelected(null); setLoading(true); setRevision(n => n + 1); }
-    catch (e) { setError(e instanceof Error ? e.message : 'No se pudo completar la operación'); }
+    catch (e) {
+      const msg = e instanceof Error ? e.message : 'No se pudo completar la operación';
+      setError(msg);
+      setErrorAvisoModal(msg);
+    }
     finally { setBusy(false); }
   };
   const save = () => perform(async () => {
@@ -84,11 +91,33 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     if (resource === 'personajes' && !selected) data.idUsuarioJugador = userId;
     await api(selected ? url(selected) : `/${resource}`, selected ? 'PUT' : 'POST', data);
   });
-  const detail = async (r: Row) => { setError(''); try { setSelected(await api<Row>(url(r))); } catch (e) { setError((e as Error).message); } };
+  const detail = async (r: Row) => {
+    setError('');
+    try { setSelected(await api<Row>(url(r))); }
+    catch (e) {
+      const msg = (e as Error).message;
+      setError(msg);
+      setErrorAvisoModal(msg);
+    }
+  };
   const filtered = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
     let res = rows.filter(r => {
-      const matchesSearch = !term || Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
+      let matchesSearch = true;
+      if (term) {
+        if (resource === 'partidas') {
+          const cleanIdTerm = term.replace(/^(#|id\s*|partida\s*)/i, '').trim();
+          if (/^\d+$/.test(cleanIdTerm)) {
+            matchesSearch = String(r.idPartida) === cleanIdTerm || String(r.idPartida).startsWith(cleanIdTerm);
+          } else {
+            const nombre = String(r.nombre ?? '').toLowerCase();
+            const anfitrion = String(r.nicknameAnfitrion ?? '').toLowerCase();
+            matchesSearch = nombre.includes(term) || anfitrion.includes(term) || String(r.idPartida).includes(term);
+          }
+        } else {
+          matchesSearch = Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
+        }
+      }
       const matchesClass = !classFilter || String(r.idClase) === classFilter;
       const matchesActive = !activeOnly || r.estado === 'activa';
       const matchesMisPartidas = !soloMisPartidas || resource !== 'partidas' || estaInscripto(r);
@@ -119,19 +148,41 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     return res;
   }, [rows, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
   const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
+  const columnLabel = (key: string): string => {
+    if (key === 'nicknameAnfitrion') return 'Nickname Anfitrión';
+    if (key === 'jugadorNombre') return 'Nombre del Jugador';
+    if (key === 'idPartida') return 'Id de Partida';
+    if (key === 'idPersonaje') return 'Id de Personaje';
+    if (key === 'idClase') return 'Id de Clase';
+    if (key === 'idTienda') return 'Id de Tienda';
+    if (key === 'numInventario') return 'Núm. Inventario';
+    if (key === 'xp') return 'XP';
+    if (key === 'nivel') return 'Nivel';
+    if (key === 'dinero') return 'Dinero';
+    return config.fields.find(f => f.key === key)?.label ?? key;
+  };
   const display = (r: Row, key: string) => {
     const f = config.fields.find(f => f.key === key);
     const referenced = f?.ref && refs[f.ref]?.find(x => x[idKeys[f.ref!]] === r[key]);
     if (referenced) return `${r[key]} — ${label(referenced)}`;
     if (key === 'estadoSesion') return ['Planificada', 'En curso', 'Finalizada'][Number(r[key])] ?? String(r[key]);
+    if (key === 'estado') {
+      const val = String(r[key] ?? '').toLowerCase();
+      if (val === 'activa') return 'Activa';
+      if (val === 'finalizada') return 'Finalizada';
+      return val ? val.charAt(0).toUpperCase() + val.slice(1) : '—';
+    }
     return typeof r[key] === 'boolean' ? (r[key] ? 'Sí' : 'No') : String(r[key] ?? '—');
   };
   return <section className="module-page">
     <h1>{config.title}</h1>
     {error && <p role="alert">{error}</p>}
-    {loading && <p role="status">Cargando…</p>}
-    <button className="btn-secondary" disabled={busy} onClick={() => { setError(''); setLoading(true); setRevision(n => n + 1); }}>Actualizar listado</button>
-    {!editing && allowed() && <button className="btn-primary" onClick={() => startEdit()}>Crear</button>}
+    {loading ? (
+      <Loading message={`Cargando ${config.title.toLowerCase()}...`} />
+    ) : (
+      <>
+        <button className="btn-secondary" disabled={busy} onClick={() => { setError(''); setLoading(true); setRevision(n => n + 1); }}>Actualizar listado</button>
+        {!editing && allowed() && <button className="btn-primary" onClick={() => startEdit()}>Crear</button>}
     {editing ? <form onSubmit={e => { e.preventDefault(); void save(); }}>
       <h2>{selected ? 'Editar' : 'Crear'} {config.title.toLowerCase()}</h2>
       {config.fields.filter(f => !selected || !f.createOnly).map(f => <label key={f.key}>{f.label}
@@ -144,9 +195,9 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       <button className="btn-primary" disabled={busy} type="submit">Guardar</button><button className="btn-secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
     </form> : <>
       <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+        <label htmlFor="modulo-buscar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
           {resource === 'partidas' ? 'Buscar por Id de Partida:' : 'Buscar:'}
-          <input value={search} placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
+          <input id="modulo-buscar" value={search} placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
         </label>
         {resource === 'personajes' && (
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
@@ -176,7 +227,10 @@ export default function ModulePage({ resource }: { resource: Resource }) {
               onClick={() => setSortDir(d => d === 'asc' ? 'desc' : 'asc')}
               title="Alternar dirección de orden"
             >
-              {sortDir === 'asc' ? '▲ Asc' : '▼ Desc'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                <TrendingUpIcon size={14} style={{ transform: sortDir === 'desc' ? 'scaleY(-1)' : undefined }} />
+                {sortDir === 'asc' ? 'Asc' : 'Desc'}
+              </span>
             </button>
             <button
               type="button"
@@ -184,7 +238,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
               style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
               onClick={() => setSoloMisPartidas(v => !v)}
             >
-              {soloMisPartidas ? '🎮 Ver todas las partidas' : '🎮 Mis partidas (inscripto/dirigiendo)'}
+              {soloMisPartidas ? 'Ver todas las partidas' : 'Mis partidas (inscripto/dirigiendo)'}
             </button>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
               <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
@@ -198,27 +252,30 @@ export default function ModulePage({ resource }: { resource: Resource }) {
           </button>
         )}
       </div>
-      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{config.fields.find(f => f.key === k)?.label ?? k}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => { const val = display(r, k); return <td key={k} title={val.length > 25 ? val : undefined}><div className="table-cell-content truncate" style={{ maxWidth: 220 }}>{val}</div></td>; })}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)} aria-label={`Ver detalle de ${label(r) || 'registro'}`}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)} aria-label={`Editar ${label(r) || 'registro'}`}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }} aria-label={`Eliminar ${label(r) || 'registro'}`}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
+      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{columnLabel(k)}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => { const val = display(r, k); return <td key={k} title={val.length > 25 ? val : undefined}><div className="table-cell-content truncate" style={{ maxWidth: 220 }}>{val}</div></td>; })}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)} aria-label={`Ver detalle de ${label(r) || 'registro'}`}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)} aria-label={`Editar ${label(r) || 'registro'}`}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }} aria-label={`Eliminar ${label(r) || 'registro'}`}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
-      {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{config.fields.find(f => f.key === k)?.label ?? k}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
+      {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{columnLabel(k)}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
         {resource === 'partidas' && (
           <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
             <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
-              📜 Ver misiones de esta partida
+              Ver misiones de esta partida
             </Link>
             <Link to={`/stores?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
-              🏪 Ver tiendas de esta partida
+              Ver tiendas de esta partida
             </Link>
           </div>
         )}
-        <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} />
+        <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} onNotifyError={(msg) => setErrorAvisoModal(msg)} />
         <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
       </article>}
     </>}
+    </>
+  )}
+  <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
   </section>;
 }
 
-function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; row: Row; refs: Record<string, Row[]>; busy: boolean; perform: (f: () => Promise<unknown>) => Promise<void> }) {
+function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resource: Resource; row: Row; refs: Record<string, Row[]>; busy: boolean; perform: (f: () => Promise<unknown>) => Promise<void>; onNotifyError?: (msg: string) => void }) {
   const [error, setError] = useState('');
   const [object, setObject] = useState('');
   const [position, setPosition] = useState('0');
@@ -277,7 +334,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
                 {item ? (
                   <div style={{ marginTop: '0.2rem' }}>
                     <strong>{label(item)}</strong>
-                    <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '⭐' : ''}</div>
+                    <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '(Único)' : ''}</div>
                   </div>
                 ) : (
                   <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>[ Libre ]</span>
@@ -294,7 +351,9 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
             setError('');
             const posNum = Number(position);
             if (occupiedPositions.has(posNum) && !objects.some(o => String(o.idObjeto) === object && Number(o.posicion) === posNum)) {
-              setError('La posición seleccionada ya está ocupada.');
+              const msg = 'La posición seleccionada ya está ocupada.';
+              setError(msg);
+              onNotifyError?.(msg);
               return;
             }
             void perform(() => api(`/inventarios/${row.idPersonaje}/${row.numInventario}/mover`, 'POST', { idObjeto: Number(object), posicion: posNum }));
@@ -302,7 +361,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid var(--border)' }}
         >
           <h4 style={{ marginTop: 0 }}>Mover objeto a este inventario</h4>
-          {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>⚠️ Capacidad insuficiente: Este inventario está lleno.</p>}
+          {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>Capacidad insuficiente: Este inventario está lleno.</p>}
           <label htmlFor="select-objeto-mover" style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto del personaje
           </label>
@@ -345,6 +404,18 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
           onSubmit={e => {
             e.preventDefault();
             const precioVenta = price ? Number(price) : (selling ? Number(selling.valor) : 0);
+            if (precioVenta < 0) {
+              const msg = 'El precio de venta no puede ser negativo.';
+              setError(msg);
+              onNotifyError?.(msg);
+              return;
+            }
+            if (precioVenta > 2147483647) {
+              const msg = 'El precio de venta es demasiado grande (máximo 2.147.483.647).';
+              setError(msg);
+              onNotifyError?.(msg);
+              return;
+            }
             void perform(() => api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: precioVenta }));
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
@@ -373,6 +444,8 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               id="input-precio-venta"
               aria-label="Precio de venta"
               type="number"
+              min="0"
+              max="2147483647"
               value={price}
               placeholder={selling ? String(selling.valor) : '0'}
               onChange={e => setPrice(e.target.value)}
@@ -381,7 +454,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
           </label>
           {selling && !price && (
             <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: 'var(--success-text)' }}>
-              ⚡ Precio de venta: <strong>${String(selling.valor)}</strong> (venta instantánea al valor máximo)
+              Precio de venta: <strong>${String(selling.valor)}</strong> (venta instantánea al valor máximo)
             </p>
           )}
           <label style={{ display: 'block', marginBottom: '0.5rem' }}>
@@ -395,7 +468,7 @@ function Workflow({ resource, row, refs, busy, perform }: { resource: Resource; 
               <option value="">Seleccionar tienda</option>
               {refs.tiendas?.map(t => (
                 <option key={String(t.idTienda)} value={String(t.idTienda)}>
-                  🏪 {label(t)}
+                  {label(t)}
                 </option>
               ))}
             </select>

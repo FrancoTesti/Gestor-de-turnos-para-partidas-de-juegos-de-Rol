@@ -39,4 +39,67 @@ describe('SesionesPage - Flujo de estados', () => {
     expect(screen.getByText('Planificada')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Ver detalle/i })).toBeInTheDocument();
   });
+
+  it('muestra cartel de advertencia en español abajo al crear sesión cuando el número de sesión es demasiado grande', async () => {
+    (apiModule.api as any).mockImplementation((path: string) => {
+      if (path === '/partidas') {
+        return Promise.resolve([{ idPartida: 1, nombre: 'Campaña test', idUsuarioAnfitrion: 1 }]);
+      }
+      return Promise.resolve([]);
+    });
+
+    const { fireEvent } = await import('@testing-library/react');
+    render(<SesionesPage />);
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Crear Sesión' })).toBeInTheDocument());
+
+    const selectPartida = screen.getByRole('combobox');
+    fireEvent.change(selectPartida, { target: { value: '1' } });
+
+    const inputNumSesion = screen.getByLabelText(/Número Sesión:/i);
+    fireEvent.change(inputNumSesion, { target: { value: '324235423542354325' } });
+
+    const form = screen.getByRole('heading', { name: 'Crear Sesión' }).closest('form')!;
+    fireEvent.submit(form);
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/El número de sesión es demasiado grande/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/2.147.483.647/i)[0]).toBeInTheDocument();
+    });
+
+    // Asegura que no se llamó al servicio
+    expect(sesionService.crearSesion).not.toHaveBeenCalled();
+  });
+
+  it('traduce el error del backend y lo muestra en el cartel de advertencia de Crear Sesión', async () => {
+    (apiModule.api as any).mockImplementation((path: string) => {
+      if (path === '/partidas') {
+        return Promise.resolve([{ idPartida: 1, nombre: 'Campaña test', idUsuarioAnfitrion: 1 }]);
+      }
+      return Promise.resolve([]);
+    });
+    (sesionService.crearSesion as any).mockRejectedValue(
+      new Error('numSesion: Too big: expected int to be <=9007199254740991; numSesion: Too big: expected number to be <=2147483647')
+    );
+
+    const { fireEvent } = await import('@testing-library/react');
+    render(<SesionesPage />);
+
+    await waitFor(() => expect(screen.getByRole('heading', { name: 'Crear Sesión' })).toBeInTheDocument());
+
+    const selectPartida = screen.getByRole('combobox');
+    fireEvent.change(selectPartida, { target: { value: '1' } });
+
+    const inputNumSesion = screen.getByLabelText(/Número Sesión:/i);
+    fireEvent.change(inputNumSesion, { target: { value: '10' } });
+
+    const btnCrear = screen.getByRole('button', { name: 'Crear Sesión' });
+    fireEvent.click(btnCrear);
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/El número de sesión es demasiado grande/i)[0]).toBeInTheDocument();
+      expect(screen.getAllByText(/2.147.483.647/i)[0]).toBeInTheDocument();
+    });
+  });
 });
+

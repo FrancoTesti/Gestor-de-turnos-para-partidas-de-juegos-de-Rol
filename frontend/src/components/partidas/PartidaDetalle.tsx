@@ -1,6 +1,8 @@
 /* muestra el detalle completo de una partida seleccionada.
  Recibe todo por props, no hace fetch directamente */
 import type { PartidaPublica } from '../../services/partida.service';
+import Loading from '../ui/Loading';
+import { CloseIcon, CrownIcon, UsersIcon, LockIcon, UnlockIcon } from '../ui';
 import './partidas.css';
 
 export interface PersonajeUnido {
@@ -36,8 +38,7 @@ export default function PartidaDetalle({
   if (cargando) {
     return (
       <div className="partida-detalle-card cargando">
-        <div className="loader-spinner">⏳</div>
-        <p>Cargando información de la partida...</p>
+        <Loading message="Cargando información de la partida..." />
       </div>
     );
   }
@@ -46,7 +47,6 @@ export default function PartidaDetalle({
   if (error) {
     return (
       <div className="partida-detalle-card error">
-        <div className="error-icon">❌</div>
         <h3>Ocurrió un error</h3>
         <p className="error-mensaje">{error}</p>
         {onCerrar && (
@@ -62,7 +62,6 @@ export default function PartidaDetalle({
   if (!partida) {
     return (
       <div className="partida-detalle-card vacio">
-        <div className="info-icon">🎲</div>
         <h3>Detalle de Partida</h3>
         <p>Seleccioná una partida de la lista para ver sus datos.</p>
       </div>
@@ -79,8 +78,9 @@ export default function PartidaDetalle({
             className="btn-cerrar"
             onClick={onCerrar}
             title="Cerrar detalle"
+            aria-label="Cerrar detalle"
           >
-            ✖
+            <CloseIcon size={16} />
           </button>
         )}
       </div>
@@ -97,27 +97,31 @@ export default function PartidaDetalle({
           <div className="detalle-campo">
             <span className="campo-etiqueta">Estado:</span>
             <span className={`badge ${partida.estado === 'activa' ? 'badge-activa' : 'badge-finalizada'}`}>
-              {partida.estado === 'activa' ? '▶ Activa' : '■ Finalizada'}
+              {partida.estado === 'activa' ? 'Activa' : 'Finalizada'}
             </span>
           </div>
 
           {/* privacidad: requerida por el plan */}
           <div className="detalle-campo">
             <span className="campo-etiqueta">Privacidad:</span>
-            <span className={`badge ${partida.esPrivada ? 'badge-privada' : 'badge-publica'}`}>
-              {partida.esPrivada ? '🔒 Privada' : '🌐 Pública'}
+            <span className={`badge ${partida.esPrivada ? 'badge-privada' : 'badge-publica'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              {partida.esPrivada ? <><LockIcon size={12} /> Privada</> : <><UnlockIcon size={12} /> Pública</>}
             </span>
           </div>
 
           {/* anfitrion: requerido por el plan */}
           <div className="detalle-campo">
             <span className="campo-etiqueta">Anfitrión:</span>
-            <span className="campo-valor">@{partida.nicknameAnfitrion}</span>
+            <span className="campo-valor" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              <CrownIcon size={14} /> @{partida.nicknameAnfitrion}
+            </span>
           </div>
 
           <div className="detalle-campo">
             <span className="campo-etiqueta">Límite de jugadores:</span>
-            <span className="campo-valor">{partida.limiteJugadores}</span>
+            <span className="campo-valor" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+              <UsersIcon size={14} /> {partida.limiteJugadores}
+            </span>
           </div>
 
         </div>
@@ -125,7 +129,7 @@ export default function PartidaDetalle({
         {personajesUnidos.length > 0 ? (
           <div className="detalle-jugadores-unidos" style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
             <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem', color: 'var(--text-h)' }}>
-              👥 Jugadores y Personajes unidos ({personajesUnidos.length} / {partida.limiteJugadores}):
+              Jugadores y Personajes unidos ({personajesUnidos.length} / {partida.limiteJugadores}):
             </h4>
             <ul style={{ paddingLeft: '1.25rem', margin: 0 }}>
               {personajesUnidos.map((p) => (
@@ -137,7 +141,7 @@ export default function PartidaDetalle({
           </div>
         ) : (
           <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-            👥 Aún no hay personajes unidos a esta partida.
+            Aún no hay personajes unidos a esta partida.
           </div>
         )}
       </div>
@@ -149,7 +153,7 @@ export default function PartidaDetalle({
             className="btn-editar"
             onClick={() => onEditar(partida)}
           >
-            ✏️ Editar
+            Editar
           </button>
         )}
         {onEliminar && (
@@ -158,7 +162,7 @@ export default function PartidaDetalle({
             className="btn-eliminar"
             onClick={() => onEliminar(partida.idPartida)}
           >
-            🗑️ Eliminar
+            Eliminar
           </button>
         )}
       </div>
