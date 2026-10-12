@@ -481,8 +481,8 @@ export default function MisionesPage() {
                 <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <strong style={{ minWidth: '110px', color: 'var(--text-h)' }}>{p.nombre}</strong>
                   <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <CoinIcon size={13} /> Oro:
-                    <input type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
+                    <CoinIcon size={13} /> $$:
+                    <input aria-label="$$:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
                   </label>
                   <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                     <ZapIcon size={13} /> XP:
