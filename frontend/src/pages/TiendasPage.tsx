@@ -20,7 +20,7 @@ import type { Clase, Partida, Personaje, Tienda } from '../interfaces';
 import { useUser } from '../context/UserContext';
 import { api } from '../services/api';
 import Loading from '../components/ui/Loading';
-import { AvisoModal, CoinIcon, StoreIcon, CloseIcon } from '../components/ui';
+import { AvisoModal, CoinIcon, CloseIcon } from '../components/ui';
 import { obtenerClases } from '../services/clase.service';
 import {
   actualizarTienda,

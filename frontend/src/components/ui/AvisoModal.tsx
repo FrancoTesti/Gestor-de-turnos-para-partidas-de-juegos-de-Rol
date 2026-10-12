@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { AlertTriangleIcon, CloseIcon } from './Icons';
 import './Modal.css';
 

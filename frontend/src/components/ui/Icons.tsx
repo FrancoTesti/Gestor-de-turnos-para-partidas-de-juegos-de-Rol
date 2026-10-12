@@ -1,23 +1,26 @@
-import React from 'react';
+import type { SVGProps } from 'react';
 
-export interface IconProps extends React.SVGProps<SVGSVGElement> {
+export interface IconProps extends SVGProps<SVGSVGElement> {
   size?: number | string;
   className?: string;
 }
 
-const defaultProps = (props: IconProps) => ({
-  width: props.size ?? 16,
-  height: props.size ?? 16,
-  viewBox: '0 0 24 24',
-  fill: 'none',
-  stroke: 'currentColor',
-  strokeWidth: 2,
-  strokeLinecap: 'round' as const,
-  strokeLinejoin: 'round' as const,
-  'aria-hidden': 'true',
-  style: { verticalAlign: 'middle', display: 'inline-block', flexShrink: 0, ...props.style },
-  ...props,
-});
+const defaultProps = (props: IconProps): SVGProps<SVGSVGElement> => {
+  const { size, style, ...rest } = props;
+  return {
+    width: size ?? 16,
+    height: size ?? 16,
+    viewBox: '0 0 24 24',
+    fill: 'none',
+    stroke: 'currentColor',
+    strokeWidth: 2,
+    strokeLinecap: 'round',
+    strokeLinejoin: 'round',
+    'aria-hidden': true,
+    style: { verticalAlign: 'middle', display: 'inline-block', flexShrink: 0, ...style },
+    ...rest,
+  };
+};
 
 // Moneda / Dinero / Oro (reemplaza 🪙)
 export function CoinIcon(props: IconProps) {
