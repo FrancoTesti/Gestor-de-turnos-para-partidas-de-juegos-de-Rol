@@ -1,25 +1,32 @@
 import { useEffect } from 'react';
+import { CloseIcon } from './Icons';
 import './Alert.css';
 
 interface AlertProps {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
   onClose?: () => void;
+  onCerrar?: () => void;
 }
 
-export default function Alert({ type, message, onClose }: AlertProps) {
+export default function Alert({ type, message, onClose, onCerrar }: AlertProps) {
+  const cerrar = () => {
+    if (onClose) onClose();
+    if (onCerrar) onCerrar();
+  };
+
   useEffect(() => {
-    if (!onClose) return;
-    const timer = window.setTimeout(onClose, 3000);
+    if (!onClose && !onCerrar) return;
+    const timer = window.setTimeout(cerrar, 3000);
     return () => window.clearTimeout(timer);
-  }, [onClose]);
+  }, [onClose, onCerrar]);
 
   return (
     <div className={`alert alert-${type}`} role="alert">
       <span className="alert-message">{message}</span>
-      {onClose && (
-        <button className="alert-close" onClick={onClose} aria-label="Cerrar alerta">
-          ✕
+      {(onClose || onCerrar) && (
+        <button className="alert-close" onClick={cerrar} aria-label="Cerrar alerta">
+          <CloseIcon size={14} />
         </button>
       )}
     </div>

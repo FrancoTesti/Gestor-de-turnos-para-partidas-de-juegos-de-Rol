@@ -1,5 +1,7 @@
 import { useState } from "react";
 import type { Usuario } from "../../interfaces";
+import Loading from "../ui/Loading";
+import { CloseIcon } from "../ui";
 import "./usuarios.css";
 
 export interface UsuarioDetalleProps {
@@ -20,12 +22,12 @@ export default function UsuarioDetalle({
   onEliminar,
 }: UsuarioDetalleProps) {
   const [isImageOpen, setIsImageOpen] = useState(false);
+  const [errorUrl, setErrorUrl] = useState<string | null>(null);
 
   if (cargando) {
     return (
       <div className="usuario-detalle-card cargando">
-        <div className="loader-spinner">⏳</div>
-        <p>Cargando información del usuario...</p>
+        <Loading message="Cargando información del usuario..." />
       </div>
     );
   }
@@ -33,7 +35,6 @@ export default function UsuarioDetalle({
   if (error) {
     return (
       <div className="usuario-detalle-card error">
-        <div className="error-icon">❌</div>
         <h3>Ocurrió un error</h3>
         <p className="error-mensaje">{error}</p>
         {onCerrar && (
@@ -48,22 +49,21 @@ export default function UsuarioDetalle({
   if (!usuario) {
     return (
       <div className="usuario-detalle-card vacio">
-        <div className="info-icon">ℹ️</div>
         <h3>Detalle de Usuario</h3>
         <p>Selecciona un usuario de la lista para ver sus datos detallados.</p>
       </div>
     );
   }
 
-  const avatarUrl = usuario.imagen?.trim()
-    ? usuario.imagen
-    : `https://api.dicebear.com/7.x/bottts/svg?seed=${usuario.nickname || usuario.nombreUsuario}`;
+  const rawUrl = usuario.imagen?.trim() || "";
+  const fallbackUrl = `https://api.dicebear.com/7.x/bottts/svg?seed=${usuario.nickname || usuario.nombreUsuario || "user"}`;
+  const avatarUrl = rawUrl && errorUrl !== rawUrl ? rawUrl : fallbackUrl;
 
   return (
     <div className="usuario-detalle-card">
       {isImageOpen && (
         <div className="lightbox-overlay" onClick={() => setIsImageOpen(false)}>
-          <button className="lightbox-close" onClick={() => setIsImageOpen(false)}>✖</button>
+          <button className="lightbox-close" onClick={() => setIsImageOpen(false)} aria-label="Cerrar"><CloseIcon size={18} /></button>
           <img src={avatarUrl} alt="Avatar" className="lightbox-image" onClick={(e) => e.stopPropagation()} />
         </div>
       )}
@@ -75,8 +75,9 @@ export default function UsuarioDetalle({
             className="btn-cerrar"
             onClick={onCerrar}
             title="Cerrar detalle"
+            aria-label="Cerrar detalle"
           >
-            ✖
+            <CloseIcon size={16} />
           </button>
         )}
       </div>
@@ -87,9 +88,8 @@ export default function UsuarioDetalle({
             src={avatarUrl}
             alt={`Avatar de ${usuario.nombreUsuario}`}
             className="detalle-avatar"
-            onError={(e) => {
-              (e.target as HTMLImageElement).src =
-                `https://api.dicebear.com/7.x/bottts/svg?seed=${usuario.nickname || "user"}`;
+            onError={() => {
+              if (rawUrl) setErrorUrl(rawUrl);
             }}
           />
         </div>
@@ -131,7 +131,7 @@ export default function UsuarioDetalle({
             className="btn-editar"
             onClick={() => onEditar(usuario)}
           >
-            ✏️ Editar
+            Editar
           </button>
         )}
         {onEliminar && (
@@ -140,7 +140,7 @@ export default function UsuarioDetalle({
             className="btn-eliminar"
             onClick={() => onEliminar(usuario.idUsuario)}
           >
-            🗑️ Eliminar
+            Eliminar
           </button>
         )}
       </div>

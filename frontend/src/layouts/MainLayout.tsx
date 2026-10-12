@@ -102,8 +102,7 @@ export default function MainLayout() {
 
       <header className="top-navbar">
         <div className="navbar-brand">
-          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span aria-hidden="true" style={{ fontSize: '1.4rem' }}>🎲</span>
+          <Link to="/dashboard" style={{ textDecoration: 'none', color: 'inherit', display: 'flex', alignItems: 'center' }}>
             <h1>Gestor de Rol</h1>
           </Link>
         </div>

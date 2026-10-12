@@ -1,4 +1,6 @@
 import type { ObjetoPublico } from '../../services/objeto.service';
+import Loading from '../ui/Loading';
+import { CoinIcon, StarIcon } from '../ui';
 import './objetos.css';
 
 interface ObjetoListaProps {
@@ -11,13 +13,13 @@ interface ObjetoListaProps {
 }
 
 export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSeleccionar, onEditar, onEliminar }: ObjetoListaProps) {
-  if (cargando) return <p className="estado-lista">Cargando objetos...</p>;
+  if (cargando) return <Loading message="Cargando objetos..." />;
   if (objetos.length === 0) return <p className="estado-lista">No hay objetos que coincidan con los filtros.</p>;
 
   return (
     <div className="objeto-grid">
       {objetos.map((objeto) => {
-        const tooltipText = `ID: #${objeto.idObjeto}\nNombre: ${objeto.nombre}\nDescripción: ${objeto.descripcion || 'Sin descripción'}\nTipo: ${objeto.tipoObjeto}\nNivel: ${objeto.nivelObjeto}\nValor: ${objeto.valor}\nCualidad: ${objeto.esUnico ? 'Único ⭐' : 'Estándar'}`;
+        const tooltipText = `ID: #${objeto.idObjeto}\nNombre: ${objeto.nombre}\nDescripción: ${objeto.descripcion || 'Sin descripción'}\nTipo: ${objeto.tipoObjeto}\nNivel: ${objeto.nivelObjeto}\nValor: ${objeto.valor}\nCualidad: ${objeto.esUnico ? 'Único' : 'Estándar'}`;
 
         return (
           <article
@@ -31,14 +33,16 @@ export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSelec
                 <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                   <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600 }}>ID: #{objeto.idObjeto}</span>
                   {objeto.esUnico && (
-                    <span className="badge-unico" style={{ background: '#fefcbf', color: '#744210', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                      ⭐ Único
+                    <span className="badge-unico" style={{ background: 'rgba(168, 85, 247, 0.15)', color: 'var(--accent)', padding: '0.15rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}>
+                      <StarIcon size={12} /> Único
                     </span>
                   )}
                 </div>
               </div>
               <h3>{objeto.nombre}</h3>
-              <p>Nivel {objeto.nivelObjeto} · Valor {objeto.valor}</p>
+              <p style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+                Nivel {objeto.nivelObjeto} · <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem' }}><CoinIcon size={13} /> {objeto.valor}</span>
+              </p>
             </button>
             {(onEditar || onEliminar) && objeto.idPersonaje === null && (
               <div className="objeto-acciones">

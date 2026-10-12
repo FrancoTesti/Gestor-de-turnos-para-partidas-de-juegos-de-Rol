@@ -121,7 +121,7 @@ function ObjetoFormularioBody({
           disabled={guardando}
         />
         <label htmlFor="esUnicoCheck" style={{ fontWeight: 600, cursor: 'pointer' }}>
-          ⭐ Objeto Único (solo puede existir una vez por personaje / partida)
+          Objeto Único (solo puede existir una vez por personaje / partida)
         </label>
       </div>
 

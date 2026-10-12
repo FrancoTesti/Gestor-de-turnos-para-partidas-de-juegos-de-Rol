@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Personaje, Inventario } from '../../interfaces';
 import type { ComprarObjetoData, ObjetoPublico } from '../../services/objeto.service';
+import { AvisoModal, CoinIcon } from '../ui';
 import './objetos.css';
 
 interface CompraObjetoFormularioProps {
@@ -22,6 +23,8 @@ export default function CompraObjetoFormulario({
   const [numInventario, setNumInventario] = useState(1);
   const [posicion, setPosicion] = useState(0);
   const [comprando, setComprando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
 
   const personajeSeleccionado = personajes.find(p => p.idPersonaje === idPersonaje);
   const saldoActual = personajeSeleccionado ? personajeSeleccionado.dinero : 0;
@@ -33,11 +36,16 @@ export default function CompraObjetoFormulario({
 
   async function enviar(evento: React.FormEvent): Promise<void> {
     evento.preventDefault();
+    setError(null);
     if (!idPersonaje || numInventario < 1 || posicion < 0 || saldoInsuficiente) return;
 
     setComprando(true);
     try {
       await onComprar({ idPersonaje, numInventario, posicion });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Error al realizar la compra';
+      setError(msg);
+      setErrorAvisoModal(msg);
     } finally {
       setComprando(false);
     }
@@ -46,7 +54,15 @@ export default function CompraObjetoFormulario({
   return (
     <form className="compra-formulario" onSubmit={(evento) => void enviar(evento)}>
       <h3>Comprar {objeto.nombre}</h3>
-      <p className="compra-precio">Precio del objeto: <strong>{objeto.valor}</strong></p>
+      <p className="compra-precio" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+        Precio del objeto: <strong><CoinIcon size={14} /> ${objeto.valor}</strong>
+      </p>
+
+      {error && (
+        <p className="detalle-error" role="alert">
+          {error}
+        </p>
+      )}
 
       {personajes.length === 0 ? (
         <p className="detalle-error" role="alert">No hay personajes disponibles para realizar la compra.</p>
@@ -70,15 +86,15 @@ export default function CompraObjetoFormulario({
             margin: '0.75rem 0',
             border: `1px solid ${saldoInsuficiente ? 'rgba(239, 68, 68, 0.35)' : 'rgba(34, 197, 94, 0.35)'}`
           }}>
-            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem' }}>
-              💰 Saldo actual: <strong>${saldoActual}</strong>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              Saldo actual: <strong><CoinIcon size={14} />${saldoActual}</strong>
             </p>
-            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: saldoInsuficiente ? 'var(--error-text, #ef4444)' : 'var(--success-text, #22c55e)' }}>
-              📊 Saldo después de la compra: <strong>${saldoRestante}</strong>
+            <p style={{ margin: '0 0 0.25rem 0', fontSize: '0.9rem', color: saldoInsuficiente ? 'var(--error-text, #ef4444)' : 'var(--success-text, #22c55e)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              Saldo después de la compra: <strong><CoinIcon size={14} />${saldoRestante}</strong>
             </p>
             {saldoInsuficiente && (
               <p role="alert" style={{ margin: '0.25rem 0 0 0', color: 'var(--error-text, #ef4444)', fontWeight: 600, fontSize: '0.85rem' }}>
-                ⚠️ Saldo insuficiente. Te faltan ${objeto.valor - saldoActual} monedas.
+                Saldo insuficiente. Te faltan ${objeto.valor - saldoActual} monedas.
               </p>
             )}
           </div>
@@ -100,6 +116,7 @@ export default function CompraObjetoFormulario({
         </button>
         <button type="button" onClick={onCancelar} disabled={comprando}>Cancelar</button>
       </div>
+      <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </form>
   );
 }

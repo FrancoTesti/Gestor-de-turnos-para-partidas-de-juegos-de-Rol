@@ -8,9 +8,26 @@ import { obtenerMisiones } from '../services/mision.service';
 import type { Mision } from '../interfaces';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
+import { AvisoModal, CoinIcon, ZapIcon } from '../components/ui';
 
 function mensajeError(e: unknown): string {
   return e instanceof Error ? e.message : 'No se pudo completar la operación';
+}
+
+function formatearErrorSesion(mensaje: string): string {
+  if (/Too big/i.test(mensaje) || /expected (number|int) to be <=/i.test(mensaje) || /numSesion.*(demasiado grande|2147483647|9007199254740991)/i.test(mensaje)) {
+    return 'El número de sesión es demasiado grande. Debe ser un número entero entre 1 y 2.147.483.647.';
+  }
+  if (/duracionSesion.*(demasiado grande|Too big)/i.test(mensaje)) {
+    return 'La duración de la sesión es demasiado grande (máximo 2.147.483.647 minutos).';
+  }
+  if (/Ese número de sesión ya existe/i.test(mensaje)) {
+    return 'Ese número de sesión ya existe en esta partida. Elegí otro número.';
+  }
+  if (/La partida está finalizada/i.test(mensaje)) {
+    return 'La partida seleccionada ya se encuentra finalizada.';
+  }
+  return mensaje;
 }
 
 export default function SesionesPage() {
@@ -22,13 +39,14 @@ export default function SesionesPage() {
   const [partidas, setPartidas] = useState<Partida[]>([]);
   const [personajes, setPersonajes] = useState<Personaje[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
   const [selected, setSelected] = useState<SesionDetalleDTO | null>(null);
   const [aviso, setAviso] = useState('');
   const [revision, setRevision] = useState(0);
 
   // estados de formularios
   const [nuevaSesion, setNuevaSesion] = useState({ idPartida: '', numSesion: '', duracionSesion: 60 });
+  const [errorCrear, setErrorCrear] = useState('');
   const [participantesIds, setParticipantesIds] = useState<number[]>([]);
   const [valorKarma, setValorKarma] = useState<1 | -1>(1);
 
@@ -36,84 +54,116 @@ export default function SesionesPage() {
     let activo = true;
     Promise.all([obtenerSesiones(), obtenerMisiones(), api<Partida[]>('/partidas'), api<Personaje[]>('/personajes')])
       .then(([ses, mis, pts, pjs]) => { if (activo) { setSesiones(ses); setMisiones(mis); setPartidas(pts); setPersonajes(pjs); } })
-      .catch((e: unknown) => { if (activo) setError(mensajeError(e)); })
+      .catch((e: unknown) => { if (activo) setErrorAvisoModal(mensajeError(e)); })
       .finally(() => { if (activo) setLoading(false); });
     return () => { activo = false; };
   }, [revision]);
 
   function recargar() {
     setLoading(true);
-    setError('');
+    setErrorCrear('');
+    setErrorAvisoModal(null);
     setRevision(value => value + 1);
   }
 
   const handleVerDetalle = async (idPartida: number, numSesion: number) => {
     try {
-      setError('');
       const detalle = await obtenerSesion(idPartida, numSesion);
       setSelected(detalle);
       setParticipantesIds([]);
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
   const handleCrear = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorCrear('');
+    setAviso('');
+
+    if (!nuevaSesion.idPartida) {
+      const msg = 'Debes seleccionar una partida para la sesión.';
+      setErrorCrear(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    const numSesionNum = Number(nuevaSesion.numSesion);
+    if (!nuevaSesion.numSesion || isNaN(numSesionNum) || !Number.isInteger(numSesionNum) || numSesionNum <= 0) {
+      const msg = 'El número de sesión debe ser un número entero mayor a 0.';
+      setErrorCrear(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    if (numSesionNum > 2147483647) {
+      const msg = 'El número de sesión es demasiado grande. Debe ser un número entero entre 1 y 2.147.483.647.';
+      setErrorCrear(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
+    const duracionNum = Number(nuevaSesion.duracionSesion);
+    if (isNaN(duracionNum) || !Number.isInteger(duracionNum) || duracionNum < 0 || duracionNum > 2147483647) {
+      const msg = 'La duración de la sesión debe ser un número entero válido (máximo 2.147.483.647 minutos).';
+      setErrorCrear(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+
     try {
-      setError('');
       await crearSesion({
         idPartida: Number(nuevaSesion.idPartida),
-        numSesion: Number(nuevaSesion.numSesion),
-        duracionSesion: Number(nuevaSesion.duracionSesion)
+        numSesion: numSesionNum,
+        duracionSesion: duracionNum
       });
       recargar();
       setAviso('Sesión creada correctamente.');
       setNuevaSesion({ idPartida: '', numSesion: '', duracionSesion: 60 });
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      const msg = formatearErrorSesion(mensajeError(e));
+      setErrorCrear(msg);
+      setErrorAvisoModal(msg);
     }
   };
 
   const handleIniciar = async () => {
     if (!selected) return;
     if (participantesIds.length === 0) {
-      setError('Debes seleccionar al menos un participante (personaje) para iniciar la sesión');
+      const msg = 'Debes seleccionar al menos un participante (personaje) para iniciar la sesión.';
+      setErrorAvisoModal(msg);
       return;
     }
     try {
-      setError('');
       await jugarSesion(selected.idPartida, selected.numSesion, participantesIds);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
       recargar();
       setAviso('Sesión iniciada con los participantes elegidos.');
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
   const handleFinalizar = async () => {
     if (!selected) return;
     try {
-      setError('');
       await finalizarSesion(selected.idPartida, selected.numSesion);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
       recargar();
       setAviso('Sesión finalizada.');
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
   const handleCalificar = async () => {
     if (!selected) return;
     try {
-      setError('');
       await calificarAnfitrion(selected.idPartida, selected.numSesion, valorKarma);
       await handleVerDetalle(selected.idPartida, selected.numSesion);
       setAviso('Calificación enviada.');
     } catch (e: unknown) {
-      setError(mensajeError(e));
+      setErrorAvisoModal(mensajeError(e));
     }
   };
 
@@ -126,7 +176,6 @@ export default function SesionesPage() {
         <h1>Gestión de Sesiones</h1>
       </div>
       
-      {error && <Alert type="error" message={error} onClose={() => setError('')} />}
       {aviso && <p role="status" className="mensaje-exito">{aviso}</p>}
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
@@ -170,13 +219,13 @@ export default function SesionesPage() {
                         )}
                       </td>
                       <td>
-                        <span style={{ color: 'var(--success-text)', fontWeight: 600 }}>
-                          {oroTotal} 🪙
+                        <span style={{ color: 'var(--success-text)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <CoinIcon size={14} /> {oroTotal} Monedas
                         </span>
                       </td>
                       <td>
-                        <span style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
-                          {xpTotal} XP
+                        <span style={{ color: 'var(--accent-text)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <ZapIcon size={14} /> {xpTotal} XP
                         </span>
                       </td>
                       <td>{s.cantJugadores}</td>
@@ -202,7 +251,7 @@ export default function SesionesPage() {
               <form onSubmit={(e) => void handleCrear(e)} className="app-form">
                 <h3 style={{ marginTop: 0 }}>Crear Sesión</h3>
                 <label>Partida:
-                  <select required value={nuevaSesion.idPartida} onChange={e => setNuevaSesion({ ...nuevaSesion, idPartida: e.target.value })}>
+                  <select required value={nuevaSesion.idPartida} onChange={e => { setNuevaSesion({ ...nuevaSesion, idPartida: e.target.value }); setErrorCrear(''); }}>
                     <option value="">Seleccionar partida...</option>
                     {partidas.filter(p => p.idUsuarioAnfitrion === usuarioLogueado?.idUsuario).map(p => (
                       <option key={p.idPartida} value={p.idPartida}>{p.nombre}</option>
@@ -210,12 +259,31 @@ export default function SesionesPage() {
                   </select>
                 </label>
                 <label>Número Sesión:
-                  <input type="number" min="1" required value={nuevaSesion.numSesion} onChange={e => setNuevaSesion({ ...nuevaSesion, numSesion: e.target.value })} />
+                  <input
+                    type="number"
+                    min="1"
+                    max="2147483647"
+                    required
+                    value={nuevaSesion.numSesion}
+                    onChange={e => { setNuevaSesion({ ...nuevaSesion, numSesion: e.target.value }); setErrorCrear(''); }}
+                  />
                 </label>
                 <label>Duración (min):
-                  <input type="number" min="0" required value={nuevaSesion.duracionSesion} onChange={e => setNuevaSesion({ ...nuevaSesion, duracionSesion: Number(e.target.value) })} />
+                  <input
+                    type="number"
+                    min="0"
+                    max="2147483647"
+                    required
+                    value={nuevaSesion.duracionSesion}
+                    onChange={e => { setNuevaSesion({ ...nuevaSesion, duracionSesion: Number(e.target.value) }); setErrorCrear(''); }}
+                  />
                 </label>
                 <button type="submit" className="btn-primary" style={{ marginTop: '0.5rem' }}>Crear Sesión</button>
+                {errorCrear && (
+                  <div style={{ marginTop: '1rem' }}>
+                    <Alert type="warning" message={errorCrear} onClose={() => setErrorCrear('')} />
+                  </div>
+                )}
               </form>
             </div>
           )}
@@ -236,7 +304,7 @@ export default function SesionesPage() {
                     <div key={m.numMision} style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                       <div><strong>Misión #{m.numMision}:</strong> {m.descripcion || 'Sin descripción'}</div>
                       <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        Estado: {m.estado ? '✅ Completada' : '⏳ Pendiente'} | XP: <strong>{m.xpOtorgadoJugadores}</strong> | Oro: <strong>{m.dineroOtorgadoAJugadores} 🪙</strong>
+                        Estado: {m.estado ? 'Completada' : 'Pendiente'} | XP: <strong>{m.xpOtorgadoJugadores}</strong> | Oro: <strong>${m.dineroOtorgadoAJugadores}</strong>
                       </div>
                     </div>
                   ))}
@@ -276,7 +344,7 @@ export default function SesionesPage() {
                 {host && (
                   <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                     <p style={{ color: 'var(--warning-text)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                      ⚠️ No podrás finalizar la sesión si hay misiones pendientes.
+                      No podrás finalizar la sesión si hay misiones pendientes.
                     </p>
                     <button className="btn-danger" onClick={() => void handleFinalizar()}>Finalizar Sesión</button>
                   </div>
@@ -289,13 +357,15 @@ export default function SesionesPage() {
               <div style={{ marginTop: '1.25rem' }}>
                 <h3 style={{ fontSize: '1.1rem' }}>Resumen de Recompensas</h3>
                 <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', marginBottom: '1rem' }}>
-                  <p style={{ margin: 0 }}>
+                  <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     <strong>Total entregado:</strong>{' '}
-                    <span style={{ color: 'var(--success-text)', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <CoinIcon size={14} />
                       {misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion && m.estado).reduce((acc, m) => acc + m.dineroOtorgadoAJugadores, 0)} Monedas
                     </span>{' '}
                     y{' '}
-                    <span style={{ color: 'var(--accent-text)', fontWeight: 700 }}>
+                    <span style={{ color: 'var(--accent-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                      <ZapIcon size={14} />
                       {misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion && m.estado).reduce((acc, m) => acc + m.xpOtorgadoJugadores, 0)} XP
                     </span>
                   </p>
@@ -304,7 +374,7 @@ export default function SesionesPage() {
                 <h3 style={{ fontSize: '1.1rem', marginTop: '1rem' }}>Participantes del historial</h3>
                 <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
                   {selected.participantes?.map(p => (
-                    <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre} {p.dioKarma ? '⭐' : ''}</li>
+                    <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre} {p.dioKarma ? '(Karma)' : ''}</li>
                   ))}
                 </ul>
                 
@@ -333,6 +403,8 @@ export default function SesionesPage() {
           </aside>
         )}
       </div>
+
+      <AvisoModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </div>
   );
 }

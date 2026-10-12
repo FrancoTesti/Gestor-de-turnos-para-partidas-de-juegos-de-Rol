@@ -59,7 +59,6 @@ export default function LoginPage() {
       </div>
       <main className="auth-page">
         <div className="auth-header">
-          <div className="auth-brand-badge" aria-hidden="true">🎲</div>
           <h2>Iniciar Sesión</h2>
           <p className="auth-subtitle">Gestor de Turnos para Partidas de Rol</p>
         </div>

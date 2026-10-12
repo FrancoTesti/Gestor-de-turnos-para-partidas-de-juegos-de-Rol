@@ -48,7 +48,7 @@ describe('ObjetoLista', () => {
 
     expect(screen.getByText('Espada Mágica')).toBeInTheDocument();
     expect(screen.getByText('ID: #1')).toBeInTheDocument();
-    expect(screen.getByText('⭐ Único')).toBeInTheDocument();
+    expect(screen.getByText('Único')).toBeInTheDocument();
 
     fireEvent.click(screen.getByText('Espada Mágica'));
     expect(onSeleccionar).toHaveBeenCalledWith(objetoMock);

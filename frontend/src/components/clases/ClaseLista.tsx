@@ -1,5 +1,7 @@
 import type { MouseEvent } from 'react';
 import type { Clase } from '../../interfaces';
+import Loading from '../ui/Loading';
+import { ShieldIcon } from '../ui';
 import './clases.css';
 
 export interface ClaseListaProps {
@@ -39,9 +41,7 @@ export default function ClaseLista({
         <div className="clase-header" style={{ borderBottom: "none", paddingBottom: "0", marginBottom: "1.5rem" }}>
           <h2>Clases de Personaje</h2>
         </div>
-        <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <span>⏳ Cargando clases...</span>
-        </div>
+        <Loading message="Cargando clases..." />
       </section>
     );
   }
@@ -73,8 +73,9 @@ export default function ClaseLista({
                 onClick={() => onSeleccionar?.(clase)}
               >
                 <div>
-                  <div className="clase-icon-badge">🛡️</div>
-                  <h3 className="clase-title">{clase.nombreClase}</h3>
+                  <h3 className="clase-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <ShieldIcon size={16} /> {clase.nombreClase}
+                  </h3>
                   <p className="clase-desc">{clase.descripcionClase}</p>
                 </div>
 

@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { CloseIcon } from './Icons';
 import './Modal.css';
 
 interface ModalProps {
@@ -7,7 +8,8 @@ interface ModalProps {
   message?: string;
   children?: React.ReactNode;
   onConfirm: () => void;
-  onCancel: () => void;
+  onCancel?: () => void;
+  onClose?: () => void;
   confirmText?: string;
   cancelText?: string;
   type?: 'confirm' | 'info';
@@ -20,19 +22,35 @@ export default function Modal({
   children,
   onConfirm,
   onCancel,
+  onClose,
   confirmText = 'Confirmar',
   cancelText = 'Cancelar',
   type = 'confirm',
 }: ModalProps) {
+  const handleCancel = () => {
+    if (onCancel) onCancel();
+    if (onClose) onClose();
+  };
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && isOpen) {
+        handleCancel();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onCancel, onClose]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="modal-overlay" onClick={onCancel} role="presentation">
+    <div className="modal-overlay" onClick={handleCancel} role="presentation">
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>{title}</h2>
-          <button className="modal-close" onClick={onCancel} aria-label="Cerrar">
-            ✕
+          <button className="modal-close" onClick={handleCancel} aria-label="Cerrar">
+            <CloseIcon size={16} />
           </button>
         </div>
 
@@ -44,7 +62,7 @@ export default function Modal({
         <div className="modal-footer">
           <button
             className="btn btn-secondary"
-            onClick={onCancel}
+            onClick={handleCancel}
             aria-label={cancelText}
           >
             {cancelText}

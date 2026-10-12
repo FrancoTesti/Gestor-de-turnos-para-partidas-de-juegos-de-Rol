@@ -13,15 +13,17 @@
 
 .usuario-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 1.25rem;
+  align-items: stretch;
 }
 
 .usuario-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 1.5rem;
+  justify-content: flex-start;
+  padding: 1.5rem 1rem;
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -29,6 +31,11 @@
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   position: relative;
   box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  min-height: 230px;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .usuario-card:hover {
@@ -41,6 +48,87 @@
   border-color: var(--accent);
   background: var(--accent-bg);
   box-shadow: 0 0 0 2px var(--accent);
+}
+
+.usuario-datos {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  box-sizing: border-box;
+}
+
+.usuario-datos h3 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-h);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.25rem;
+  box-sizing: border-box;
+}
+
+.usuario-datos p {
+  margin: 0;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.25rem;
+  box-sizing: border-box;
+}
+
+.usuario-datos small {
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.25rem;
+}
+
+.usuario-acciones {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.75rem;
+  width: 100%;
+  justify-content: center;
+}
+
+.usuario-acciones button {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.85rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  border: 1px solid var(--border);
+  background: var(--bg-card-secondary);
+  color: var(--text-h);
+  transition: all 0.2s;
+}
+
+.usuario-acciones button:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.usuario-acciones button.boton-eliminar:hover {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #fff;
 }
 
 .avatar-wrapper {
@@ -251,6 +339,8 @@
 .campo-valor {
   color: var(--text);
   font-size: 1.05rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 .campo-valor.badge {

@@ -1,8 +1,17 @@
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
+import Loading from '../components/ui/Loading';
 
 export default function DashboardPage() {
-  const { usuarioLogueado, usuarios, jugadores, anfitriones, rolDe } = useUser();
+  const { usuarioLogueado, usuarios, jugadores, anfitriones, rolDe, cargandoSesion } = useUser();
+
+  if (cargandoSesion) {
+    return (
+      <div style={{ width: '100%', maxWidth: 1040, margin: '1rem auto', padding: '0 0.75rem', boxSizing: 'border-box' }}>
+        <Loading message="Cargando panel de control..." />
+      </div>
+    );
+  }
 
   // Si no está logueado, redirige a login
   if (!usuarioLogueado) {
@@ -11,6 +20,9 @@ export default function DashboardPage() {
 
   const rol = rolDe(usuarioLogueado.idUsuario);
   const numberFormatter = new Intl.NumberFormat('es-AR');
+
+  const jugadoresValidos = jugadores.filter(j => usuarios.some(u => u.idUsuario === j.idUsuario));
+  const anfitrionesValidos = anfitriones.filter(a => usuarios.some(u => u.idUsuario === a.idUsuario));
 
   return (
     <div style={{ width: '100%', maxWidth: 1040, margin: '1rem auto', padding: '0 0.75rem', boxSizing: 'border-box' }}>
@@ -39,7 +51,7 @@ export default function DashboardPage() {
               </p>
             </div>
             <span className={`badge badge-${rol}`}>
-              {rol === 'anfitrion' ? '👑 Anfitrión' : rol === 'jugador' ? '⚔️ Jugador' : '👤 Usuario'}
+              {rol === 'anfitrion' ? 'Anfitrión' : rol === 'jugador' ? 'Jugador' : 'Usuario'}
             </span>
           </div>
 
@@ -67,13 +79,13 @@ export default function DashboardPage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <Link to="/games" className="btn btn-secondary" style={{ justifyContent: 'flex-start', fontSize: '0.85rem' }}>
-              🎲 Partidas Activas
+              Partidas Activas
             </Link>
             <Link to="/characters" className="btn btn-secondary" style={{ justifyContent: 'flex-start', fontSize: '0.85rem' }}>
-              ⚔️ Mis Personajes
+              Mis Personajes
             </Link>
             <Link to="/classes" className="btn btn-secondary" style={{ justifyContent: 'flex-start', fontSize: '0.85rem' }}>
-              📜 Catálogo de Clases
+              Catálogo de Clases
             </Link>
           </div>
         </div>
@@ -97,7 +109,7 @@ export default function DashboardPage() {
             Jugadores
           </strong>
           <p className="tabular-nums" style={{ fontSize: '2.4rem', fontWeight: 800, margin: '0.5rem 0 0', color: 'var(--text-h)' }}>
-            {numberFormatter.format(jugadores.length)}
+            {numberFormatter.format(jugadoresValidos.length)}
           </p>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
             Perfiles de jugador activos
@@ -110,7 +122,7 @@ export default function DashboardPage() {
             Anfitriones
           </strong>
           <p className="tabular-nums" style={{ fontSize: '2.4rem', fontWeight: 800, margin: '0.5rem 0 0', color: 'var(--text-h)' }}>
-            {numberFormatter.format(anfitriones.length)}
+            {numberFormatter.format(anfitrionesValidos.length)}
           </p>
           <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
             Masters / Creadores de mesas
@@ -121,7 +133,7 @@ export default function DashboardPage() {
         <div className="bento-card bento-col-12">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
-              <span>👥</span> Directorio de usuarios registrados
+              Directorio de usuarios registrados
             </h3>
             <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} className="tabular-nums">
               Total: {usuarios.length}

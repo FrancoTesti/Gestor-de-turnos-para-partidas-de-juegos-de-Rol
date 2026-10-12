@@ -1,4 +1,6 @@
 import type { ObjetoPublico } from '../../services/objeto.service';
+import Loading from '../ui/Loading';
+import { CoinIcon, StarIcon } from '../ui';
 import './objetos.css';
 
 interface ObjetoDetalleProps {
@@ -10,7 +12,7 @@ interface ObjetoDetalleProps {
 }
 
 export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error, onComprar }: ObjetoDetalleProps) {
-  if (cargando) return <p>Cargando detalle...</p>;
+  if (cargando) return <Loading message="Cargando detalle..." />;
   if (error) return <p className="detalle-error" role="alert">{error}</p>;
   if (!objeto) return <p>Seleccioná un objeto para ver sus datos.</p>;
 
@@ -21,8 +23,13 @@ export default function ObjetoDetalle({ objeto, nombreTienda, cargando, error, o
       <p>{objeto.descripcion}</p>
       <dl>
         <div><dt>Nivel</dt><dd>{objeto.nivelObjeto}</dd></div>
-        <div><dt>Valor</dt><dd>{objeto.valor}</dd></div>
-        <div><dt>Único</dt><dd>{objeto.esUnico ? '⭐ Sí (Objeto único)' : 'No'}</dd></div>
+        <div><dt>Valor</dt><dd style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><CoinIcon size={14} /> ${objeto.valor}</dd></div>
+        <div>
+          <dt>Único</dt>
+          <dd style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+            {objeto.esUnico ? <><StarIcon size={14} /> Sí (Objeto único)</> : 'No'}
+          </dd>
+        </div>
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>
         <div><dt>Ubicación</dt><dd>{nombreTienda ?? (objeto.idPersonaje ? `Inventario ${objeto.numInventario} del personaje #${objeto.idPersonaje}` : 'Sin asignar')}</dd></div>
       </dl>

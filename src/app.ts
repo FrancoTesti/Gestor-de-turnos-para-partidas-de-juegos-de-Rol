@@ -31,9 +31,21 @@ export function createApp(orm: MikroORM) {
   if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
 
   // Middleware CORS para permitir peticiones desde el frontend
-  const allowedOrigin = process.env.CORS_ORIGIN ?? 'http://localhost:5173';
+  const allowedOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').trim().replace(/\/+$/, '');
+  const allowedOrigins = [allowedOrigin];
+  if (allowedOrigin === 'http://localhost:5173') {
+    allowedOrigins.push('http://127.0.0.1:5173');
+  } else if (allowedOrigin === 'http://127.0.0.1:5173') {
+    allowedOrigins.push('http://localhost:5173');
+  }
+
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', allowedOrigin);
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else {
+      res.header('Access-Control-Allow-Origin', allowedOrigin);
+    }
     res.header('Access-Control-Allow-Credentials', 'true');
     res.header('X-Content-Type-Options', 'nosniff');
     res.header('Cache-Control', 'no-store');
@@ -54,7 +66,8 @@ export function createApp(orm: MikroORM) {
     // el propio servidor, que es el caso de la app publicada con el frontend servido por la API.
     // Un sitio ajeno manda su propio Origin, que no coincide con ninguno de los dos.
     const origenPropio = `${req.protocol}://${req.get('host')}`;
-    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && req.headers.origin !== allowedOrigin && req.headers.origin !== origenPropio) {
+    const origenValido = req.headers.origin && (allowedOrigins.includes(req.headers.origin) || req.headers.origin === origenPropio);
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && !origenValido) {
       res.status(403).json({ message: 'Origen no permitido' }); return;
     }
     next();
@@ -118,11 +131,48 @@ export function createApp(orm: MikroORM) {
 
 export const mensajeCuerpoGrande = 'Los datos enviados superan el límite de 64 KB. Acortá el texto e intentá de nuevo.';
 
+export function formatearZodError(err: ZodError): string {
+  const mensajesPorCampo = new Map<string, string>();
+  for (const issue of err.issues) {
+    const campo = issue.path.join('.');
+    const nombreCampo = campo === 'numSesion' ? 'número de sesión'
+      : campo === 'idPartida' ? 'partida'
+      : campo === 'duracionSesion' ? 'duración de sesión'
+      : campo === 'numMision' ? 'número de misión'
+      : campo === 'numInventario' ? 'número de inventario'
+      : campo === 'precio' ? 'precio'
+      : campo === 'limiteJugadores' ? 'límite de jugadores'
+      : campo === 'dineroTotal' || campo === 'dinero' ? 'dinero'
+      : campo === 'xpTotal' || campo === 'xp' ? 'XP'
+      : campo === 'cantidadEspacio' ? 'capacidad de inventario'
+      : campo || 'valor';
+
+    if (issue.code === 'too_big') {
+      const max = (issue.maximum ?? 2147483647).toLocaleString('es-AR');
+      if (!mensajesPorCampo.has(campo) || (issue.maximum && issue.maximum < 9007199254740991)) {
+        mensajesPorCampo.set(campo, `El ${nombreCampo} es demasiado grande. Debe ser menor o igual a ${max}.`);
+      }
+    } else if (issue.code === 'too_small') {
+      if (campo === 'idPartida' || campo === 'numSesion') {
+        mensajesPorCampo.set('sesion', 'Debes seleccionar una sesión en curso para la misión.');
+      } else {
+        const min = issue.minimum ?? 1;
+        mensajesPorCampo.set(campo, `El ${nombreCampo} debe ser mayor o igual a ${min}.`);
+      }
+    } else if (issue.code === 'invalid_type') {
+      mensajesPorCampo.set(campo, `El ${nombreCampo} tiene un formato o tipo inválido.`);
+    } else {
+      mensajesPorCampo.set(campo, `${campo ? campo + ': ' : ''}${issue.message}`);
+    }
+  }
+  return Array.from(mensajesPorCampo.values()).join('; ');
+}
+
 // Traduce los errores conocidos a respuestas HTTP. Se exporta para que las pruebas
 // monten routers sueltos con el mismo tratamiento de errores que la aplicación real.
 export const manejarErrores: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof HttpError) { res.status(err.status).json({ message: err.message }); return; }
-  if (err instanceof ZodError) { res.status(400).json({ message: err.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') }); return; }
+  if (err instanceof ZodError) { res.status(400).json({ message: formatearZodError(err) }); return; }
   if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
   if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
   if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }

@@ -3,6 +3,8 @@ no hace fetch directamente: recibe los datos por props desde el componente padre
 
 import type { MouseEvent } from 'react';
 import type { PartidaPublica } from '../../services/partida.service';
+import Loading from '../ui/Loading';
+import { LockIcon, UnlockIcon, CrownIcon, UsersIcon } from '../ui';
 import './partidas.css';
 
 // contrato de props: que datos y funciones espera este componente
@@ -40,10 +42,7 @@ export default function PartidaLista({
     return (
       <section className="partida-lista-container">
         <h2>Partidas activas</h2>
-        <div className="estado-cargando" role="status">
-          <span aria-hidden="true">⏳</span>
-          <span>Cargando partidas...</span>
-        </div>
+        <Loading message="Cargando partidas..." />
       </section>
     );
   }
@@ -82,8 +81,8 @@ export default function PartidaLista({
               <div className="partida-card-header">
                 <h3 className="partida-nombre">{partida.nombre}</h3>
                 {/* privacidad: requerida por el plan */}
-                <span className={`badge ${partida.esPrivada ? 'badge-privada' : 'badge-publica'}`}>
-                  {partida.esPrivada ? '🔒 Privada' : '🌐 Pública'}
+                <span className={`badge ${partida.esPrivada ? 'badge-privada' : 'badge-publica'}`} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  {partida.esPrivada ? <><LockIcon size={12} /> Privada</> : <><UnlockIcon size={12} /> Pública</>}
                 </span>
               </div>
 
@@ -92,20 +91,24 @@ export default function PartidaLista({
                 <p>
                   <span className="info-label">Estado:</span>
                   <span className={`badge ${partida.estado === 'activa' ? 'badge-activa' : 'badge-finalizada'}`}>
-                    {partida.estado === 'activa' ? '▶ Activa' : '■ Finalizada'}
+                    {partida.estado === 'activa' ? 'Activa' : 'Finalizada'}
                   </span>
                 </p>
 
                 {/* anfitrion: requerido por el plan */}
-                <p>
+                <p style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span className="info-label">Anfitrión:</span>
-                  <span>@{partida.nicknameAnfitrion}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <CrownIcon size={14} /> @{partida.nicknameAnfitrion}
+                  </span>
                 </p>
 
                 {/* limite de jugadores */}
-                <p>
+                <p style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
                   <span className="info-label">Límite:</span>
-                  <span>{partida.limiteJugadores} jugadores</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                    <UsersIcon size={14} /> {partida.limiteJugadores} jugadores
+                  </span>
                 </p>
               </div>
 

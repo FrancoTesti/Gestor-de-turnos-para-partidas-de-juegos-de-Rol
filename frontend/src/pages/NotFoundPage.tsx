@@ -17,7 +17,6 @@ export default function NotFoundPage() {
         boxShadow: 'var(--shadow-lg)',
         textAlign: 'center'
       }}>
-        <div style={{ fontSize: '3rem', marginBottom: '1rem' }} aria-hidden="true">🗺️</div>
         <h1 style={{ fontSize: '1.85rem', marginBottom: '0.75rem' }}>Página no encontrada</h1>
         <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
           No existe ninguna sección en {pathname}.

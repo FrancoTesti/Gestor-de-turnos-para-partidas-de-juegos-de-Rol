@@ -32,7 +32,7 @@ export class JugadorService {
   async obtenerTodos(): Promise<JugadorPublicoDTO[]> {
     // populate: ['usuario'] le dice a MikroORM que también cargue los datos del Usuario asociado
     const jugadores = await this.em.find(Jugador, {}, { populate: ['usuario'] });
-    return jugadores.map((j) => this.aJugadorPublico(j));
+    return jugadores.filter((j) => !!j.usuario).map((j) => this.aJugadorPublico(j));
   }
 
   // busca un jugador por el idUsuario (que es su clave primaria)

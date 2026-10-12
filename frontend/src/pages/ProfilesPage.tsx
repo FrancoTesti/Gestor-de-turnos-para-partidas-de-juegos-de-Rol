@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useTheme, type Theme, type AccentColor } from '../context/ThemeContext';
 import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
+import Loading from '../components/ui/Loading';
+import { CheckIcon, AvisoModal } from '../components/ui';
 import { actualizarUsuario } from '../services/usuario.service';
 import { actualizarJugador, crearJugador, eliminarJugador } from '../services/jugador.service';
 import { crearAnfitrion, eliminarAnfitrion } from '../services/anfitrion.service';
@@ -11,12 +13,20 @@ import './ProfilesPage.css';
 // El servidor solo autoriza operar sobre la cuenta de la sesión, así que acá no se
 // ofrecen acciones sobre cuentas ajenas.
 export default function ProfilesPage() {
-  const { usuarioLogueado, jugadores, anfitriones, recargar, logout } = useUser();
+  const { usuarioLogueado, jugadores, anfitriones, recargar, logout, cargandoSesion } = useUser();
   const { theme, setTheme, accentColor, setAccentColor } = useTheme();
   const [error, setError] = useState('');
   const [aviso, setAviso] = useState('');
   const [busy, setBusy] = useState(false);
   const [editando, setEditando] = useState(false);
+
+  if (cargandoSesion) {
+    return (
+      <section className="profiles-page">
+        <Loading message="Cargando configuración..." />
+      </section>
+    );
+  }
 
   if (!usuarioLogueado) return null;
   const id = usuarioLogueado.idUsuario;
@@ -62,10 +72,16 @@ export default function ProfilesPage() {
 
       {error && <p className="perfil-error" role="alert">{error}</p>}
       {aviso && <p className="perfil-aviso" role="status">{aviso}</p>}
+      <AvisoModal
+        isOpen={Boolean(error)}
+        titulo="Aviso de Configuración"
+        mensaje={error}
+        onClose={() => setError('')}
+      />
 
       {/* Configuración de Apariencia / Tema */}
       <article className="perfil-card">
-        <h2>🎨 Apariencia y Tema</h2>
+        <h2>Apariencia y Tema</h2>
         <p className="perfil-nota" style={{ marginBottom: '1rem' }}>
           Personalizá el aspecto visual de la aplicación. Los cambios se guardan automáticamente en tu dispositivo.
         </p>
@@ -76,9 +92,9 @@ export default function ProfilesPage() {
         <div className="theme-options-grid">
           {(
             [
-              ['dark', '🌙 Tema Oscuro', 'Colores oscuros para inmersión rolera'],
-              ['light', '☀️ Tema Claro', 'Colores claros y nítidos para alta visibilidad'],
-              ['system', '💻 Tema del Sistema', 'Sincronizado con la preferencia de tu dispositivo'],
+              ['dark', 'Tema Oscuro', 'Colores oscuros para inmersión rolera'],
+              ['light', 'Tema Claro', 'Colores claros y nítidos para alta visibilidad'],
+              ['system', 'Tema del Sistema', 'Sincronizado con la preferencia de tu dispositivo'],
             ] as [Theme, string, string][]
           ).map(([t, label, desc]) => (
             <button
@@ -89,7 +105,12 @@ export default function ProfilesPage() {
             >
               <div className="theme-option-title">{label}</div>
               <div className="theme-option-desc">{desc}</div>
-              {theme === t && <span className="theme-option-check">✓ Activo</span>}
+              {theme === t && (
+                <span className="theme-option-check">
+                  <CheckIcon size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: 4 }} />
+                  Activo
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -130,7 +151,12 @@ export default function ProfilesPage() {
                 <span className="theme-option-title" style={{ margin: 0 }}>{label}</span>
               </div>
               <div className="theme-option-desc">{desc}</div>
-              {accentColor === c && <span className="theme-option-check">✓ Activo</span>}
+              {accentColor === c && (
+                <span className="theme-option-check">
+                  <CheckIcon size={14} style={{ display: 'inline-block', verticalAlign: 'text-bottom', marginRight: 4 }} />
+                  Activo
+                </span>
+              )}
             </button>
           ))}
         </div>
@@ -138,7 +164,7 @@ export default function ProfilesPage() {
         <div style={{ marginTop: '1.25rem', display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', background: 'var(--bg-card-secondary)', padding: '0.85rem 1.15rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)' }}>
           <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>Vista previa del botón:</span>
           <button type="button" className="btn-primary" style={{ pointerEvents: 'none' }}>
-            ⚔️ Botón de Acción ({accentColor === 'violet' ? 'Violeta' : accentColor === 'amber' ? 'Ámbar' : accentColor === 'emerald' ? 'Esmeralda' : accentColor === 'blue' ? 'Azul' : 'Carmesí'})
+            Botón de Acción ({accentColor === 'violet' ? 'Violeta' : accentColor === 'amber' ? 'Ámbar' : accentColor === 'emerald' ? 'Esmeralda' : accentColor === 'blue' ? 'Azul' : 'Carmesí'})
           </button>
         </div>
       </article>

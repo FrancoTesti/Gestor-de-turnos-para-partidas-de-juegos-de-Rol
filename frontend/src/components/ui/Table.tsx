@@ -60,20 +60,22 @@ export default function Table<T extends Record<string, unknown>>({
                     <td className="actions">
                       {onEdit && canEditItem && (
                         <button
-                          className="btn-icon btn-edit"
+                          className="btn-secondary"
                           onClick={() => onEdit(item)}
                           aria-label="Editar"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem' }}
                         >
-                          ✏️
+                          Editar
                         </button>
                       )}
                       {onDelete && canDeleteItem && (
                         <button
-                          className="btn-icon btn-delete"
+                          className="btn-secondary"
                           onClick={() => onDelete(item)}
                           aria-label="Eliminar"
+                          style={{ padding: '0.25rem 0.5rem', fontSize: '0.8rem', color: 'var(--error-text)' }}
                         >
-                          🗑️
+                          Eliminar
                         </button>
                       )}
                     </td>
