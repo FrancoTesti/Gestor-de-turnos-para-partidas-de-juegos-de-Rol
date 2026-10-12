@@ -486,7 +486,7 @@ export default function MisionesPage() {
                   </label>
                   <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
                     <ZapIcon size={13} /> XP:
-                    <input type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
+                    <input aria-label="XP:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
                   </label>
                 </div>
               );
