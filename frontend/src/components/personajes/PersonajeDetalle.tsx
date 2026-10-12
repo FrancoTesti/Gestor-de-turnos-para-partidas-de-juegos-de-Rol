@@ -77,7 +77,7 @@ export default function PersonajeDetalle({
           </div>
           <div className="stat-item">
             <span className="stat-val" style={{ fontSize: '1.4rem', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.35rem' }}>
-              <CoinIcon size={18} /> {personaje.dinero}
+              <CoinIcon size={18} style={{ color: '#f59e0b', flexShrink: 0 }} /> {personaje.dinero}
             </span>
             <span className="stat-lbl">Dinero en oro</span>
           </div>
