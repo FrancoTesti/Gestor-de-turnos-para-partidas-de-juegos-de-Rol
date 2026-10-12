@@ -335,11 +335,11 @@ export default function MisionesPage() {
                     <td>S{m.numSesion}</td>
                     <td>M{m.numMision}</td>
                     <td>{m.descripcion}</td>
-                    <td style={{ fontWeight: 600, color: 'var(--accent-text)' }}>
+                    <td style={{ fontWeight: 600 }}>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--success-text)' }}>
                         <CoinIcon size={14} /> {m.dineroTotal}
                       </span>
-                      {' | '}
+                      <span style={{ color: 'var(--text-muted)', margin: '0 0.35rem', fontWeight: 400 }}>|</span>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--accent-text)' }}>
                         <ZapIcon size={14} /> {m.xpTotal} XP
                       </span>

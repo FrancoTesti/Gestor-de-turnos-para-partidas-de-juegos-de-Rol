@@ -83,7 +83,7 @@
 }
 
 .nav-dropdown.active .nav-item {
-  color: var(--accent-text);
+  color: #ffffff;
   font-weight: 700;
   background: var(--accent-solid);
   box-shadow: 0 2px 8px var(--accent-glow);

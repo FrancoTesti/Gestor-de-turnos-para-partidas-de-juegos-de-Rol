@@ -122,22 +122,38 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 0.5rem;
   background: var(--bg-card-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
   padding: 0.75rem 0.5rem;
   text-align: center;
   margin-bottom: 0.85rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .stat-item {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.stat-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  right: -0.25rem;
+  top: 15%;
+  height: 70%;
+  width: 1px;
+  background-color: var(--border);
+  opacity: 0.7;
 }
 
 .stat-val {
   font-weight: 800;
-  color: var(--accent-text, var(--text-h));
-  font-size: 1.1rem;
+  color: var(--text-h);
+  font-size: 1.15rem;
+  line-height: 1.2;
 }
 
 .stat-lbl {
@@ -146,7 +162,7 @@
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  margin-top: 0.15rem;
+  margin-top: 0.25rem;
 }
 
 .personaje-meta {

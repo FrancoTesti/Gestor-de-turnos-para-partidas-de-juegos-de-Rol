@@ -163,7 +163,7 @@ export default function PersonajeLista({
                     </div>
                     <div className="stat-item">
                       <span className="stat-val" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                        <CoinIcon size={16} /> {p.dinero}
+                        <CoinIcon size={16} style={{ color: '#f59e0b', flexShrink: 0 }} /> {p.dinero}
                       </span>
                       <span className="stat-lbl">Dinero</span>
                     </div>
