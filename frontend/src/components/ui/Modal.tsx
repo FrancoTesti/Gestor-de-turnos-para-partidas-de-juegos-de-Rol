@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { CloseIcon } from './Icons';
 import './Modal.css';
 
@@ -27,10 +27,10 @@ export default function Modal({
   cancelText = 'Cancelar',
   type = 'confirm',
 }: ModalProps) {
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     if (onCancel) onCancel();
     if (onClose) onClose();
-  };
+  }, [onCancel, onClose]);
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -40,7 +40,7 @@ export default function Modal({
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onCancel, onClose]);
+  }, [isOpen, handleCancel]);
 
   if (!isOpen) return null;
 

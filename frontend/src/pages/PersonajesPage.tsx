@@ -49,7 +49,7 @@ function mensajeError(e: unknown): string {
 }
 
 function limpiarEmojis(texto: string): string {
-  return texto.replace(/^[⚠️✅]\s*/, '').trim();
+  return texto.replace(/^(?:⚠️|✅)\s*/u, '').trim();
 }
 
 export default function PersonajesPage() {

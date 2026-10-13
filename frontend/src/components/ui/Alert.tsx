@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { CloseIcon } from './Icons';
 import './Alert.css';
 
@@ -10,16 +10,16 @@ interface AlertProps {
 }
 
 export default function Alert({ type, message, onClose, onCerrar }: AlertProps) {
-  const cerrar = () => {
+  const cerrar = useCallback(() => {
     if (onClose) onClose();
     if (onCerrar) onCerrar();
-  };
+  }, [onClose, onCerrar]);
 
   useEffect(() => {
     if (!onClose && !onCerrar) return;
     const timer = window.setTimeout(cerrar, 3000);
     return () => window.clearTimeout(timer);
-  }, [onClose, onCerrar]);
+  }, [onClose, onCerrar, cerrar]);
 
   return (
     <div className={`alert alert-${type}`} role="alert">
