@@ -105,11 +105,7 @@ export default function ClasesPage() {
       )
     : clases;
 
-  useEffect(() => {
-    if (seleccionada && !clasesFiltradas.some((c) => c.idClase === seleccionada.idClase)) {
-      setSeleccionada(null);
-    }
-  }, [clasesFiltradas, seleccionada]);
+  const claseSeleccionada = seleccionada && clasesFiltradas.some((c) => c.idClase === seleccionada.idClase) ? seleccionada : null;
 
   return (
     <section style={{ padding: '0.5rem 0' }}>
@@ -185,16 +181,16 @@ export default function ClasesPage() {
 
           <ClaseLista
             clases={clasesFiltradas}
-            claseSeleccionadaId={seleccionada?.idClase}
+            claseSeleccionadaId={claseSeleccionada?.idClase}
             cargando={cargando}
             onSeleccionar={(c) => setSeleccionada(c)}
             onEditar={esAnfitrion ? (c) => { setEnEdicion(c); setVista('formulario'); } : undefined}
             onEliminar={esAnfitrion ? (id) => void borrar(id) : undefined}
           />
 
-          {seleccionada && (
+          {claseSeleccionada && (
             <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '520px', boxShadow: 'var(--shadow)' }}>
-              <ClaseDetalle clase={seleccionada} onVolver={() => setSeleccionada(null)} />
+              <ClaseDetalle clase={claseSeleccionada} onVolver={() => setSeleccionada(null)} />
               <button
                 type="button"
                 className="btn-secondary"

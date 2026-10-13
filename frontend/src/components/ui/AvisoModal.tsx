@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { AlertTriangleIcon, CloseIcon } from './Icons';
 import './Modal.css';
 
@@ -19,10 +19,10 @@ export default function AvisoModal({
   onCerrar,
   tipo = 'advertencia',
 }: AvisoModalProps) {
-  const cerrar = () => {
+  const cerrar = useCallback(() => {
     if (onClose) onClose();
     if (onCerrar) onCerrar();
-  };
+  }, [onClose, onCerrar]);
 
   const estaAbierto = isOpen !== undefined ? (isOpen && Boolean(mensaje)) : Boolean(mensaje);
 
@@ -34,7 +34,7 @@ export default function AvisoModal({
     }
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [estaAbierto, onClose, onCerrar]);
+  }, [estaAbierto, cerrar]);
 
   if (!estaAbierto || !mensaje) return null;
 

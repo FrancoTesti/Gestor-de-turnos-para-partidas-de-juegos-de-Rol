@@ -39,12 +39,15 @@ async function request(path: string, method = 'GET', body?: unknown, cookie = ho
   const setCookie = res.headers.get('set-cookie') ?? '';
   return { status: res.status, body: text ? JSON.parse(text) : undefined, cookie: setCookie.split(';')[0] ?? '', setCookie };
 }
+
+const testDbUrl = process.env.TEST_DB_URL || process.env.SUPABASE_DB_URL;
+
 before(async () => {
-  assert.ok(process.env.TEST_DB_URL, 'Indicá TEST_DB_URL para habilitar explícitamente las pruebas contra PostgreSQL');
-  connection = new Client({ connectionString: process.env.TEST_DB_URL, ssl: sslDb });
+  assert.ok(testDbUrl, 'Indicá TEST_DB_URL o SUPABASE_DB_URL para habilitar explícitamente las pruebas contra PostgreSQL');
+  connection = new Client({ connectionString: testDbUrl, ssl: sslDb });
   await connection.connect();
   await connection.query(`CREATE SCHEMA "${schema}"`); created = true;
-  orm = await MikroORM.init({ ...config, clientUrl: process.env.TEST_DB_URL, ...enEsquema(schema), debug: false });
+  orm = await MikroORM.init({ ...config, clientUrl: testDbUrl, ...enEsquema(schema), debug: false });
   await orm.schema.createSchema();
   server = createApp(orm).listen(0, '127.0.0.1');
   await new Promise<void>(resolve => server.once('listening', resolve));
@@ -399,7 +402,7 @@ test('migración explícita de usuarios y partidas, diagnóstico sin escritura e
   const user = await em.findOneOrFail(Usuario, { idUsuario: ids.player });
   const game = await em.findOneOrFail(Partida, { idPartida: ids.game });
   user.contrasena = 'legado123'; game.contrasena = 'partida123'; await em.flush();
-  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, SUPABASE_DB_URL: process.env.TEST_DB_URL, // 30 s: arrancar el script (Node + MikroORM + conexión) tarda cerca de 7 s en una
+  const run = (apply: boolean) => execFileSync(process.execPath, [resolve(__dirname, '../scripts/migrate-passwords.js'), ...(apply ? ['--apply'] : [])], { encoding: 'utf8', env: { ...process.env, SUPABASE_DB_URL: testDbUrl, // 30 s: arrancar el script (Node + MikroORM + conexión) tarda cerca de 7 s en una
   // máquina lenta, y acá se ejecuta tres veces con la base ya cargada.
   DB_SCHEMA: schema }, timeout: 30000 });
   assert.match(run(false), /Modo diagnóstico/);
