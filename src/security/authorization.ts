@@ -111,6 +111,9 @@ export const protectObjetoModifications = (em: EntityManager, paramName: string 
 
 export const requireOwnedCharacterForCompra = (em: EntityManager): RequestHandler => async (req, _res, next) => {
   try {
+    if (req.identity?.anfitrion) {
+      throw new HttpError(403, 'Los anfitriones no pueden comprar objetos de la tienda');
+    }
     await ownedCharacter(em, idSchema.parse(req.body.idPersonaje), req.identity!.idUsuario);
     next();
   } catch (err) { next(err); }

@@ -177,6 +177,7 @@ test('compra valida enteros estrictos, posición, propiedad y dinero', async () 
   assert.equal((await request(path, 'POST', { idPersonaje: true, numInventario: true, posicion: null }, playerCookie)).status, 400);
   assert.equal((await request(path, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 999 }, playerCookie)).status, 400);
   assert.equal((await request(path, 'POST', { idPersonaje: ids.otherCharacter, numInventario: 1, posicion: 0 }, playerCookie)).status, 403);
+  assert.equal((await request(path, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, hostCookie)).status, 403);
   const buy = await request(path, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
   assert.equal(buy.status, 200); assert.equal(buy.body.dineroRestante, 60);
   assert.equal((await request(path, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 1 }, playerCookie)).status, 409);

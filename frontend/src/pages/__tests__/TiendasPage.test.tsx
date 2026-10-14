@@ -110,5 +110,22 @@ describe('TiendasPage', () => {
       expect(screen.getByText(/Se puede vender/i)).toBeInTheDocument();
     });
   });
+
+  it('inhabilita a los anfitriones de poder comprar objetos en la tienda', async () => {
+    render(<TiendasPage />);
+    await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
+
+    const verCatalogoBtns = screen.getAllByRole('button', { name: /Ver catálogo/i });
+    fireEvent.click(verCatalogoBtns[0]);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Los anfitriones administran las tiendas y no tienen permitido comprar objetos/i)).toBeInTheDocument();
+    });
+
+    const comprarBtn = screen.getByRole('button', { name: /Comprar/i });
+    expect(comprarBtn).toBeDisabled();
+    expect(comprarBtn).toHaveAttribute('title', 'Los anfitriones no pueden comprar objetos de la tienda');
+  });
 });
+
 
