@@ -316,7 +316,7 @@ test('concurrencia de compra y venta de objeto único', async () => {
     descripcion: 'Objeto único para prueba de concurrencia',
     tipoObjeto: 'Reliquia',
     valor: 40,
-    nivelObjeto: 5,
+    nivelObjeto: 1,
     esUnico: true,
     posicion: 0,
     tienda,
@@ -353,13 +353,19 @@ test('casos borde: saldo insuficiente, objeto ajeno, venta a tienda de otra clas
   const em = orm.em.fork();
   const claseMago = em.create(Clase, { nombreClase: 'Mago', descripcionClase: 'Magia' });
   const tiendaMago = em.create(Tienda, { nombre: 'Boutique Mágica', claseTienda: 'Túnicá', clase: claseMago });
-  const objetoCaro = em.create(Objeto, { nombre: 'Artefacto Costoso', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 500, nivelObjeto: 10, esUnico: false, posicion: 0, tienda: tiendaMago });
+  const objetoCaro = em.create(Objeto, { nombre: 'Artefacto Costoso', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 500, nivelObjeto: 1, esUnico: false, posicion: 0, tienda: tiendaMago });
+  const objetoNivelAlto = em.create(Objeto, { nombre: 'Grimorio Superior', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 20, nivelObjeto: 10, esUnico: false, posicion: 0, tienda: tiendaMago });
   await em.flush();
 
   // 1. Saldo insuficiente (dinero del personaje = 100, valor = 500)
   const compraSinSaldo = await request(`/objetos/${objetoCaro.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
   assert.equal(compraSinSaldo.status, 409);
   assert.match(compraSinSaldo.body.message, /dinero suficiente/i);
+
+  // 1b. Nivel insuficiente (personaje nivel = 1, nivelObjeto = 10)
+  const compraNivelBajo = await request(`/objetos/${objetoNivelAlto.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  assert.equal(compraNivelBajo.status, 409);
+  assert.match(compraNivelBajo.body.message, /nivel del personaje es insuficiente/i);
 
   // 2. Comprar objeto normal para las siguientes pruebas
   await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
