@@ -1,5 +1,6 @@
+import { Link, useInRouterContext } from 'react-router-dom';
 import type { Personaje, Clase } from '../../interfaces';
-import { CoinIcon, UserIcon, SwordsIcon, ShieldIcon } from '../ui/Icons';
+import { CoinIcon, UserIcon, SwordsIcon, ShieldIcon, PackageIcon } from '../ui/Icons';
 import './personajes.css';
 
 export interface PersonajeDetalleProps {
@@ -19,6 +20,7 @@ export default function PersonajeDetalle({
   onCerrar,
   onEditar,
 }: PersonajeDetalleProps) {
+  const inRouter = useInRouterContext();
   const volver = onVolver || onCerrar;
 
   if (!personaje) {
@@ -96,13 +98,30 @@ export default function PersonajeDetalle({
         </div>
       </div>
 
-      {onEditar && (
-        <div className="personaje-acciones" style={{ marginTop: '1.5rem' }}>
+      <div className="personaje-acciones" style={{ marginTop: '1.5rem', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+        {inRouter ? (
+          <Link
+            to={`/inventory?personaje=${encodeURIComponent(personaje.nombreFicticio)}`}
+            className="btn btn-emerald"
+            style={{ textDecoration: 'none' }}
+          >
+            <PackageIcon size={16} /> Ver inventarios
+          </Link>
+        ) : (
+          <a
+            href={`/inventory?personaje=${encodeURIComponent(personaje.nombreFicticio)}`}
+            className="btn btn-emerald"
+            style={{ textDecoration: 'none' }}
+          >
+            <PackageIcon size={16} /> Ver inventarios
+          </a>
+        )}
+        {onEditar && (
           <button type="button" className="btn-purple" onClick={() => onEditar(personaje)}>
             Editar este Personaje
           </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }

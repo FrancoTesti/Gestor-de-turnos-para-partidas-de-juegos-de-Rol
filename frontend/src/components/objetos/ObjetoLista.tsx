@@ -112,6 +112,21 @@ export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSelec
                     >
                       <StarIcon size={12} /> Único
                     </span>
+                    {objeto.idPersonaje !== null && (
+                      <span
+                        className="badge-comprado"
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          color: 'var(--error-solid, #ef4444)',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Ya comprado
+                      </span>
+                    )}
                   </>
                 )}
               </div>
