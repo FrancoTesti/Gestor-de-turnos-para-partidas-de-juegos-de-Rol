@@ -4,6 +4,9 @@ Trabajo práctico de Desarrollo de Software: Node.js, Express, TypeScript, Mikro
 
 Integrantes: Franco Testi, Octavio Gudiño, Renzo Scollo, Alejandro Ciesco y Emanuel Salomón.
 
+> 🚀 **Aplicación desplegada en producción:** [https://gestor-de-turnos-para-partidas-de-juegos.onrender.com](https://gestor-de-turnos-para-partidas-de-juegos.onrender.com)  
+> **Cuentas de prueba para la cátedra:** `dm_demo` (Anfitrión) y `jugador_demo` (Jugador) con contraseña `PruebaSegura123`.
+
 **Toda la documentación está indexada en [docs/README.md](docs/README.md).**
 
 **¿Primera vez tras la migración a PostgreSQL (Supabase)? Empezá por el [TUTORIAL.md](TUTORIAL.md).**

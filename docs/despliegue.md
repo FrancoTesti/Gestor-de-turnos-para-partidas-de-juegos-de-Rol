@@ -5,8 +5,26 @@ frontend compilado, de modo que toda la aplicación puede publicarse como **un �
 Esta página documenta qué configuración necesita, **sin incluir ningún valor real**: las credenciales se
 cargan en el `.env` de cada máquina o en el panel del proveedor, nunca en el repositorio.
 
-> **Estado:** La aplicación está desplegada y activa en **Render** conectada a **PostgreSQL en Supabase**:
-> **URL pública:** [https://gestor-de-turnos-para-partidas-de-juegos.onrender.com](https://gestor-de-turnos-para-partidas-de-juegos.onrender.com)
+> 🚀 **Despliegue activo en producción:**
+> - **URL pública:** [https://gestor-de-turnos-para-partidas-de-juegos.onrender.com](https://gestor-de-turnos-para-partidas-de-juegos.onrender.com)
+> - **Cuentas de prueba para evaluación docente:**
+>   - **Rol Anfitrión:** `dm_demo` / `PruebaSegura123`
+>   - **Rol Jugador:** `jugador_demo` / `PruebaSegura123`
+
+## Arquitectura del despliegue en la nube
+
+1. **Plataforma Web:** Render (Web Service bajo Node.js).
+2. **Base de datos:** PostgreSQL administrado en Supabase con conexión segura SSL (Session Pooler en puerto 5432).
+3. **Mismo dominio (Same-Origin):** El backend Express sirve la API bajo `/api` y el bundle estático compilado de React (Vite) bajo `/`, eliminando problemas de CORS y permitiendo cookies de sesión con `SameSite=Strict` y `Secure`.
+4. **Comandos configurados en Render:**
+   - **Build Command:** `npm ci --include=dev && npm run build:all`  
+     *(Equivalente a: `npm ci && npm run build && npm --prefix frontend ci && npm --prefix frontend run build`)*
+   - **Start Command:** `npm start`
+5. **Variables de entorno requeridas en el panel de Render:**
+   - `NODE_ENV=production`
+   - `PORT=3000` *(o el puerto asignado por Render)*
+   - `SUPABASE_DB_URL=...` *(connection string de Supabase)*
+   - `DB_SSL=true`
 
 ## Variables
 
