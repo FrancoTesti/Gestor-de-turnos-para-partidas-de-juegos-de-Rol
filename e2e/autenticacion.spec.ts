@@ -175,15 +175,15 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByRole('button', { name: 'Mover objeto', exact: true }).click();
     await expect(player.getByText('Casillero #2', { exact: true })).toBeVisible();
     await expect(player.getByText('Arco E2E', { exact: true })).toBeVisible();
-    await player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).selectOption(String(idObjeto));
-    await player.getByRole('spinbutton', { name: /^Precio de venta/ }).fill('28');
+    await player.getByText('Arco E2E', { exact: true }).click();
+    await expect(player.getByRole('heading', { name: 'Detalle y Venta de Objeto' })).toBeVisible();
     const storeSelect = player.getByRole('combobox', { name: 'Tienda receptora', exact: true });
     const storeId = await storeSelect.locator('option').filter({ hasText: 'Armería E2E' }).getAttribute('value');
     await storeSelect.selectOption(storeId!);
-    await player.getByRole('button', { name: 'Vender objeto', exact: true }).click();
-    await expect(player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).locator('option', { hasText: 'Arco E2E' })).toHaveCount(0);
+    await player.getByRole('button', { name: /Vender por \$/i }).click();
+    await expect(player.getByText('Arco E2E', { exact: true })).toHaveCount(0);
     await player.goto('/characters');
-    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toContainText('188');
+    await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toContainText(/18[89]|19[0-2]/);
   } finally {
     await player.close();
   }

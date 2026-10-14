@@ -257,7 +257,7 @@ export default function ObjetosPage() {
           </div>
           <div className="objetos-layout">
             <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={host ? (objeto) => { setEnEdicion(objeto); setVista('formulario'); } : undefined} onEliminar={host ? (objeto) => void borrar(objeto) : undefined} />
-            <aside className="panel-detalle">
+            <aside className="panel-detalle panel-detalle-desktop">
               <ObjetoDetalle
                 objeto={seleccionado}
                 cargando={cargandoDetalle}
@@ -266,6 +266,7 @@ export default function ObjetosPage() {
                 onComprar={!host && seleccionado !== null && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
                 deshabilitarCompra={host}
                 motivoDeshabilitado="Los anfitriones no pueden comprar objetos de la tienda"
+                onCerrar={seleccionado ? () => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); } : undefined}
               />
               {personajeDueno && !venderAbierto && (
                 <button
@@ -297,6 +298,76 @@ export default function ObjetosPage() {
               )}
             </aside>
           </div>
+
+          {/* Modal Pop-up para mobile al cliquear cualquier objeto */}
+          {seleccionado && (
+            <div
+              className="objeto-modal-mobile"
+              role="dialog"
+              aria-modal="true"
+              onClick={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
+            >
+              <div
+                className="objeto-modal-mobile-content"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ padding: '0.25rem 0.65rem', fontSize: '0.85rem' }}
+                    onClick={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
+                  >
+                    ✕ Cerrar detalle
+                  </button>
+                </div>
+                <ObjetoDetalle
+                  objeto={seleccionado}
+                  cargando={cargandoDetalle}
+                  error={errorDetalle}
+                  nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
+                  onComprar={!host && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
+                  deshabilitarCompra={host}
+                  motivoDeshabilitado="Los anfitriones no pueden comprar objetos de la tienda"
+                  onCerrar={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
+                />
+                {personajeDueno && !venderAbierto && (
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    style={{ marginTop: '0.75rem', width: '100%' }}
+                    onClick={() => { setCompraAbierta(false); setVenderAbierto(true); }}
+                  >
+                    Vender este objeto
+                  </button>
+                )}
+                {compraAbierta && (
+                  <CompraObjetoFormulario
+                    objeto={seleccionado}
+                    personajes={personajes}
+                    inventarios={inventarios}
+                    onComprar={async (d) => {
+                      await comprar(d);
+                      setSeleccionado(null);
+                    }}
+                    onCancelar={() => setCompraAbierta(false)}
+                  />
+                )}
+                {personajeDueno && venderAbierto && (
+                  <VentaObjetoFormulario
+                    objeto={seleccionado}
+                    personaje={personajeDueno}
+                    tiendas={tiendas}
+                    onVender={async (d) => {
+                      await vender(d);
+                      setSeleccionado(null);
+                    }}
+                    onCancelar={() => setVenderAbierto(false)}
+                  />
+                )}
+              </div>
+            </div>
+          )}
         </>
       )}
     </section>

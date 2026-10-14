@@ -542,9 +542,6 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
   const [objetoVenta, setObjetoVenta] = useState<Row | null>(null);
   const [precioReventa, setPrecioReventa] = useState<number>(0);
   const [tiendaVenta, setTiendaVenta] = useState<string>('');
-  const [objetoVentaForm, setObjetoVentaForm] = useState('');
-  const [precioVentaForm, setPrecioVentaForm] = useState('');
-  const [tiendaVentaForm, setTiendaVentaForm] = useState('');
   const [preciosReventa, setPreciosReventa] = useState<Record<string | number, number>>(() => {
     try {
       const guardados = sessionStorage.getItem('precios_reventa_inventario');
@@ -752,104 +749,6 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
             </select>
           </label>
           <button className="btn-primary" disabled={busy || isFull}>Mover objeto</button>
-        </form>
-
-        {/* Vender objeto */}
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            setError('');
-            setMensajeVenta(null);
-            const selling = objects.find(o => String(o.idObjeto) === objetoVentaForm);
-            const precioVenta = precioVentaForm ? Number(precioVentaForm) : (selling ? Number(selling.valor) : 0);
-            if (precioVenta < 0) {
-              const msg = 'El precio de venta no puede ser negativo.';
-              setError(msg);
-              onNotifyError?.(msg);
-              return;
-            }
-            if (precioVenta > 2147483647) {
-              const msg = 'El precio de venta es demasiado grande (máximo 2.147.483.647).';
-              setError(msg);
-              onNotifyError?.(msg);
-              return;
-            }
-            void perform(async () => {
-              await api(`/objetos/${objetoVentaForm}/vender`, 'POST', {
-                idPersonaje: row.idPersonaje,
-                idTienda: Number(tiendaVentaForm),
-                precio: precioVenta,
-              });
-              setMensajeVenta(`¡Venta realizada con éxito! Objeto vendido por $${precioVenta}.`);
-              setObjetoVentaForm('');
-              setPrecioVentaForm('');
-            });
-          }}
-          style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)', marginBottom: '1rem' }}
-        >
-          <h4 style={{ marginTop: 0 }}>Vender objeto de este inventario</h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>
-            Venta instantánea a la tienda o hacé clic directo en cualquier casillero de arriba para ver su valor de reventa.
-          </p>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Objeto a vender
-            <select
-              required
-              value={objetoVentaForm}
-              onChange={e => {
-                setObjetoVentaForm(e.target.value);
-                setMensajeVenta(null);
-              }}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            >
-              <option value="">Seleccionar objeto</option>
-              {[...objects]
-                .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }))
-                .map(o => (
-                  <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
-                    {label(o)} (Posición {String(o.posicion)}, Valor ${String(o.valor)})
-                  </option>
-                ))}
-            </select>
-          </label>
-          <label htmlFor="input-precio-venta" style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Precio de venta
-            <input
-              id="input-precio-venta"
-              aria-label="Precio de venta"
-              type="number"
-              min="0"
-              max="2147483647"
-              value={precioVentaForm}
-              placeholder={objects.find(o => String(o.idObjeto) === objetoVentaForm) ? String(objects.find(o => String(o.idObjeto) === objetoVentaForm)!.valor) : '0'}
-              onChange={e => setPrecioVentaForm(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            />
-          </label>
-          {objetoVentaForm && !precioVentaForm && objects.find(o => String(o.idObjeto) === objetoVentaForm) && (
-            <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: 'var(--success-text)' }}>
-              Precio de venta: <strong>${String(objects.find(o => String(o.idObjeto) === objetoVentaForm)!.valor)}</strong> (venta instantánea al valor máximo)
-            </p>
-          )}
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Tienda receptora
-            <select
-              required
-              value={tiendaVentaForm}
-              onChange={e => setTiendaVentaForm(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            >
-              <option value="">Seleccionar tienda</option>
-              {refs.tiendas?.map(t => (
-                <option key={String(t.idTienda)} value={String(t.idTienda)}>
-                  {label(t)} {t.claseTienda ? `(${t.claseTienda})` : ''}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="btn-primary" type="submit" disabled={busy || !objetoVentaForm || !tiendaVentaForm}>
-            Vender objeto
-          </button>
         </form>
 
         {/* Modal de Detalle y Venta de Objeto al cliquear */}

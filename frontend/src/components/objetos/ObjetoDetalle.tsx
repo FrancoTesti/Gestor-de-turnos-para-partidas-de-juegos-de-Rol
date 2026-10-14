@@ -11,6 +11,7 @@ interface ObjetoDetalleProps {
   onComprar?: () => void;
   deshabilitarCompra?: boolean;
   motivoDeshabilitado?: string;
+  onCerrar?: () => void;
 }
 
 export default function ObjetoDetalle({
@@ -21,6 +22,7 @@ export default function ObjetoDetalle({
   onComprar,
   deshabilitarCompra,
   motivoDeshabilitado,
+  onCerrar,
 }: ObjetoDetalleProps) {
   if (cargando) return <Loading message="Cargando detalle..." />;
   if (error) return <p className="detalle-error" role="alert">{error}</p>;
@@ -28,7 +30,21 @@ export default function ObjetoDetalle({
 
   return (
     <div className="objeto-detalle">
-      <span className="objeto-tipo">{objeto.tipoObjeto}</span>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span className="objeto-tipo">{objeto.tipoObjeto}</span>
+        {onCerrar && (
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={onCerrar}
+            style={{ padding: '0.15rem 0.5rem', fontSize: '0.8rem' }}
+            title="Cerrar detalle"
+            aria-label="Cerrar detalle"
+          >
+            ✕
+          </button>
+        )}
+      </div>
       <h2>{objeto.nombre}</h2>
       <p>{objeto.descripcion}</p>
       <dl>
