@@ -42,11 +42,15 @@ describe('ObjetoLista', () => {
     expect(screen.getByText('No hay objetos que coincidan con los filtros.')).toBeInTheDocument();
   });
 
-  it('renderiza objetos con ID, distintivo de único y activa selección', () => {
+  it('renderiza objetos con el diseño de tienda: tipo, nombre, precio, descripción, ID, nivel y distintivo único', () => {
     const onSeleccionar = vi.fn();
     render(<ObjetoLista objetos={[objetoMock]} onSeleccionar={onSeleccionar} />);
 
+    expect(screen.getByText('Arma')).toBeInTheDocument();
     expect(screen.getByText('Espada Mágica')).toBeInTheDocument();
+    expect(screen.getByText(/150/)).toBeInTheDocument();
+    expect(screen.getByText('Corta el aire con filo ardiente')).toBeInTheDocument();
+    expect(screen.getByText(/Nivel 5/)).toBeInTheDocument();
     expect(screen.getByText('ID: #1')).toBeInTheDocument();
     expect(screen.getByText('Único')).toBeInTheDocument();
 

@@ -32,7 +32,6 @@ import {
   type CrearTiendaData,
 } from '../services/tienda.service';
 import {
-  comprarObjeto,
   obtenerObjetos,
   type ObjetoPublico,
 } from '../services/objeto.service';
@@ -78,10 +77,6 @@ export default function TiendasPage() {
   const [guardando, setGuardando] = useState(false);
   const [errorForm, setErrorForm] = useState<string | null>(null);
   const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
-
-  // Acciones de compra
-  const [personajeCompradorId, setPersonajeCompradorId] = useState<number | ''>('');
-  const [comprandoId, setComprandoId] = useState<number | null>(null);
 
   const [revision, setRevision] = useState(0);
   function cargar() {
@@ -197,62 +192,6 @@ export default function TiendasPage() {
       const msg = mensajeError(e);
       setError(msg);
       setErrorAvisoModal(msg);
-    }
-  }
-
-  const personajeComprador = useMemo(() => {
-    if (!personajeCompradorId) return null;
-    return misPersonajes.find((pj) => pj.idPersonaje === Number(personajeCompradorId)) ?? null;
-  }, [misPersonajes, personajeCompradorId]);
-
-  async function handleComprar(idObjeto: number) {
-    if (esAnfitrion) {
-      const msg = 'Los anfitriones no tienen permitido comprar objetos de la tienda.';
-      setError(msg);
-      setErrorAvisoModal(msg);
-      return;
-    }
-    if (!personajeCompradorId) {
-      const msg = 'Seleccioná un personaje para realizar la compra.';
-      setError(msg);
-      setErrorAvisoModal(msg);
-      return;
-    }
-    const objAComprar = objetos.find((o) => o.idObjeto === idObjeto);
-    if (personajeComprador && objAComprar && personajeComprador.nivel < objAComprar.nivelObjeto) {
-      const msg = `Nivel insuficiente: tu personaje es nivel ${personajeComprador.nivel} y el objeto requiere nivel ${objAComprar.nivelObjeto}.`;
-      setError(msg);
-      setErrorAvisoModal(msg);
-      return;
-    }
-    setComprandoId(idObjeto);
-    setError(null);
-    setMensaje(null);
-    try {
-      const idNum = Number(personajeCompradorId);
-      const ocupadas = new Set(
-        objetos
-          .filter((o) => o.idPersonaje === idNum && (o.numInventario === 1 || o.numInventario === null))
-          .map((o) => o.posicion),
-      );
-      let proximaPosicion = 0;
-      while (ocupadas.has(proximaPosicion)) {
-        proximaPosicion++;
-      }
-
-      await comprarObjeto(idObjeto, {
-        idPersonaje: idNum,
-        numInventario: 1,
-        posicion: proximaPosicion,
-      });
-      setMensaje('¡Objeto comprado con éxito!');
-      cargar();
-    } catch (e) {
-      const msg = mensajeError(e);
-      setError(msg);
-      setErrorAvisoModal(msg);
-    } finally {
-      setComprandoId(null);
     }
   }
 
@@ -537,7 +476,7 @@ export default function TiendasPage() {
 
       {/* Panel de detalle y Catálogo de objetos de la tienda */}
       {seleccionada && (
-        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', maxWidth: '680px', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', width: '100%', boxSizing: 'border-box', border: '1px solid var(--border)', boxShadow: 'var(--shadow-lg)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
             <h3 style={{ marginTop: 0 }}>Tienda #{seleccionada.idTienda}: {seleccionada.nombre}</h3>
             <button type="button" className="btn-secondary" onClick={() => setSeleccionada(null)} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -556,188 +495,115 @@ export default function TiendasPage() {
             Catálogo de Objetos ({objetosDeTienda.length})
           </h4>
           <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
-            Venta según tipo de tienda ({seleccionada.claseTienda}). Los objetos únicos solo pueden existir en un lugar por partida (en tienda o en inventario).
+            Venta según tipo de tienda ({seleccionada.claseTienda}). La compra de objetos es exclusiva de Catálogo &gt; Objetos.
           </p>
-
-          {esAnfitrion ? (
-            <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
-              Los anfitriones administran las tiendas y no tienen permitido comprar objetos.
-            </p>
-          ) : misPersonajes.length > 0 ? (
-            <div style={{ background: 'var(--bg-card-secondary)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-subtle)' }}>
-              <label htmlFor="comprar-como-personaje" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span>Comprar como:</span>
-              </label>
-              <select
-                id="comprar-como-personaje"
-                aria-label="Comprar como personaje"
-                value={personajeCompradorId}
-                onChange={(e) => setPersonajeCompradorId(e.target.value ? Number(e.target.value) : '')}
-                style={{ padding: '0.35rem 0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
-              >
-                <option value="">Seleccionar personaje...</option>
-                {misPersonajes.map((pj) => (
-                  <option key={pj.idPersonaje} value={pj.idPersonaje}>
-                    {pj.nombreFicticio} (Saldo: ${pj.dinero})
-                  </option>
-                ))}
-              </select>
-            </div>
-          ) : null}
 
           {objetosDeTienda.length === 0 ? (
             <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', margin: '1rem 0' }}>
               Actualmente no hay objetos asociados a esta tienda.
             </p>
           ) : (
-            <div style={{ display: 'grid', gap: '0.75rem' }}>
-              {objetosDeTienda.map((obj) => {
-                const nivelInsuficiente = Boolean(
-                  personajeComprador && personajeComprador.nivel < obj.nivelObjeto
-                );
-                const deshabilitado =
-                  esAnfitrion ||
-                  !personajeCompradorId ||
-                  nivelInsuficiente ||
-                  comprandoId === obj.idObjeto;
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '0.75rem' }}>
+              {objetosDeTienda.map((obj) => (
+                <div
+                  key={obj.idObjeto}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.4rem',
+                    padding: '0.85rem 1rem',
+                    borderRadius: 'var(--radius-sm)',
+                    background: 'var(--bg-card-secondary)',
+                    border: '1px solid var(--border)',
+                  }}
+                >
+                  {/* Arriba de todo: Tipo de item */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.05em',
+                        color: 'var(--accent)',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {obj.tipoObjeto}
+                    </span>
+                  </div>
 
-                let textoBoton = 'Comprar';
-                if (comprandoId === obj.idObjeto) {
-                  textoBoton = 'Comprando...';
-                } else if (personajeComprador && nivelInsuficiente) {
-                  textoBoton = `Nivel mín. ${obj.nivelObjeto}`;
-                }
-
-                let tituloBoton: string | undefined = undefined;
-                if (esAnfitrion) {
-                  tituloBoton = 'Los anfitriones no pueden comprar objetos de la tienda';
-                } else if (!personajeCompradorId) {
-                  tituloBoton = 'Seleccioná un personaje para comprar';
-                } else if (nivelInsuficiente) {
-                  tituloBoton = `Tu personaje es nivel ${personajeComprador!.nivel}. Requiere nivel ${obj.nivelObjeto}.`;
-                }
-
-                return (
+                  {/* Mismo nivel: Nombre a la izquierda y Precio a la derecha */}
                   <div
-                    key={obj.idObjeto}
                     style={{
                       display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.4rem',
-                      padding: '0.85rem 1rem',
-                      borderRadius: 'var(--radius-sm)',
-                      background: 'var(--bg-card-secondary)',
-                      border: '1px solid var(--border)',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      gap: '0.75rem',
                     }}
                   >
-                    {/* Arriba de todo: Tipo de item */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span
-                        style={{
-                          fontSize: '0.75rem',
-                          textTransform: 'uppercase',
-                          letterSpacing: '0.05em',
-                          color: 'var(--accent)',
-                          fontWeight: 700,
-                        }}
-                      >
-                        {obj.tipoObjeto}
-                      </span>
-                    </div>
-
-                    {/* Mismo nivel: Nombre a la izquierda y Precio a la derecha */}
-                    <div
+                    <strong style={{ fontSize: '1rem', color: 'var(--text-h)' }}>
+                      {obj.nombre}
+                    </strong>
+                    <span
                       style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
+                        fontWeight: 700,
+                        color: 'var(--accent-text)',
+                        fontSize: '1rem',
+                        display: 'inline-flex',
                         alignItems: 'center',
-                        gap: '0.75rem',
+                        gap: '0.25rem',
+                        flexShrink: 0,
                       }}
                     >
-                      <strong style={{ fontSize: '1rem', color: 'var(--text-h)' }}>
-                        {obj.nombre}
-                      </strong>
-                      <span
-                        style={{
-                          fontWeight: 700,
-                          color: 'var(--accent-text)',
-                          fontSize: '1rem',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '0.25rem',
-                          flexShrink: 0,
-                        }}
-                      >
-                        <CoinIcon size={14} /> ${obj.valor}
-                      </span>
-                    </div>
-
-                    {/* Descripción si existe */}
-                    {obj.descripcion && (
-                      <p style={{ margin: '0.1rem 0 0.25rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                        {obj.descripcion}
-                      </p>
-                    )}
-
-                    {/* Abajo: ID, Nivel, Único (a la izquierda) y Botón Comprar (a la derecha) */}
-                    <div
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        marginTop: '0.25rem',
-                        flexWrap: 'wrap',
-                        gap: '0.5rem',
-                      }}
-                    >
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '0.4rem',
-                          fontSize: '0.8rem',
-                          color: 'var(--text-muted)',
-                        }}
-                      >
-                        <span>#{obj.idObjeto}</span>
-                        <span>•</span>
-                        <span>Nivel {obj.nivelObjeto}</span>
-                        {obj.esUnico && (
-                          <>
-                            <span>•</span>
-                            <span
-                              style={{
-                                fontSize: '0.75rem',
-                                padding: '0.1rem 0.4rem',
-                                borderRadius: '4px',
-                                background: 'rgba(168, 85, 247, 0.2)',
-                                color: 'var(--accent, #a855f7)',
-                                fontWeight: 700,
-                              }}
-                            >
-                              Único
-                            </span>
-                            <span style={{ color: 'var(--success-text)', fontSize: '0.75rem', fontWeight: 600 }}>
-                              (Se puede vender)
-                            </span>
-                          </>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        className="btn-primary"
-                        disabled={deshabilitado}
-                        onClick={() => void handleComprar(obj.idObjeto)}
-                        style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
-                        title={tituloBoton}
-                      >
-                        {textoBoton}
-                      </button>
-                    </div>
+                      <CoinIcon size={14} /> ${obj.valor}
+                    </span>
                   </div>
-                );
-              })}
+
+                  {/* Descripción si existe */}
+                  {obj.descripcion && (
+                    <p style={{ margin: '0.1rem 0 0.25rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      {obj.descripcion}
+                    </p>
+                  )}
+
+                  {/* Abajo: ID, Nivel, Único */}
+                  <div
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      marginTop: '0.25rem',
+                      fontSize: '0.8rem',
+                      color: 'var(--text-muted)',
+                      flexWrap: 'wrap',
+                    }}
+                  >
+                    <span>#{obj.idObjeto}</span>
+                    <span>•</span>
+                    <span>Nivel {obj.nivelObjeto}</span>
+                    {obj.esUnico && (
+                      <>
+                        <span>•</span>
+                        <span
+                          style={{
+                            fontSize: '0.75rem',
+                            padding: '0.1rem 0.4rem',
+                            borderRadius: '4px',
+                            background: 'rgba(168, 85, 247, 0.2)',
+                            color: 'var(--accent, #a855f7)',
+                            fontWeight: 700,
+                          }}
+                        >
+                          Único
+                        </span>
+                        <span style={{ color: 'var(--success-text)', fontSize: '0.75rem', fontWeight: 600 }}>
+                          (Se puede vender)
+                        </span>
+                      </>
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
           )}
         </aside>
