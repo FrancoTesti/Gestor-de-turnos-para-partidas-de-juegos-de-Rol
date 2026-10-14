@@ -1,4 +1,5 @@
 import type { Clase } from '../../interfaces';
+import { ShieldIcon } from '../ui';
 import './clases.css';
 
 export interface ClaseDetalleProps {
@@ -36,8 +37,8 @@ export default function ClaseDetalle({ clase, onVolver, onCerrar, onEditar }: Cl
       </div>
 
       <div style={{ marginTop: '1rem' }}>
-        <h3 style={{ fontSize: '1.4rem', color: 'var(--text-h)', margin: '0.5rem 0' }}>
-          {clase.nombreClase}
+        <h3 style={{ fontSize: '1.4rem', color: 'var(--text-h)', margin: '0.5rem 0', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <ShieldIcon size={20} /> {clase.nombreClase}
         </h3>
         <p style={{ color: 'var(--text-muted)', lineHeight: 1.5, fontSize: '1rem' }}>
           {clase.descripcionClase}

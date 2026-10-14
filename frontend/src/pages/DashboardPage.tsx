@@ -138,7 +138,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Celda 6 (12 cols): Directorio de Usuarios */}
-        <div className="bento-card bento-col-12">
+        <div className="bento-card bento-col-12" style={{ minHeight: '440px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
             <div>
               <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
@@ -160,14 +160,16 @@ export default function DashboardPage() {
               <p style={{ margin: 0, fontStyle: 'italic' }}>No hay usuarios registrados aún.</p>
             </div>
           ) : (
-            <>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
               <ul style={{
                 margin: 0,
                 padding: 0,
                 listStyle: 'none',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: '0.75rem'
+                gap: '0.75rem',
+                minHeight: '320px',
+                alignContent: 'start',
               }}>
                 {usuariosPaginados.map((u) => (
                   <li key={u.idUsuario} style={{
@@ -196,7 +198,7 @@ export default function DashboardPage() {
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginTop: '1.25rem',
+                  marginTop: 'auto',
                   paddingTop: '1rem',
                   borderTop: '1px solid var(--border-subtle)',
                   flexWrap: 'wrap',
@@ -246,7 +248,7 @@ export default function DashboardPage() {
                   </button>
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
       </div>

@@ -25,10 +25,21 @@
   padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  align-items: flex-end;
+}
+
+.objeto-filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .objeto-filtros input,
 .objeto-filtros select {
+  box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.85rem;
@@ -39,7 +50,8 @@
 }
 
 .objeto-filtros input {
-  flex: 1 1 10rem;
+  box-sizing: border-box;
+  flex: 1 1 12rem;
   min-width: 0;
 }
 
@@ -298,8 +310,16 @@
 
   .objeto-filtros input,
   .objeto-filtros select {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.85rem;
+    box-sizing: border-box;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.875rem;
+    min-height: 2.35rem;
+  }
+
+  .objeto-filtros input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    padding: 0.55rem 0.8rem;
   }
 
   .objeto-campos-numericos {
@@ -332,14 +352,15 @@
 }
 
 @media (min-width: 768px) {
-  .seccion-header,
-  .objeto-filtros {
+  .seccion-header {
     align-items: center;
     flex-direction: row;
-  }
-  
-  .seccion-header {
     justify-content: space-between;
+  }
+
+  .objeto-filtros {
+    align-items: flex-end;
+    flex-direction: row;
   }
 
   .objetos-layout {

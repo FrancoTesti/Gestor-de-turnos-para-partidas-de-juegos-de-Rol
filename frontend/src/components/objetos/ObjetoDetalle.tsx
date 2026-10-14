@@ -33,12 +33,17 @@ export default function ObjetoDetalle({
       <p>{objeto.descripcion}</p>
       <dl>
         <div><dt>Nivel</dt><dd>{objeto.nivelObjeto}</dd></div>
-        <div><dt>Valor</dt><dd style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}><CoinIcon size={14} /> ${objeto.valor}</dd></div>
         <div>
-          <dt>Único</dt>
-          <dd style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-            {objeto.esUnico ? <><StarIcon size={14} /> Sí (Objeto único)</> : 'No'}
-          </dd>
+          <dt style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+            Valor <CoinIcon size={14} />
+          </dt>
+          <dd>${objeto.valor}</dd>
+        </div>
+        <div>
+          <dt style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+            Único <StarIcon size={14} />
+          </dt>
+          <dd>{objeto.esUnico ? 'Sí' : 'No'}</dd>
         </div>
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>
         <div><dt>Ubicación</dt><dd>{nombreTienda ?? (objeto.idPersonaje ? `Inventario ${objeto.numInventario} del personaje #${objeto.idPersonaje}` : 'Sin asignar')}</dd></div>

@@ -214,8 +214,8 @@ export class JuegoService {
       const tienda = await tx.findOne(Tienda, { idTienda: data.idTienda }, { populate: ['clase'] });
       if (!tienda) throw new HttpError(404, 'Tienda no encontrada');
       conflict(!!tienda.clase && !!p.clase && tienda.clase.idClase !== p.clase.idClase, 'No podés vender a una tienda de otra clase');
-      const precioVenta = data.precio !== undefined ? data.precio : object.valor;
       const rango = rangoVenta(object.valor);
+      const precioVenta = data.precio !== undefined ? data.precio : object.valor;
       conflict(precioVenta < rango.minimo || precioVenta > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
       conflict(p.dinero + precioVenta > 2147483647, 'El saldo excedería el límite permitido');
       p.dinero += precioVenta;
