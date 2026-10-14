@@ -75,4 +75,15 @@ describe('ObjetoLista', () => {
     expect(screen.queryByRole('button', { name: 'Editar' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Eliminar' })).not.toBeInTheDocument();
   });
+
+  it('ordena y muestra los objetos en orden alfabético por nombre', () => {
+    const objetoZ = { ...objetoMock, idObjeto: 10, nombre: 'Zafiro Arcano' };
+    const objetoA = { ...objetoMock, idObjeto: 11, nombre: 'Anillo de Fuego' };
+    const objetoM = { ...objetoMock, idObjeto: 12, nombre: 'Maza de Guerra' };
+
+    render(<ObjetoLista objetos={[objetoZ, objetoA, objetoM]} onSeleccionar={vi.fn()} />);
+
+    const titulos = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(titulos).toEqual(['Anillo de Fuego', 'Maza de Guerra', 'Zafiro Arcano']);
+  });
 });

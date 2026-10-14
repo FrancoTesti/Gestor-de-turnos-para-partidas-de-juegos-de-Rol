@@ -93,7 +93,7 @@ export default function ObjetosPage() {
       const coincideNivel = !nivel || objeto.nivelObjeto === Number(nivel);
       const coincideValor = !valorMax || objeto.valor <= Number(valorMax);
       return coincideTexto && coincideTipo && coincideNivel && coincideValor && sugerido;
-    });
+    }).sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: 'base' }));
   }, [busqueda, objetos, tipo, nivel, valorMax, sugerirPara, personajes, tiendas]);
 
   async function seleccionar(objeto: ObjetoPublico): Promise<void> {
@@ -236,24 +236,24 @@ export default function ObjetosPage() {
               <option value="">Todos los tipos</option>
               {tipos.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
-            <input
-              type="number"
-              min="1"
-              value={nivel}
-              onChange={(e) => setNivel(e.target.value)}
-              placeholder="Nivel exacto"
-              aria-label="Filtrar por nivel"
-              style={{ width: '120px' }}
-            />
-            <input
-              type="number"
-              min="0"
-              value={valorMax}
-              onChange={(e) => setValorMax(e.target.value)}
-              placeholder="Valor máx"
-              aria-label="Filtrar por valor máximo"
-              style={{ width: '120px' }}
-            />
+            <div className="objeto-campos-numericos">
+              <input
+                type="number"
+                min="1"
+                value={nivel}
+                onChange={(e) => setNivel(e.target.value)}
+                placeholder="Nivel exacto"
+                aria-label="Filtrar por nivel"
+              />
+              <input
+                type="number"
+                min="0"
+                value={valorMax}
+                onChange={(e) => setValorMax(e.target.value)}
+                placeholder="Valor máx"
+                aria-label="Filtrar por valor máximo"
+              />
+            </div>
           </div>
           <div className="objetos-layout">
             <ObjetoLista objetos={filtrados} seleccionadoId={seleccionado?.idObjeto} cargando={cargando} onSeleccionar={(objeto) => void seleccionar(objeto)} onEditar={host ? (objeto) => { setEnEdicion(objeto); setVista('formulario'); } : undefined} onEliminar={host ? (objeto) => void borrar(objeto) : undefined} />

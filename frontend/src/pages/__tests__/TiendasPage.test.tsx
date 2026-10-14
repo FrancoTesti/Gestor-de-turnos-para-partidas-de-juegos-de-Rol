@@ -92,6 +92,19 @@ vi.mock('../../services/objeto.service', () => ({
       numInventario: 1,
       posicion: 0,
     },
+    {
+      idObjeto: 3,
+      nombre: 'Arco Compuesto',
+      descripcion: 'Arco veloz de precisión',
+      tipoObjeto: 'Arma',
+      valor: 250,
+      nivelObjeto: 2,
+      esUnico: false,
+      idTienda: 1,
+      idPersonaje: null,
+      numInventario: null,
+      posicion: 0,
+    },
   ]),
   comprarObjeto: vi.fn().mockResolvedValue({}),
 }));
@@ -155,8 +168,11 @@ describe('TiendasPage', () => {
     const aside = screen.getByRole('complementary');
     expect(aside).toHaveStyle({ width: '100%' });
     expect(aside).not.toHaveStyle({ maxWidth: '680px' });
-    expect(within(aside).getByText('Arma')).toBeInTheDocument();
+    expect(within(aside).getByText(/Arco Compuesto/i)).toBeInTheDocument();
     expect(within(aside).getByText(/Espada Legendaria/i)).toBeInTheDocument();
+    const items = within(aside).getAllByText(/(Arco Compuesto|Espada Legendaria)/i);
+    expect(items[0]).toHaveTextContent('Arco Compuesto');
+    expect(items[1]).toHaveTextContent('Espada Legendaria');
     expect(within(aside).getByText(/500/)).toBeInTheDocument();
     expect(within(aside).getByText('#1')).toBeInTheDocument();
     expect(within(aside).getByText(/Nivel 5/)).toBeInTheDocument();

@@ -320,7 +320,9 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
     }
     const isFull = freePositions.length === 0;
     const selling = objects.find(o => String(o.idObjeto) === object);
-    const moveOptions = characterObjects.length > 0 ? characterObjects : objects;
+    const moveOptions = (characterObjects.length > 0 ? characterObjects : objects)
+      .slice()
+      .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }));
 
     return (
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
@@ -451,7 +453,9 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
               style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
             >
               <option value="">Seleccionar objeto</option>
-              {objects.map(o => (
+              {[...objects]
+                .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }))
+                .map(o => (
                 <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
                   {label(o)} (Posición {String(o.posicion)}, Valor ${String(o.valor)})
                 </option>

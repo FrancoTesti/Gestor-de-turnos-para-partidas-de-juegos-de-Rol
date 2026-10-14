@@ -76,7 +76,11 @@ export class ObjetoService {
   }
 
   async obtenerTodos(): Promise<ObjetoPublicoDTO[]> {
-    const objetos = await this.em.find(Objeto, {}, { populate: ['tienda', 'inventario.personaje'] });
+    const objetos = await this.em.find(
+      Objeto,
+      {},
+      { populate: ['tienda', 'inventario.personaje'], orderBy: { nombre: 'ASC' } }
+    );
     return objetos.map((o) => this.aObjetoPublico(o));
   }
 

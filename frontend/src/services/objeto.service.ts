@@ -46,7 +46,8 @@ export interface ResultadoVentaObjeto {
 }
 
 export async function obtenerObjetos(): Promise<ObjetoPublico[]> {
-  return api<ObjetoPublico[]>(OBJETOS_URL);
+  const lista = await api<ObjetoPublico[]>(OBJETOS_URL);
+  return lista.sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: 'base' }));
 }
 
 export async function obtenerObjetoPorId(idObjeto: number): Promise<ObjetoPublico> {
