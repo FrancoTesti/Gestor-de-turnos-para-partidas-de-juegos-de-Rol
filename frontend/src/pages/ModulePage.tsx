@@ -227,14 +227,14 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       <button className="btn-primary" disabled={busy} type="submit">Guardar</button><button className="btn-secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
     </form> : <>
       <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
-        <label htmlFor="modulo-buscar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)', flex: '1 1 320px', maxWidth: '460px' }}>
+        <label htmlFor="modulo-buscar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)', flex: '1 1 auto', flexWrap: 'wrap', maxWidth: '100%' }}>
           {resource === 'partidas' ? 'Buscar por Id de Partida:' : 'Buscar:'}
           <input
             id="modulo-buscar"
             value={search}
             placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'}
             onChange={e => setSearch(e.target.value)}
-            style={{ padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none', minWidth: '280px', flex: '1 1 280px', maxWidth: '420px' }}
+            style={{ padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none', width: '100%', maxWidth: '24rem', boxSizing: 'border-box' }}
           />
         </label>
         {resource === 'personajes' && (

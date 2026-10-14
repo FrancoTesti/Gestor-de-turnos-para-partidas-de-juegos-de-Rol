@@ -182,7 +182,7 @@ it('aplica las alineaciones requeridas a la tabla de inventarios (izq, centro, d
 
   // El recuadro de búsqueda tiene ancho flexible para no cortar el texto
   const inputBuscar = screen.getByPlaceholderText('Filtrar por cualquier campo...');
-  expect(inputBuscar).toHaveStyle({ minWidth: '280px' });
+  expect(inputBuscar).toHaveStyle({ maxWidth: '24rem', width: '100%' });
 });
 
 
