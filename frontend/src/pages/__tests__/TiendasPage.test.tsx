@@ -153,6 +153,8 @@ describe('TiendasPage', () => {
     });
 
     const aside = screen.getByRole('complementary');
+    expect(aside).toHaveStyle({ width: '100%' });
+    expect(aside).not.toHaveStyle({ maxWidth: '680px' });
     expect(within(aside).getByText('Arma')).toBeInTheDocument();
     expect(within(aside).getByText(/Espada Legendaria/i)).toBeInTheDocument();
     expect(within(aside).getByText(/500/)).toBeInTheDocument();
@@ -164,23 +166,8 @@ describe('TiendasPage', () => {
     expect(within(aside).queryByText(/Instancia Comprada/i)).not.toBeInTheDocument();
   });
 
-  it('inhabilita a los anfitriones de poder comprar objetos en la tienda', async () => {
-    render(<TiendasPage />);
-    await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
-
-    const verCatalogoBtns = screen.getAllByRole('button', { name: /Ver catálogo/i });
-    fireEvent.click(verCatalogoBtns[0]);
-
-    await waitFor(() => {
-      expect(screen.getByText(/Los anfitriones administran las tiendas y no tienen permitido comprar objetos/i)).toBeInTheDocument();
-    });
-
-    const comprarBtn = screen.getByRole('button', { name: /Comprar/i });
-    expect(comprarBtn).toBeDisabled();
-    expect(comprarBtn).toHaveAttribute('title', 'Los anfitriones no pueden comprar objetos de la tienda');
-  });
-
-  it('para un jugador, restringe la compra si el nivel del personaje es inferior al del objeto', async () => {
+  it('no permite comprar objetos en la tienda ya que la compra es exclusiva de Catálogo > Objetos', async () => {
+    // Probar tanto para anfitrión como para jugador
     mocks.setRole('jugador');
     render(<TiendasPage />);
     await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
@@ -189,17 +176,14 @@ describe('TiendasPage', () => {
     fireEvent.click(verCatalogoBtns[0]);
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/Comprar como/i)).toBeInTheDocument();
+      expect(screen.getByText(/Catálogo de Objetos/i)).toBeInTheDocument();
     });
 
-    // Seleccionar el personaje que tiene nivel 2 (el objeto Espada Legendaria requiere nivel 5)
-    fireEvent.change(screen.getByLabelText(/Comprar como/i), { target: { value: '10' } });
-
-    await waitFor(() => {
-      const botonNivel = screen.getByRole('button', { name: /Nivel mín\. 5/i });
-      expect(botonNivel).toBeDisabled();
-      expect(botonNivel).toHaveAttribute('title', expect.stringContaining('Requiere nivel 5'));
-    });
+    const aside = screen.getByRole('complementary');
+    // No debe haber botón de Comprar ni selector de comprar como personaje
+    expect(within(aside).queryByRole('button', { name: /Comprar/i })).not.toBeInTheDocument();
+    expect(within(aside).queryByLabelText(/Comprar como/i)).not.toBeInTheDocument();
+    expect(within(aside).queryByText(/Los anfitriones administran las tiendas/i)).not.toBeInTheDocument();
   });
 });
 
