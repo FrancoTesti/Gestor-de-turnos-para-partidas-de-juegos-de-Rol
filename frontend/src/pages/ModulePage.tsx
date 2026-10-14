@@ -360,7 +360,7 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
           }}
           style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', border: '1px solid var(--border)' }}
         >
-          <h4 style={{ marginTop: 0 }}>Mover objeto a este inventario</h4>
+          <h4 style={{ marginTop: 0 }}>Mover objeto en este inventario</h4>
           {isFull && <p style={{ color: '#c53030', fontSize: '0.85rem' }}>Capacidad insuficiente: Este inventario está lleno.</p>}
           <label htmlFor="select-objeto-mover" style={{ display: 'block', marginBottom: '0.5rem' }}>
             Objeto del personaje

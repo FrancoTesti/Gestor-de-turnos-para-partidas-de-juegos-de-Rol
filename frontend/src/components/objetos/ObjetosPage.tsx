@@ -83,6 +83,9 @@ export default function ObjetosPage() {
   const filtrados = useMemo(() => {
     const texto = busqueda.trim().toLocaleLowerCase();
     return objetos.filter((objeto) => {
+      // Las instancias de objetos no únicos comprados pertenecen exclusivamente al inventario
+      if (objeto.idPersonaje !== null && !objeto.esUnico) return false;
+
       const coincideTexto = !texto || objeto.nombre.toLocaleLowerCase().includes(texto) || objeto.descripcion.toLocaleLowerCase().includes(texto);
       const clase = personajes.find(p => p.idPersonaje === Number(sugerirPara))?.idClase;
       const sugerido = !sugerirPara || (objeto.idTienda !== null && objeto.idPersonaje === null && tiendas.some(t => t.idTienda === objeto.idTienda && t.idClase === clase));
@@ -154,13 +157,12 @@ export default function ObjetosPage() {
     setMensaje(null);
     try {
       const resultado = await comprarObjeto(seleccionado.idObjeto, data);
-      setObjetos((actuales) => {
-        if (seleccionado.esUnico) {
-          return actuales.map((objeto) => (objeto.idObjeto === resultado.objeto.idObjeto ? resultado.objeto : objeto));
-        }
-        return [...actuales, resultado.objeto];
-      });
-      setSeleccionado(resultado.objeto);
+      if (seleccionado.esUnico) {
+        setObjetos((actuales) =>
+          actuales.map((objeto) => (objeto.idObjeto === resultado.objeto.idObjeto ? resultado.objeto : objeto)),
+        );
+        setSeleccionado(resultado.objeto);
+      }
       setPersonajes((actuales) =>
         actuales.map((personaje) => personaje.idPersonaje === resultado.idPersonaje
           ? { ...personaje, dinero: resultado.dineroRestante }
@@ -179,13 +181,16 @@ export default function ObjetosPage() {
     setMensaje(null);
     try {
       const resultado = await venderObjeto(seleccionado.idObjeto, data);
-      setObjetos((actuales) =>
-        actuales.map((o) =>
-          o.idObjeto === resultado.idObjeto
-            ? { ...o, idTienda: data.idTienda, idPersonaje: null, numInventario: null, posicion: 0 }
-            : o,
-        ),
-      );
+      setObjetos((actuales) => {
+        if (seleccionado.esUnico) {
+          return actuales.map((o) =>
+            o.idObjeto === resultado.idObjeto
+              ? { ...o, idTienda: data.idTienda, idPersonaje: null, numInventario: null, posicion: 0 }
+              : o,
+          );
+        }
+        return actuales.filter((o) => o.idObjeto !== resultado.idObjeto);
+      });
       setPersonajes((actuales) =>
         actuales.map((p) =>
           p.idPersonaje === resultado.idPersonaje

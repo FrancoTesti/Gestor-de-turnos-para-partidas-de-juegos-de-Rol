@@ -29,6 +29,7 @@ describe('JuegoService - Inventarios, Movimiento y Ventas', () => {
       inventario,
       posicion: 0,
       tienda: null,
+      esUnico: true,
     });
   });
 
@@ -59,6 +60,7 @@ describe('JuegoService - Inventarios, Movimiento y Ventas', () => {
       find: vi.fn().mockResolvedValue([]),
       count: vi.fn().mockResolvedValue(overrides?.countObjetos ?? 0),
       create: vi.fn().mockImplementation((_entity, data) => Object.assign(new Inventario(), data)),
+      remove: vi.fn(),
       flush: vi.fn().mockResolvedValue(undefined),
       removeAndFlush: vi.fn().mockResolvedValue(undefined),
     };
@@ -130,6 +132,15 @@ describe('JuegoService - Inventarios, Movimiento y Ventas', () => {
       expect(res.dineroRestante).toBe(180);
       expect(objeto.inventario).toBeNull();
       expect(objeto.tienda).toBe(tienda);
+      expect(tx.flush).toHaveBeenCalledOnce();
+    });
+
+    it('vende un objeto no único eliminando la instancia para que no vuelva a aparecer en la tienda', async () => {
+      objeto.esUnico = false;
+      const { service, tx } = crearMockEm();
+      const res = await service.sell(1, 50, { idPersonaje: 10, idTienda: 2, precio: 80 });
+      expect(res.dineroRestante).toBe(180);
+      expect(tx.remove).toHaveBeenCalledWith(objeto);
       expect(tx.flush).toHaveBeenCalledOnce();
     });
 

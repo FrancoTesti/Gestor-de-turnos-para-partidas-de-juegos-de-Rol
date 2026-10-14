@@ -243,6 +243,14 @@ test('compra de objeto no único (esUnico: false) es infinita: se clona en inven
     request(`/objetos/${pocion.idObjeto}/comprar`, 'POST', { idPersonaje: ids.otherCharacter, numInventario: 1, posicion: 0 }, otherCookie),
   ]);
   assert.deepEqual(concurrentResults.map(r => r.status), [200, 200]);
+
+  // Venta de la instancia clonada: acredita el dinero y la instancia no queda en la tienda
+  const sellClone = await request(`/objetos/${buy1.body.objeto.idObjeto}/vender`, 'POST', { idPersonaje: ids.character, idTienda: ids.store, precio: 8 }, playerCookie);
+  assert.equal(sellClone.status, 200);
+  const cloneInDb = await orm.em.fork().findOne(Objeto, { idObjeto: buy1.body.objeto.idObjeto });
+  assert.equal(cloneInDb, null);
+  const storeItems = await orm.em.fork().find(Objeto, { tienda, nombre: 'Poción de Vida' });
+  assert.equal(storeItems.length, 1);
 });
 test('venta entre 70 y 100 %, no repetible, con control de propiedad', async () => {
   await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
