@@ -23,6 +23,7 @@ import {
   type ActualizarClaseData,
   type CrearClaseData,
 } from '../services/clase.service';
+import './UsersPage.css';
 
 type Vista = 'listado' | 'formulario';
 
@@ -53,6 +54,16 @@ export default function ClasesPage() {
       .finally(() => { if (activo) setCargando(false); });
     return () => { activo = false; };
   }, [revision]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && seleccionada) {
+        setSeleccionada(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [seleccionada]);
 
   function recargar() {
     setCargando(true);
@@ -189,17 +200,32 @@ export default function ClasesPage() {
           />
 
           {claseSeleccionada && (
-            <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '520px', boxShadow: 'var(--shadow)' }}>
-              <ClaseDetalle clase={claseSeleccionada} onVolver={() => setSeleccionada(null)} />
-              <button
-                type="button"
-                className="btn-secondary"
-                style={{ marginTop: '1rem' }}
-                onClick={() => setSeleccionada(null)}
+            <div
+              className="usuario-modal-overlay"
+              onClick={() => setSeleccionada(null)}
+              role="dialog"
+              aria-modal="true"
+            >
+              <div
+                className="usuario-modal-content"
+                onClick={(e) => e.stopPropagation()}
               >
-                Cerrar detalle
-              </button>
-            </aside>
+                <ClaseDetalle
+                  clase={claseSeleccionada}
+                  onVolver={() => setSeleccionada(null)}
+                  onCerrar={() => setSeleccionada(null)}
+                  onEditar={esAnfitrion ? (c) => { setEnEdicion(c); setVista('formulario'); setSeleccionada(null); } : undefined}
+                />
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  style={{ marginTop: '1rem', width: '100%' }}
+                  onClick={() => setSeleccionada(null)}
+                >
+                  Cerrar detalle
+                </button>
+              </div>
+            </div>
           )}
         </>
       )}

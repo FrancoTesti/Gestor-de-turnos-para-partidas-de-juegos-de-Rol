@@ -159,3 +159,10 @@
   padding: 1.5rem;
   box-shadow: var(--shadow);
 }
+
+.usuario-modal-content .clase-detalle-card {
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0.5rem;
+}

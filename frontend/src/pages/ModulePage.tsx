@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
 import Loading from '../components/ui/Loading';
-import { AvisoModal, TrendingUpIcon } from '../components/ui';
+import { AvisoModal, TrendingUpIcon, CoinIcon } from '../components/ui';
 import './ModulePage.css';
+import './UsersPage.css';
 
 type Row = Record<string, unknown>;
 type Resource = 'clases' | 'tiendas' | 'partidas' | 'personajes' | 'inventarios';
@@ -350,7 +351,13 @@ export default function ModulePage({ resource }: { resource: Resource }) {
                   }
 
                   let cellContent: ReactNode = val;
-                  if (resource === 'partidas' && k === 'nombre') {
+                  if (resource === 'inventarios' && k === 'personajeNombre') {
+                    cellContent = (
+                      <strong style={{ fontWeight: 700, color: 'var(--text-h)' }}>
+                        {val}
+                      </strong>
+                    );
+                  } else if (resource === 'partidas' && k === 'nombre') {
                     cellContent = (
                       <strong style={{ fontWeight: 700, color: 'var(--text-h)' }}>
                         {val}
@@ -448,7 +455,21 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         </table>
       </div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
-      {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{columnLabel(k)}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
+      {selected && (
+        <article className={resource === 'inventarios' ? 'inventario-detalle-article' : undefined}>
+          <h2>Detalle</h2>
+          {resource === 'inventarios' ? (
+            <dl className="inventario-info-grid">
+              {columns.map(k => (
+                <div key={k} className="inventario-info-card">
+                  <dt className="inventario-info-label">{columnLabel(k)}</dt>
+                  <dd className="inventario-info-value">{display(selected, k)}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <dl>{columns.map(k => <div key={k}><dt>{columnLabel(k)}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
+          )}
         {resource === 'partidas' && (
           <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
             <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
@@ -461,7 +482,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         )}
         <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} onNotifyError={(msg) => setErrorAvisoModal(msg)} />
         <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
-      </article>}
+      </article>
+      )}
     </>}
     </>
   )}
@@ -473,9 +495,10 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
   const [error, setError] = useState('');
   const [object, setObject] = useState('');
   const [position, setPosition] = useState('0');
-  const [store, setStore] = useState('');
-  const [price, setPrice] = useState('');
   const [characterObjects, setCharacterObjects] = useState<Row[]>([]);
+  const [objetoVenta, setObjetoVenta] = useState<Row | null>(null);
+  const [precioReventa, setPrecioReventa] = useState<number>(0);
+  const [tiendaVenta, setTiendaVenta] = useState<string>('');
 
   useEffect(() => {
     let active = true;
@@ -489,6 +512,29 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
     return () => { active = false; };
   }, [resource, row.idPersonaje, row]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && objetoVenta) {
+        setObjetoVenta(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [objetoVenta]);
+
+  const abrirVentaObjeto = (item: Row) => {
+    const valorBase = Number(item.valor) || 0;
+    const factor = 0.5 + Math.random() * 0.3;
+    const minVenta = Math.ceil(valorBase * 0.5);
+    const maxVenta = Math.floor(valorBase * 0.8);
+    const calculado = Math.round(valorBase * factor);
+    const finalPrice = Math.max(minVenta, Math.min(maxVenta, calculado));
+    setObjetoVenta(item);
+    setPrecioReventa(finalPrice);
+    const defaultStore = refs.tiendas && refs.tiendas.length > 0 ? String(refs.tiendas[0].idTienda) : '';
+    setTiendaVenta(defaultStore);
+  };
+
   if (resource === 'inventarios') {
     const objects = (row.objetos ?? []) as Row[];
 
@@ -499,7 +545,6 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
       if (!occupiedPositions.has(p)) freePositions.push(p);
     }
     const isFull = freePositions.length === 0;
-    const selling = objects.find(o => String(o.idObjeto) === object);
     const moveOptions = (characterObjects.length > 0 ? characterObjects : objects)
       .slice()
       .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }));
@@ -508,32 +553,50 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
         <h3>Mochila / Inventario #{String(row.numInventario)}</h3>
         {error && <p role="alert">{error}</p>}
-        <p style={{ fontSize: '0.9rem', color: 'var(--text)' }}>
+        <p style={{ fontSize: '0.9rem', color: 'var(--text)', marginBottom: '0.35rem' }}>
           Capacidad: <strong>{objects.length} / {totalCapacity} espacios ocupados</strong> ({freePositions.length} libres)
         </p>
+        <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
+          💡 Hacé clic en cualquier objeto de la mochila para ver sus características y venderlo a una tienda.
+        </p>
 
-        <div className="grid-posiciones" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '0.5rem', marginBottom: '1.25rem' }}>
+        <div className="grid-posiciones" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '0.65rem', marginBottom: '1.25rem' }}>
           {Array.from({ length: totalCapacity }, (_, idx) => {
             const item = objects.find(o => Number(o.posicion) === idx);
             return (
               <div
                 key={idx}
+                className={item ? 'casillero-ocupado' : undefined}
+                onClick={() => {
+                  if (item) {
+                    abrirVentaObjeto(item);
+                  }
+                }}
                 style={{
                   border: item ? '1px solid var(--border)' : '1px dashed var(--border)',
                   background: item ? 'var(--bg-card)' : 'var(--bg-card-secondary)',
-                  padding: '0.5rem',
+                  padding: '0.65rem',
                   borderRadius: '6px',
                   fontSize: '0.85rem',
+                  cursor: item ? 'pointer' : 'default',
+                  transition: 'all 0.15s ease',
+                  ...(item ? { boxShadow: '0 2px 8px rgba(0,0,0,0.12)' } : {}),
                 }}
+                title={item ? `Clic para ver detalle y vender ${label(item)}` : `Casillero #${idx} libre`}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem' }}>Casillero #{idx}</div>
+                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span>Casillero #{idx}</span>
+                  {item && <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 700 }}>Vender ↗</span>}
+                </div>
                 {item ? (
-                  <div style={{ marginTop: '0.2rem' }}>
-                    <strong>{label(item)}</strong>
-                    <div style={{ color: 'var(--text)', fontSize: '0.8rem' }}>${String(item.valor)} {item.esUnico ? '(Único)' : ''}</div>
+                  <div style={{ marginTop: '0.25rem' }}>
+                    <strong style={{ display: 'block', color: 'var(--text-h)', fontSize: '0.9rem' }}>{label(item)}</strong>
+                    <div style={{ color: 'var(--accent-text)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.2rem' }}>
+                      <CoinIcon size={12} /> ${String(item.valor)} {item.esUnico ? '(Único)' : ''}
+                    </div>
                   </div>
                 ) : (
-                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>[ Libre ]</span>
+                  <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', display: 'inline-block', marginTop: '0.25rem' }}>[ Libre ]</span>
                 )}
               </div>
             );
@@ -598,87 +661,212 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
           <button className="btn-primary" disabled={busy || isFull}>Mover objeto</button>
         </form>
 
-        {/* Vender objeto */}
-        <form
-          onSubmit={e => {
-            e.preventDefault();
-            const precioVenta = price ? Number(price) : (selling ? Number(selling.valor) : 0);
-            if (precioVenta < 0) {
-              const msg = 'El precio de venta no puede ser negativo.';
-              setError(msg);
-              onNotifyError?.(msg);
-              return;
-            }
-            if (precioVenta > 2147483647) {
-              const msg = 'El precio de venta es demasiado grande (máximo 2.147.483.647).';
-              setError(msg);
-              onNotifyError?.(msg);
-              return;
-            }
-            void perform(async () => {
-              await api(`/objetos/${object}/vender`, 'POST', { idPersonaje: row.idPersonaje, idTienda: Number(store), precio: precioVenta });
-              setObject('');
-            });
-          }}
-          style={{ background: 'var(--social-bg)', padding: '1rem', borderRadius: '8px', border: '1px solid var(--border)' }}
-        >
-          <h4 style={{ marginTop: 0 }}>Vender objeto de este inventario</h4>
-          <p style={{ fontSize: '0.85rem', color: 'var(--text)' }}>Venta instantánea a la tienda por su valor máximo.</p>
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Objeto a vender
-            <select
-              required
-              value={object}
-              onChange={e => { setObject(e.target.value); }}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
+        {/* Modal de Detalle y Venta de Objeto al cliquear */}
+        {objetoVenta && (
+          <div
+            className="usuario-modal-overlay"
+            onClick={() => setObjetoVenta(null)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              className="usuario-modal-content"
+              onClick={e => e.stopPropagation()}
+              style={{ maxWidth: '480px', padding: '1.5rem' }}
             >
-              <option value="">Seleccionar objeto</option>
-              {[...objects]
-                .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }))
-                .map(o => (
-                <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
-                  {label(o)} (Posición {String(o.posicion)}, Valor ${String(o.valor)})
-                </option>
-              ))}
-            </select>
-          </label>
-          <label htmlFor="input-precio-venta" style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Precio de venta
-            <input
-              id="input-precio-venta"
-              aria-label="Precio de venta"
-              type="number"
-              min="0"
-              max="2147483647"
-              value={price}
-              placeholder={selling ? String(selling.valor) : '0'}
-              onChange={e => setPrice(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            />
-          </label>
-          {selling && !price && (
-            <p style={{ margin: '0.5rem 0', fontSize: '0.9rem', color: 'var(--success-text)' }}>
-              Precio de venta: <strong>${String(selling.valor)}</strong> (venta instantánea al valor máximo)
-            </p>
-          )}
-          <label style={{ display: 'block', marginBottom: '0.5rem' }}>
-            Tienda receptora
-            <select
-              required
-              value={store}
-              onChange={e => setStore(e.target.value)}
-              style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
-            >
-              <option value="">Seleccionar tienda</option>
-              {refs.tiendas?.map(t => (
-                <option key={String(t.idTienda)} value={String(t.idTienda)}>
-                  {label(t)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button className="btn-primary" disabled={busy || !selling}>Vender objeto</button>
-        </form>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ margin: 0, fontSize: '1.25rem', color: 'var(--text-h)' }}>
+                  Detalle y Venta de Objeto
+                </h3>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setObjetoVenta(null)}
+                  style={{ padding: '0.25rem 0.6rem', fontSize: '0.85rem' }}
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Tarjeta con formato de catalogo > tienda */}
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.4rem',
+                  padding: '1rem 1.15rem',
+                  borderRadius: 'var(--radius-sm)',
+                  background: 'var(--bg-card-secondary)',
+                  border: '1px solid var(--border)',
+                }}
+              >
+                {/* Arriba de todo: Tipo de item */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <span
+                    style={{
+                      fontSize: '0.75rem',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.05em',
+                      color: 'var(--accent)',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {String(objetoVenta.tipoObjeto ?? 'Objeto')}
+                  </span>
+                </div>
+
+                {/* Mismo nivel: Nombre a la izquierda y Precio original a la derecha */}
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                  }}
+                >
+                  <strong style={{ fontSize: '1.1rem', color: 'var(--text-h)' }}>
+                    {label(objetoVenta)}
+                  </strong>
+                  <span
+                    style={{
+                      fontWeight: 600,
+                      color: 'var(--text-muted)',
+                      fontSize: '0.95rem',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      flexShrink: 0,
+                      textDecoration: 'line-through',
+                    }}
+                    title="Valor de compra original"
+                  >
+                    <CoinIcon size={14} /> ${String(objetoVenta.valor)}
+                  </span>
+                </div>
+
+                {/* Descripción si existe */}
+                {objetoVenta.descripcion ? (
+                  <p style={{ margin: '0.15rem 0 0.35rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    {String(objetoVenta.descripcion)}
+                  </p>
+                ) : null}
+
+                {/* Abajo: ID, Nivel, Posición, Único */}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    marginTop: '0.25rem',
+                    fontSize: '0.8rem',
+                    color: 'var(--text-muted)',
+                    flexWrap: 'wrap',
+                  }}
+                >
+                  <span>#{String(objetoVenta.idObjeto)}</span>
+                  <span>•</span>
+                  <span>Nivel {String(objetoVenta.nivelObjeto ?? 1)}</span>
+                  <span>•</span>
+                  <span>Casillero #{String(objetoVenta.posicion)}</span>
+                  {objetoVenta.esUnico && (
+                    <>
+                      <span>•</span>
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          background: 'rgba(168, 85, 247, 0.2)',
+                          color: 'var(--accent, #a855f7)',
+                          fontWeight: 700,
+                        }}
+                      >
+                        Único
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Valor de Reventa */}
+              <div
+                style={{
+                  background: 'rgba(34, 197, 94, 0.12)',
+                  border: '1px solid rgba(34, 197, 94, 0.35)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.85rem 1rem',
+                  margin: '1rem 0',
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <span style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.95rem' }}>
+                    Valor de reventa:
+                  </span>
+                  <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--success-text, #10b981)', display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
+                    <CoinIcon size={16} /> ${precioReventa}
+                  </span>
+                </div>
+                <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  Calculado aleatoriamente entre 50% y 80% de su valor original ({Math.round((precioReventa / (Number(objetoVenta.valor) || 1)) * 100)}%).
+                </p>
+              </div>
+
+              {/* Selector de Tienda Receptora */}
+              <label style={{ display: 'block', marginBottom: '1.25rem', fontWeight: 600, color: 'var(--text-h)' }}>
+                Tienda receptora
+                <select
+                  required
+                  value={tiendaVenta}
+                  onChange={e => setTiendaVenta(e.target.value)}
+                  style={{ display: 'block', width: '100%', padding: '0.55rem', marginTop: '0.35rem' }}
+                >
+                  <option value="">Seleccionar tienda...</option>
+                  {refs.tiendas?.map(t => (
+                    <option key={String(t.idTienda)} value={String(t.idTienda)}>
+                      {label(t)} {t.claseTienda ? `(${t.claseTienda})` : ''}
+                    </option>
+                  ))}
+                </select>
+              </label>
+
+              {/* Botón de Vender y Cancelar */}
+              <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  disabled={busy || !tiendaVenta}
+                  onClick={() => {
+                    if (!tiendaVenta) {
+                      const msg = 'Debés seleccionar una tienda receptora.';
+                      setError(msg);
+                      onNotifyError?.(msg);
+                      return;
+                    }
+                    void perform(async () => {
+                      await api(`/objetos/${objetoVenta.idObjeto}/vender`, 'POST', {
+                        idPersonaje: row.idPersonaje,
+                        idTienda: Number(tiendaVenta),
+                        precio: precioReventa,
+                      });
+                      setObjetoVenta(null);
+                    });
+                  }}
+                  style={{ flex: 1, padding: '0.65rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', fontSize: '0.95rem' }}
+                >
+                  <CoinIcon size={14} /> Vender por ${precioReventa}
+                </button>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => setObjetoVenta(null)}
+                  style={{ padding: '0.65rem 1rem' }}
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

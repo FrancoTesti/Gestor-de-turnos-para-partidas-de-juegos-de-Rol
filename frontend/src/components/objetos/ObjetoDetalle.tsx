@@ -37,7 +37,7 @@ export default function ObjetoDetalle({
         <div>
           <dt>Único</dt>
           <dd style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-            {objeto.esUnico ? <><StarIcon size={14} /> Sí (Objeto único)</> : 'No'}
+            {objeto.esUnico ? <><StarIcon size={14} /> Sí</> : 'No'}
           </dd>
         </div>
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>

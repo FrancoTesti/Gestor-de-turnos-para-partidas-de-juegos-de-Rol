@@ -124,3 +124,59 @@
   margin: 0;
   color: var(--text);
 }
+
+/* Detalle compacto de inventarios para desktop */
+.inventario-detalle-article {
+  max-width: 820px;
+}
+
+.module-page dl.inventario-info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin: 1.25rem 0 1.5rem 0;
+  padding: 0;
+}
+
+.module-page dl.inventario-info-grid > div.inventario-info-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  background: var(--bg-card-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  box-shadow: var(--shadow-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.inventario-info-label {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted) !important;
+  min-width: unset !important;
+}
+
+.inventario-info-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-h) !important;
+  word-break: break-word;
+  margin: 0;
+}
+
+/* Casilleros interactivos de inventario */
+.casillero-ocupado {
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.casillero-ocupado:hover {
+  transform: translateY(-2px);
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+}

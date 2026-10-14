@@ -144,11 +144,11 @@ describe('JuegoService - Inventarios, Movimiento y Ventas', () => {
       expect(tx.flush).toHaveBeenCalledOnce();
     });
 
-    it('rechaza vender si el precio está fuera del rango 70% - 100%', async () => {
+    it('rechaza vender si el precio está fuera del rango 50% - 80%', async () => {
       const { service } = crearMockEm();
-      // Objeto de valor 100 -> rango [70, 100]
-      await expect(service.sell(1, 50, { idPersonaje: 10, idTienda: 2, precio: 50 }))
-        .rejects.toThrow(/70–100 %/);
+      // Objeto de valor 100 -> rango [50, 80]
+      await expect(service.sell(1, 50, { idPersonaje: 10, idTienda: 2, precio: 40 }))
+        .rejects.toThrow(/50–80 %/);
     });
 
     it('rechaza vender un objeto que ya está en la tienda o no pertenece al personaje', async () => {

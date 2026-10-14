@@ -29,18 +29,28 @@
 
 .objeto-filtros input,
 .objeto-filtros select {
+  box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0.65rem 0.85rem;
+  padding: 0.6rem 0.9rem;
   color: var(--text-h);
   background: var(--bg-card-secondary);
   font: inherit;
-  font-size: 0.95rem;
+  font-size: 0.925rem;
+  min-height: 2.5rem;
+  line-height: normal;
 }
 
 .objeto-filtros input {
-  flex: 1 1 10rem;
+  box-sizing: border-box;
+  flex: 1 1 14rem;
   min-width: 0;
+}
+
+.objeto-filtros input[type="search"] {
+  box-sizing: border-box;
+  padding: 0.6rem 0.9rem;
+  min-width: 240px;
 }
 
 .objetos-layout {
@@ -298,8 +308,16 @@
 
   .objeto-filtros input,
   .objeto-filtros select {
-    padding: 0.45rem 0.65rem;
-    font-size: 0.85rem;
+    box-sizing: border-box;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.875rem;
+    min-height: 2.35rem;
+  }
+
+  .objeto-filtros input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    padding: 0.55rem 0.8rem;
   }
 
   .objeto-campos-numericos {
