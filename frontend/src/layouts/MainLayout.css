@@ -223,18 +223,20 @@
 @media (max-width: 768px) {
   .top-navbar {
     height: auto;
-    padding: 0.5rem 0.75rem;
+    padding: 0.65rem 1.25rem;
     flex-wrap: wrap;
-    row-gap: 0.5rem;
+    row-gap: 0.6rem;
   }
 
   .navbar-brand {
     order: 1;
+    padding-left: 0.35rem;
   }
 
   .navbar-user {
     order: 2;
     gap: 0.5rem;
+    padding-right: 0.25rem;
   }
 
   .navbar-menu {

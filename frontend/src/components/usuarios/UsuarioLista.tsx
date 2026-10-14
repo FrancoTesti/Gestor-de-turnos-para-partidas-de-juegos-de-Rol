@@ -3,7 +3,7 @@ import type { Usuario } from '../../interfaces';
 import Loading from '../ui/Loading';
 import './usuarios.css';
 
-function AvatarUsuario({ imagen, nickname }: { imagen?: string; nickname: string }) {
+export function AvatarUsuario({ imagen, nickname }: { imagen?: string; nickname: string }) {
   const [errorUrl, setErrorUrl] = useState<string | null>(null);
   const urlLimpia = imagen?.trim() || '';
   const fallo = Boolean(urlLimpia && errorUrl === urlLimpia);

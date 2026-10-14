@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
@@ -270,14 +270,28 @@ export default function ModulePage({ resource }: { resource: Resource }) {
                 {sortDir === 'asc' ? 'Asc' : 'Desc'}
               </span>
             </button>
-            <button
-              type="button"
-              className={soloMisPartidas ? "btn-primary" : "btn-secondary"}
-              style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
-              onClick={() => setSoloMisPartidas(v => !v)}
-            >
-              {soloMisPartidas ? 'Ver todas las partidas' : 'Mis partidas (inscripto/dirigiendo)'}
-            </button>
+            <div style={{ display: 'inline-flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                type="button"
+                className={!soloMisPartidas ? "btn-primary" : "btn-secondary"}
+                style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
+                onClick={() => setSoloMisPartidas(false)}
+              >
+                Ver todas las partidas
+              </button>
+              <button
+                type="button"
+                className={soloMisPartidas ? "btn-primary" : "btn-secondary"}
+                style={{
+                  fontSize: '0.85rem',
+                  padding: '0.4rem 0.75rem',
+                  ...(soloMisPartidas ? {} : { borderColor: 'var(--accent)', color: 'var(--accent-text)' }),
+                }}
+                onClick={() => setSoloMisPartidas(true)}
+              >
+                Mis partidas (inscripto/dirigiendo)
+              </button>
+            </div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, cursor: 'pointer' }}>
               <input type="checkbox" checked={activeOnly} onChange={e => setActiveOnly(e.target.checked)} />
               Solo partidas activas
@@ -294,15 +308,33 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         <table>
           <thead>
             <tr>
-              {columns.map((k, idx) => (
-                <th
-                  key={k}
-                  style={resource === 'inventarios' ? { textAlign: idx === 0 ? 'left' : 'center' } : undefined}
-                >
-                  {columnLabel(k)}
-                </th>
-              ))}
-              <th style={resource === 'inventarios' ? { textAlign: 'right' } : undefined}>Acciones</th>
+              {columns.map((k, idx) => {
+                let thAlign: 'left' | 'center' | 'right' | undefined = undefined;
+                if (resource === 'inventarios') {
+                  thAlign = idx === 0 ? 'left' : 'center';
+                } else if (resource === 'partidas') {
+                  thAlign = 'center';
+                }
+                return (
+                  <th
+                    key={k}
+                    style={thAlign ? { textAlign: thAlign } : undefined}
+                  >
+                    {columnLabel(k)}
+                  </th>
+                );
+              })}
+              <th
+                style={
+                  resource === 'inventarios'
+                    ? { textAlign: 'right' }
+                    : resource === 'partidas'
+                    ? { textAlign: 'center' }
+                    : undefined
+                }
+              >
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -310,7 +342,36 @@ export default function ModulePage({ resource }: { resource: Resource }) {
               <tr key={url(r)}>
                 {columns.map((k, idx) => {
                   const val = display(r, k);
-                  const align = resource === 'inventarios' ? (idx === 0 ? 'left' : 'center') : undefined;
+                  let align: 'left' | 'center' | 'right' | undefined = undefined;
+                  if (resource === 'inventarios') {
+                    align = idx === 0 ? 'left' : 'center';
+                  } else if (resource === 'partidas') {
+                    align = 'center';
+                  }
+
+                  let cellContent: ReactNode = val;
+                  if (resource === 'partidas' && k === 'nombre') {
+                    cellContent = (
+                      <strong style={{ fontWeight: 700, color: 'var(--text-h)' }}>
+                        {val}
+                      </strong>
+                    );
+                  } else if (resource === 'partidas' && k === 'estado') {
+                    const valLower = String(val).toLowerCase();
+                    const esActiva = valLower.includes('activa') || valLower.includes('activo');
+                    const esFinalizada = valLower.includes('finalizada') || valLower.includes('finalizado');
+                    const colorEstado = esActiva
+                      ? 'var(--success-text, #10b981)'
+                      : esFinalizada
+                      ? 'var(--danger-text, #ef4444)'
+                      : 'inherit';
+                    cellContent = (
+                      <strong style={{ fontWeight: 700, color: colorEstado }}>
+                        {val}
+                      </strong>
+                    );
+                  }
+
                   return (
                     <td
                       key={k}
@@ -325,22 +386,32 @@ export default function ModulePage({ resource }: { resource: Resource }) {
                           margin: align === 'center' ? '0 auto' : undefined,
                         }}
                       >
-                        {val}
+                        {cellContent}
                       </div>
                     </td>
                   );
                 })}
-                <td style={resource === 'inventarios' ? { textAlign: 'right' } : undefined}>
+                <td
+                  style={
+                    resource === 'inventarios'
+                      ? { textAlign: 'right' }
+                      : resource === 'partidas'
+                      ? { textAlign: 'center' }
+                      : undefined
+                  }
+                >
                   <div
                     style={
                       resource === 'inventarios'
                         ? { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }
+                        : resource === 'partidas'
+                        ? { display: 'flex', justifyContent: 'center', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }
                         : undefined
                     }
                   >
                     <button
                       className="btn-secondary"
-                      style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' ? undefined : '0.5rem' }}
+                      style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' || resource === 'partidas' ? undefined : '0.5rem' }}
                       onClick={() => void detail(r)}
                       aria-label={`Ver detalle de ${label(r) || 'registro'}`}
                     >
@@ -350,7 +421,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
                       <>
                         <button
                           className="btn-primary"
-                          style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' ? undefined : '0.5rem' }}
+                          style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' || resource === 'partidas' ? undefined : '0.5rem' }}
                           onClick={() => startEdit(r)}
                           aria-label={`Editar ${label(r) || 'registro'}`}
                         >
