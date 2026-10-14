@@ -9,6 +9,7 @@ import {
   InventarioLlenoError,
   ObjetoService,
   PosicionOcupadaError,
+  NivelInsuficienteError,
 } from '../services/objeto.service';
 
 describe('ObjetoService.comprarObjeto', () => {
@@ -19,7 +20,7 @@ describe('ObjetoService.comprarObjeto', () => {
 
   beforeEach(() => {
     tienda = Object.assign(new Tienda(), { idTienda: 1, nombre: 'Armería', claseTienda: 'general' });
-    personaje = Object.assign(new Personaje(), { idPersonaje: 10, nombreFicticio: 'Arthas', dinero: 100 });
+    personaje = Object.assign(new Personaje(), { idPersonaje: 10, nombreFicticio: 'Arthas', dinero: 100, nivel: 1 });
     inventario = Object.assign(new Inventario(), { personaje, numInventario: 1, cantidadEspacio: 2 });
     objeto = Object.assign(new Objeto(), {
       idObjeto: 5,
@@ -146,6 +147,18 @@ describe('ObjetoService.comprarObjeto', () => {
 
     expect(objeto.posicion).toBe(1);
     expect(resultado.objeto.posicion).toBe(1);
+  });
+
+  it('rechaza la compra si el nivel del personaje es inferior al nivel del objeto', async () => {
+    personaje.nivel = 1;
+    objeto.nivelObjeto = 5;
+    const { service, tx } = crearServicio();
+
+    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
+      .rejects.toThrow(NivelInsuficienteError);
+
+    expect(personaje.dinero).toBe(100);
+    expect(tx.flush).not.toHaveBeenCalled();
   });
 });
 

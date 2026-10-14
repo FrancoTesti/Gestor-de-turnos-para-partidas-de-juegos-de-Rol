@@ -200,6 +200,11 @@ export default function TiendasPage() {
     }
   }
 
+  const personajeComprador = useMemo(() => {
+    if (!personajeCompradorId) return null;
+    return misPersonajes.find((pj) => pj.idPersonaje === Number(personajeCompradorId)) ?? null;
+  }, [misPersonajes, personajeCompradorId]);
+
   async function handleComprar(idObjeto: number) {
     if (esAnfitrion) {
       const msg = 'Los anfitriones no tienen permitido comprar objetos de la tienda.';
@@ -209,6 +214,13 @@ export default function TiendasPage() {
     }
     if (!personajeCompradorId) {
       const msg = 'Seleccioná un personaje para realizar la compra.';
+      setError(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
+    const objAComprar = objetos.find((o) => o.idObjeto === idObjeto);
+    if (personajeComprador && objAComprar && personajeComprador.nivel < objAComprar.nivelObjeto) {
+      const msg = `Nivel insuficiente: tu personaje es nivel ${personajeComprador.nivel} y el objeto requiere nivel ${objAComprar.nivelObjeto}.`;
       setError(msg);
       setErrorAvisoModal(msg);
       return;
@@ -272,15 +284,8 @@ export default function TiendasPage() {
   // Objetos para la tienda seleccionada
   const objetosDeTienda = useMemo(() => {
     if (!seleccionada) return [];
-    return objetos.filter((o) => {
-      if (o.idTienda === seleccionada.idTienda) return true;
-      if (o.esUnico && o.idPersonaje !== null && seleccionada.idPartida) {
-        const pj = personajes.find((p) => p.idPersonaje === o.idPersonaje);
-        if (pj && pj.idPartida === seleccionada.idPartida) return true;
-      }
-      return false;
-    });
-  }, [seleccionada, objetos, personajes]);
+    return objetos.filter((o) => o.idPersonaje === null && o.idTienda === seleccionada.idTienda);
+  }, [seleccionada, objetos]);
 
   return (
     <section style={{ padding: '0.5rem 0' }}>
@@ -587,72 +592,147 @@ export default function TiendasPage() {
           ) : (
             <div style={{ display: 'grid', gap: '0.75rem' }}>
               {objetosDeTienda.map((obj) => {
-                const pjDueno = obj.idPersonaje ? personajes.find((p) => p.idPersonaje === obj.idPersonaje) : null;
-                const countEnInventarios = pjDueno ? 1 : 0;
-                const esComprable = !obj.esUnico || countEnInventarios === 0;
+                const nivelInsuficiente = Boolean(
+                  personajeComprador && personajeComprador.nivel < obj.nivelObjeto
+                );
+                const deshabilitado =
+                  esAnfitrion ||
+                  !personajeCompradorId ||
+                  nivelInsuficiente ||
+                  comprandoId === obj.idObjeto;
+
+                let textoBoton = 'Comprar';
+                if (comprandoId === obj.idObjeto) {
+                  textoBoton = 'Comprando...';
+                } else if (personajeComprador && nivelInsuficiente) {
+                  textoBoton = `Nivel mín. ${obj.nivelObjeto}`;
+                }
+
+                let tituloBoton: string | undefined = undefined;
+                if (esAnfitrion) {
+                  tituloBoton = 'Los anfitriones no pueden comprar objetos de la tienda';
+                } else if (!personajeCompradorId) {
+                  tituloBoton = 'Seleccioná un personaje para comprar';
+                } else if (nivelInsuficiente) {
+                  tituloBoton = `Tu personaje es nivel ${personajeComprador!.nivel}. Requiere nivel ${obj.nivelObjeto}.`;
+                }
 
                 return (
                   <div
                     key={obj.idObjeto}
                     style={{
                       display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '0.75rem 1rem',
+                      flexDirection: 'column',
+                      gap: '0.4rem',
+                      padding: '0.85rem 1rem',
                       borderRadius: 'var(--radius-sm)',
                       background: 'var(--bg-card-secondary)',
                       border: '1px solid var(--border)',
-                      flexWrap: 'wrap',
-                      gap: '0.5rem',
                     }}
                   >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <strong style={{ color: 'var(--text-h)' }}>{obj.nombre}</strong>
-                        {obj.esUnico && (
-                          <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.4rem', borderRadius: '4px', background: 'rgba(168, 85, 247, 0.2)', color: 'var(--accent, #a855f7)', fontWeight: 700 }}>
-                            Único
-                          </span>
-                        )}
-                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                          ({obj.tipoObjeto} - Nivel {obj.nivelObjeto})
-                        </span>
-                      </div>
-                      <p style={{ margin: '0.2rem 0', fontSize: '0.85rem', color: 'var(--text)' }}>
-                        {obj.descripcion}
-                      </p>
-                      {obj.esUnico && (
-                        <p style={{ margin: '0.2rem 0', fontSize: '0.8rem', fontWeight: 600 }}>
-                          {countEnInventarios === 1 ? (
-                            <span style={{ color: 'var(--error-text)' }}>
-                              No se puede vender — En posesión de {pjDueno?.nombreFicticio} (Inventario #{obj.numInventario ?? 1})
-                            </span>
-                          ) : (
-                            <span style={{ color: 'var(--success-text)' }}>
-                              Se puede vender — Disponible en tienda (COUNT = 0)
-                            </span>
-                          )}
-                        </p>
-                      )}
+                    {/* Arriba de todo: Tipo de item */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span
+                        style={{
+                          fontSize: '0.75rem',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          color: 'var(--accent)',
+                          fontWeight: 700,
+                        }}
+                      >
+                        {obj.tipoObjeto}
+                      </span>
                     </div>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                      <span style={{ fontWeight: 700, color: 'var(--accent-text)', fontSize: '1rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                        <CoinIcon size={14} /> {obj.valor}
+                    {/* Mismo nivel: Nombre a la izquierda y Precio a la derecha */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <strong style={{ fontSize: '1rem', color: 'var(--text-h)' }}>
+                        {obj.nombre}
+                      </strong>
+                      <span
+                        style={{
+                          fontWeight: 700,
+                          color: 'var(--accent-text)',
+                          fontSize: '1rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          flexShrink: 0,
+                        }}
+                      >
+                        <CoinIcon size={14} /> ${obj.valor}
                       </span>
+                    </div>
+
+                    {/* Descripción si existe */}
+                    {obj.descripcion && (
+                      <p style={{ margin: '0.1rem 0 0.25rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                        {obj.descripcion}
+                      </p>
+                    )}
+
+                    {/* Abajo: ID, Nivel, Único (a la izquierda) y Botón Comprar (a la derecha) */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        marginTop: '0.25rem',
+                        flexWrap: 'wrap',
+                        gap: '0.5rem',
+                      }}
+                    >
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.4rem',
+                          fontSize: '0.8rem',
+                          color: 'var(--text-muted)',
+                        }}
+                      >
+                        <span>#{obj.idObjeto}</span>
+                        <span>•</span>
+                        <span>Nivel {obj.nivelObjeto}</span>
+                        {obj.esUnico && (
+                          <>
+                            <span>•</span>
+                            <span
+                              style={{
+                                fontSize: '0.75rem',
+                                padding: '0.1rem 0.4rem',
+                                borderRadius: '4px',
+                                background: 'rgba(168, 85, 247, 0.2)',
+                                color: 'var(--accent, #a855f7)',
+                                fontWeight: 700,
+                              }}
+                            >
+                              Único
+                            </span>
+                            <span style={{ color: 'var(--success-text)', fontSize: '0.75rem', fontWeight: 600 }}>
+                              (Se puede vender)
+                            </span>
+                          </>
+                        )}
+                      </div>
+
                       <button
                         type="button"
                         className="btn-primary"
-                        disabled={esAnfitrion || !esComprable || comprandoId === obj.idObjeto || !personajeCompradorId}
+                        disabled={deshabilitado}
                         onClick={() => void handleComprar(obj.idObjeto)}
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
-                        title={esAnfitrion ? 'Los anfitriones no pueden comprar objetos de la tienda' : undefined}
+                        style={{ padding: '0.4rem 0.85rem', fontSize: '0.85rem' }}
+                        title={tituloBoton}
                       >
-                        {comprandoId === obj.idObjeto
-                          ? 'Comprando...'
-                          : esComprable
-                          ? 'Comprar'
-                          : 'No se puede vender'}
+                        {textoBoton}
                       </button>
                     </div>
                   </div>

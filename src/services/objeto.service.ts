@@ -61,6 +61,13 @@ export class PosicionOcupadaError extends Error {
   }
 }
 
+export class NivelInsuficienteError extends Error {
+  constructor() {
+    super('El nivel del personaje es insuficiente para comprar este objeto');
+    this.name = 'NivelInsuficienteError';
+  }
+}
+
 export class ObjetoService {
   private em: EntityManager;
 
@@ -155,6 +162,7 @@ export class ObjetoService {
         { populate: ['partida'], lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!personaje) throw new PersonajeNoEncontradoError();
+      if (personaje.nivel < objeto.nivelObjeto) throw new NivelInsuficienteError();
 
       if (objeto.esUnico && personaje.partida) {
         const objetoExistente = await em.findOne(Objeto, {

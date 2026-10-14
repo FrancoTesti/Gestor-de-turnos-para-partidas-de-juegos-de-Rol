@@ -8,6 +8,7 @@ import {
   ObjetoService,
   PersonajeNoEncontradoError,
   PosicionOcupadaError,
+  NivelInsuficienteError,
 } from '../services/objeto.service';
 import {
   ErrorValidacionObjeto,
@@ -151,7 +152,8 @@ export class ObjetoController {
         error instanceof ObjetoNoDisponibleError ||
         error instanceof DineroInsuficienteError ||
         error instanceof InventarioLlenoError ||
-        error instanceof PosicionOcupadaError
+        error instanceof PosicionOcupadaError ||
+        error instanceof NivelInsuficienteError
       ) {
         res.status(409).json({ message: error.message });
         return;

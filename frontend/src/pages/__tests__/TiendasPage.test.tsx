@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { vi, beforeEach, describe, it, expect } from 'vitest';
 import TiendasPage from '../TiendasPage';
 import type { Tienda, Clase } from '../../interfaces';
@@ -13,13 +13,43 @@ const mocks = vi.hoisted(() => {
     { idClase: 1, nombreClase: 'Guerrero', descripcionClase: 'Fuerza' },
   ];
 
-  return { mockTiendas, mockClases };
+  let currentRole = 'anfitrion';
+
+  return {
+    mockTiendas,
+    mockClases,
+    getRole: () => currentRole,
+    setRole: (r: string) => {
+      currentRole = r;
+    },
+  };
 });
 
 vi.mock('../../context/UserContext', () => ({
   useUser: () => ({
     usuarioLogueado: { idUsuario: 1, nickname: 'admin' },
-    rolDe: (id: number) => (id === 1 ? 'anfitrion' : 'jugador'),
+    rolDe: () => mocks.getRole(),
+  }),
+}));
+
+vi.mock('../../services/api', () => ({
+  api: vi.fn().mockImplementation((url: string) => {
+    if (url === '/personajes') {
+      return Promise.resolve([
+        {
+          idPersonaje: 10,
+          nombreFicticio: 'MiGuerrero',
+          raza: 'Humano',
+          xp: 0,
+          nivel: 2,
+          dinero: 1000,
+          idClase: 1,
+          idUsuarioJugador: 1,
+          idPartida: 1,
+        },
+      ]);
+    }
+    return Promise.resolve([]);
   }),
 }));
 
@@ -49,6 +79,19 @@ vi.mock('../../services/objeto.service', () => ({
       numInventario: null,
       posicion: 0,
     },
+    {
+      idObjeto: 2,
+      nombre: 'Instancia Comprada',
+      descripcion: 'Ya en posesión de un personaje',
+      tipoObjeto: 'Arma',
+      valor: 100,
+      nivelObjeto: 1,
+      esUnico: false,
+      idTienda: 1,
+      idPersonaje: 99,
+      numInventario: 1,
+      posicion: 0,
+    },
   ]),
   comprarObjeto: vi.fn().mockResolvedValue({}),
 }));
@@ -56,6 +99,7 @@ vi.mock('../../services/objeto.service', () => ({
 describe('TiendasPage', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.setRole('anfitrion');
   });
 
   it('muestra el listado de tiendas al cargar', async () => {
@@ -97,7 +141,7 @@ describe('TiendasPage', () => {
     });
   });
 
-  it('abre el catálogo de una tienda y muestra objetos disponibles con lógica de objeto único', async () => {
+  it('abre el catálogo de una tienda, muestra la plantilla con el nuevo diseño y no muestra instancias compradas', async () => {
     render(<TiendasPage />);
     await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
 
@@ -106,9 +150,18 @@ describe('TiendasPage', () => {
 
     await waitFor(() => {
       expect(screen.getByText(/Catálogo de Objetos/i)).toBeInTheDocument();
-      expect(screen.getByText(/Espada Legendaria/i)).toBeInTheDocument();
-      expect(screen.getByText(/Se puede vender/i)).toBeInTheDocument();
     });
+
+    const aside = screen.getByRole('complementary');
+    expect(within(aside).getByText('Arma')).toBeInTheDocument();
+    expect(within(aside).getByText(/Espada Legendaria/i)).toBeInTheDocument();
+    expect(within(aside).getByText(/500/)).toBeInTheDocument();
+    expect(within(aside).getByText('#1')).toBeInTheDocument();
+    expect(within(aside).getByText(/Nivel 5/)).toBeInTheDocument();
+    expect(within(aside).getByText(/Único/)).toBeInTheDocument();
+    expect(within(aside).getByText(/Se puede vender/i)).toBeInTheDocument();
+    // Instancia ya comprada no debe aparecer en la tienda
+    expect(within(aside).queryByText(/Instancia Comprada/i)).not.toBeInTheDocument();
   });
 
   it('inhabilita a los anfitriones de poder comprar objetos en la tienda', async () => {
@@ -125,6 +178,28 @@ describe('TiendasPage', () => {
     const comprarBtn = screen.getByRole('button', { name: /Comprar/i });
     expect(comprarBtn).toBeDisabled();
     expect(comprarBtn).toHaveAttribute('title', 'Los anfitriones no pueden comprar objetos de la tienda');
+  });
+
+  it('para un jugador, restringe la compra si el nivel del personaje es inferior al del objeto', async () => {
+    mocks.setRole('jugador');
+    render(<TiendasPage />);
+    await waitFor(() => expect(screen.getByText(/Armería Real/i)).toBeInTheDocument());
+
+    const verCatalogoBtns = screen.getAllByRole('button', { name: /Ver catálogo/i });
+    fireEvent.click(verCatalogoBtns[0]);
+
+    await waitFor(() => {
+      expect(screen.getByLabelText(/Comprar como/i)).toBeInTheDocument();
+    });
+
+    // Seleccionar el personaje que tiene nivel 2 (el objeto Espada Legendaria requiere nivel 5)
+    fireEvent.change(screen.getByLabelText(/Comprar como/i), { target: { value: '10' } });
+
+    await waitFor(() => {
+      const botonNivel = screen.getByRole('button', { name: /Nivel mín\. 5/i });
+      expect(botonNivel).toBeDisabled();
+      expect(botonNivel).toHaveAttribute('title', expect.stringContaining('Requiere nivel 5'));
+    });
   });
 });
 

@@ -18,7 +18,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
   beforeEach(() => {
     partida = Object.assign(new Partida(), { idPartida: 1, nombre: 'Aventura' });
     tienda = Object.assign(new Tienda(), { idTienda: 1, nombre: 'Armería' });
-    personaje = Object.assign(new Personaje(), { idPersonaje: 10, nombreFicticio: 'Heroe', dinero: 500, partida });
+    personaje = Object.assign(new Personaje(), { idPersonaje: 10, nombreFicticio: 'Heroe', dinero: 500, nivel: 10, partida });
     inventario = Object.assign(new Inventario(), { personaje, numInventario: 1, cantidadEspacio: 10 });
     objetoUnico = Object.assign(new Objeto(), {
       idObjeto: 99,
