@@ -215,8 +215,8 @@ export class JuegoService {
       if (!tienda) throw new HttpError(404, 'Tienda no encontrada');
       conflict(!!tienda.clase && !!p.clase && tienda.clase.idClase !== p.clase.idClase, 'No podés vender a una tienda de otra clase');
       const rango = rangoVenta(object.valor);
-      const precioVenta = data.precio !== undefined ? data.precio : rango.maximo;
-      conflict(precioVenta < rango.minimo || precioVenta > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (50–80 % del valor)`);
+      const precioVenta = data.precio !== undefined ? data.precio : object.valor;
+      conflict(precioVenta < rango.minimo || precioVenta > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
       conflict(p.dinero + precioVenta > 2147483647, 'El saldo excedería el límite permitido');
       p.dinero += precioVenta;
       if (object.esUnico) {

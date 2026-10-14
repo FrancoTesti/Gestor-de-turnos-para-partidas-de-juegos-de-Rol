@@ -167,7 +167,9 @@ export default function DashboardPage() {
                 listStyle: 'none',
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-                gap: '0.75rem'
+                gap: '0.75rem',
+                minHeight: '280px',
+                alignContent: 'start',
               }}>
                 {usuariosPaginados.map((u) => (
                   <li key={u.idUsuario} style={{

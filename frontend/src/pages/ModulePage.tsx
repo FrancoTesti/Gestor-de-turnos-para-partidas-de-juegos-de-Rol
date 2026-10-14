@@ -499,6 +499,14 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
   const [objetoVenta, setObjetoVenta] = useState<Row | null>(null);
   const [precioReventa, setPrecioReventa] = useState<number>(0);
   const [tiendaVenta, setTiendaVenta] = useState<string>('');
+  const [preciosReventa, setPreciosReventa] = useState<Record<string | number, number>>(() => {
+    try {
+      const guardados = sessionStorage.getItem('precios_reventa_inventario');
+      return guardados ? JSON.parse(guardados) : {};
+    } catch {
+      return {};
+    }
+  });
 
   useEffect(() => {
     let active = true;
@@ -523,12 +531,28 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
   }, [objetoVenta]);
 
   const abrirVentaObjeto = (item: Row) => {
-    const valorBase = Number(item.valor) || 0;
-    const factor = 0.5 + Math.random() * 0.3;
-    const minVenta = Math.ceil(valorBase * 0.5);
-    const maxVenta = Math.floor(valorBase * 0.8);
-    const calculado = Math.round(valorBase * factor);
-    const finalPrice = Math.max(minVenta, Math.min(maxVenta, calculado));
+    const id = String(item.idObjeto);
+    let finalPrice = preciosReventa[id];
+
+    // Si aún no se generó para este objeto, se calcula una única vez
+    if (typeof finalPrice !== 'number') {
+      const valorBase = Number(item.valor) || 0;
+      // Generar una única vez entre 70% y 80% (conforme a las reglas de cátedra 70%-100%)
+      const factor = 0.7 + Math.random() * 0.1;
+      const minVenta = Math.ceil(valorBase * 0.7);
+      const maxVenta = Math.floor(valorBase * 1.0);
+      const calculado = Math.round(valorBase * factor);
+      finalPrice = Math.max(minVenta, Math.min(maxVenta, calculado));
+
+      setPreciosReventa(prev => {
+        const updated = { ...prev, [id]: finalPrice };
+        try {
+          sessionStorage.setItem('precios_reventa_inventario', JSON.stringify(updated));
+        } catch {}
+        return updated;
+      });
+    }
+
     setObjetoVenta(item);
     setPrecioReventa(finalPrice);
     const defaultStore = refs.tiendas && refs.tiendas.length > 0 ? String(refs.tiendas[0].idTienda) : '';
@@ -584,15 +608,33 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
                 }}
                 title={item ? `Clic para ver detalle y vender ${label(item)}` : `Casillero #${idx} libre`}
               >
-                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ fontWeight: 600, color: 'var(--text-h)', fontSize: '0.75rem' }}>
                   <span>Casillero #{idx}</span>
-                  {item && <span style={{ fontSize: '0.7rem', color: 'var(--accent)', fontWeight: 700 }}>Vender ↗</span>}
                 </div>
                 {item ? (
-                  <div style={{ marginTop: '0.25rem' }}>
+                  <div style={{ marginTop: '0.25rem', display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                     <strong style={{ display: 'block', color: 'var(--text-h)', fontSize: '0.9rem' }}>{label(item)}</strong>
-                    <div style={{ color: 'var(--accent-text)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.2rem', marginTop: '0.2rem' }}>
-                      <CoinIcon size={12} /> ${String(item.valor)} {item.esUnico ? '(Único)' : ''}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.35rem' }}>
+                      <div style={{ color: 'var(--accent-text)', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                        <CoinIcon size={12} /> ${String(item.valor)} {item.esUnico ? '(Único)' : ''}
+                      </div>
+                      <span
+                        style={{
+                          fontSize: '0.7rem',
+                          fontWeight: 700,
+                          color: 'var(--accent-text)',
+                          background: 'var(--accent-bg)',
+                          border: '1px solid var(--accent)',
+                          padding: '0.15rem 0.45rem',
+                          borderRadius: '4px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.15rem',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.15)',
+                        }}
+                      >
+                        Vender ↗
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -807,7 +849,7 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
                   </span>
                 </div>
                 <p style={{ margin: '0.35rem 0 0 0', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                  Calculado aleatoriamente entre 50% y 80% de su valor original ({Math.round((precioReventa / (Number(objetoVenta.valor) || 1)) * 100)}%).
+                  Calculado aleatoriamente entre 70% y 80% de su valor original ({Math.round((precioReventa / (Number(objetoVenta.valor) || 1)) * 100)}%).
                 </p>
               </div>
 
@@ -847,6 +889,14 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
                         idPersonaje: row.idPersonaje,
                         idTienda: Number(tiendaVenta),
                         precio: precioReventa,
+                      });
+                      setPreciosReventa(prev => {
+                        const updated = { ...prev };
+                        delete updated[String(objetoVenta.idObjeto)];
+                        try {
+                          sessionStorage.setItem('precios_reventa_inventario', JSON.stringify(updated));
+                        } catch {}
+                        return updated;
                       });
                       setObjetoVenta(null);
                     });

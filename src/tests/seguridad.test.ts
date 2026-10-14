@@ -23,9 +23,9 @@ describe('contratos y seguridad', () => {
     expect(() => validarActualizacionObjeto({ idPersonaje: 1 })).toThrow();
     expect(() => validarActualizacionObjeto({})).toThrow();
   });
-  it('redondea límites sin salir del rango 50–80 %', () => {
-    expect(rangoVenta(40)).toEqual({ minimo: 20, maximo: 32 });
-    expect(rangoVenta(3)).toEqual({ minimo: 2, maximo: 2 });
+  it('redondea límites sin salir del rango 70–100 %', () => {
+    expect(rangoVenta(40)).toEqual({ minimo: 28, maximo: 40 });
+    expect(rangoVenta(3)).toEqual({ minimo: 3, maximo: 3 });
     expect(rangoVenta(0)).toEqual({ minimo: 0, maximo: 0 });
     expect(saleSchema.safeParse({ idPersonaje: 1, idTienda: 1, precio: -1 }).success).toBe(false);
   });

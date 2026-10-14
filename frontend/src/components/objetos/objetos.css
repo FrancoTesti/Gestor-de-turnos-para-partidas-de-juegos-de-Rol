@@ -25,6 +25,16 @@
   padding: 1rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  align-items: flex-end;
+}
+
+.objeto-filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
 }
 
 .objeto-filtros input,
@@ -32,25 +42,17 @@
   box-sizing: border-box;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 0.6rem 0.9rem;
+  padding: 0.65rem 0.85rem;
   color: var(--text-h);
   background: var(--bg-card-secondary);
   font: inherit;
-  font-size: 0.925rem;
-  min-height: 2.5rem;
-  line-height: normal;
+  font-size: 0.95rem;
 }
 
 .objeto-filtros input {
   box-sizing: border-box;
-  flex: 1 1 14rem;
+  flex: 1 1 12rem;
   min-width: 0;
-}
-
-.objeto-filtros input[type="search"] {
-  box-sizing: border-box;
-  padding: 0.6rem 0.9rem;
-  min-width: 240px;
 }
 
 .objetos-layout {
@@ -350,14 +352,15 @@
 }
 
 @media (min-width: 768px) {
-  .seccion-header,
-  .objeto-filtros {
+  .seccion-header {
     align-items: center;
     flex-direction: row;
-  }
-  
-  .seccion-header {
     justify-content: space-between;
+  }
+
+  .objeto-filtros {
+    align-items: flex-end;
+    flex-direction: row;
   }
 
   .objetos-layout {
