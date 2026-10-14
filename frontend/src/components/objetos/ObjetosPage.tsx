@@ -145,6 +145,10 @@ export default function ObjetosPage() {
   }
 
   async function comprar(data: ComprarObjetoData): Promise<void> {
+    if (host) {
+      setError('Los anfitriones no tienen permitido comprar objetos de la tienda.');
+      return;
+    }
     if (!seleccionado) return;
     setError(null);
     setMensaje(null);
@@ -251,7 +255,9 @@ export default function ObjetosPage() {
                 cargando={cargandoDetalle}
                 error={errorDetalle}
                 nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
-                onComprar={seleccionado !== null && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
+                onComprar={!host && seleccionado !== null && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
+                deshabilitarCompra={host}
+                motivoDeshabilitado="Los anfitriones no pueden comprar objetos de la tienda"
               />
               {personajeDueno && !venderAbierto && (
                 <button

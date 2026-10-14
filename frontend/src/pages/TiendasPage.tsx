@@ -5,6 +5,7 @@
  * Reglas de acceso:
  *  - Todos pueden ver el listado de tiendas.
  *  - Solo anfitriones pueden crear, editar o eliminar tiendas.
+ *  - Los anfitriones están inhabilitados para comprar objetos de la tienda.
  *
  * Reglas de Partida y Objetos Únicos:
  *  - Las tiendas pertenecen a cada partida (idPartida), permitiendo filtrar por partida.
@@ -200,6 +201,12 @@ export default function TiendasPage() {
   }
 
   async function handleComprar(idObjeto: number) {
+    if (esAnfitrion) {
+      const msg = 'Los anfitriones no tienen permitido comprar objetos de la tienda.';
+      setError(msg);
+      setErrorAvisoModal(msg);
+      return;
+    }
     if (!personajeCompradorId) {
       const msg = 'Seleccioná un personaje para realizar la compra.';
       setError(msg);
@@ -536,7 +543,11 @@ export default function TiendasPage() {
             Venta según tipo de tienda ({seleccionada.claseTienda}). Los objetos únicos solo pueden existir en un lugar por partida (en tienda o en inventario).
           </p>
 
-          {misPersonajes.length > 0 && (
+          {esAnfitrion ? (
+            <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', margin: '0 0 1rem 0' }}>
+              Los anfitriones administran las tiendas y no tienen permitido comprar objetos.
+            </p>
+          ) : misPersonajes.length > 0 ? (
             <div style={{ background: 'var(--bg-card-secondary)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', border: '1px solid var(--border-subtle)' }}>
               <label htmlFor="comprar-como-personaje" style={{ fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <span>Comprar como:</span>
@@ -556,7 +567,7 @@ export default function TiendasPage() {
                 ))}
               </select>
             </div>
-          )}
+          ) : null}
 
           {objetosDeTienda.length === 0 ? (
             <p style={{ fontStyle: 'italic', color: 'var(--text-muted)', margin: '1rem 0' }}>
@@ -621,9 +632,10 @@ export default function TiendasPage() {
                       <button
                         type="button"
                         className="btn-primary"
-                        disabled={!esComprable || comprandoId === obj.idObjeto || !personajeCompradorId}
+                        disabled={esAnfitrion || !esComprable || comprandoId === obj.idObjeto || !personajeCompradorId}
                         onClick={() => void handleComprar(obj.idObjeto)}
                         style={{ padding: '0.4rem 0.8rem', fontSize: '0.85rem' }}
+                        title={esAnfitrion ? 'Los anfitriones no pueden comprar objetos de la tienda' : undefined}
                       >
                         {comprandoId === obj.idObjeto
                           ? 'Comprando...'
