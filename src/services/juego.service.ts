@@ -218,8 +218,16 @@ export class JuegoService {
       const rango = rangoVenta(object.valor);
       conflict(precioVenta < rango.minimo || precioVenta > rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
       conflict(p.dinero + precioVenta > 2147483647, 'El saldo excedería el límite permitido');
-      p.dinero += precioVenta; object.inventario = null; object.tienda = tienda; object.posicion = 0;
-      await tx.flush(); return { idObjeto: object.idObjeto, idPersonaje: p.idPersonaje, dineroRestante: p.dinero, precio: precioVenta };
+      p.dinero += precioVenta;
+      if (object.esUnico) {
+        object.inventario = null;
+        object.tienda = tienda;
+        object.posicion = 0;
+      } else {
+        tx.remove(object);
+      }
+      await tx.flush();
+      return { idObjeto: object.idObjeto, idPersonaje: p.idPersonaje, dineroRestante: p.dinero, precio: precioVenta };
     });
   }
 }

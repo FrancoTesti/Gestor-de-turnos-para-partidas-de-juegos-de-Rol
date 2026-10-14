@@ -30,6 +30,9 @@ export default function CompraObjetoFormulario({
   const saldoActual = personajeSeleccionado ? personajeSeleccionado.dinero : 0;
   const saldoRestante = saldoActual - objeto.valor;
   const saldoInsuficiente = saldoActual < objeto.valor;
+  const nivelInsuficiente = Boolean(
+    personajeSeleccionado && personajeSeleccionado.nivel < objeto.nivelObjeto
+  );
 
   const disponibles = inventarios?.filter(i => i.idPersonaje === idPersonaje);
   const elegido = disponibles?.find(i => i.numInventario === numInventario);
@@ -37,7 +40,7 @@ export default function CompraObjetoFormulario({
   async function enviar(evento: React.FormEvent): Promise<void> {
     evento.preventDefault();
     setError(null);
-    if (!idPersonaje || numInventario < 1 || posicion < 0 || saldoInsuficiente) return;
+    if (!idPersonaje || numInventario < 1 || posicion < 0 || saldoInsuficiente || nivelInsuficiente) return;
 
     setComprando(true);
     try {
@@ -97,6 +100,11 @@ export default function CompraObjetoFormulario({
                 Saldo insuficiente. Te faltan ${objeto.valor - saldoActual} monedas.
               </p>
             )}
+            {nivelInsuficiente && (
+              <p role="alert" style={{ margin: '0.25rem 0 0 0', color: 'var(--error-text, #ef4444)', fontWeight: 600, fontSize: '0.85rem' }}>
+                Nivel insuficiente: tu personaje es nivel {personajeSeleccionado?.nivel} y el objeto requiere nivel {objeto.nivelObjeto}.
+              </p>
+            )}
           </div>
 
           <label>
@@ -111,7 +119,7 @@ export default function CompraObjetoFormulario({
       )}
 
       <div className="compra-acciones">
-        <button className="btn-comprar" type="submit" disabled={comprando || personajes.length === 0 || saldoInsuficiente || (disponibles !== undefined && !elegido)}>
+        <button className="btn-comprar" type="submit" disabled={comprando || personajes.length === 0 || saldoInsuficiente || nivelInsuficiente || (disponibles !== undefined && !elegido)}>
           {comprando ? 'Comprando...' : 'Confirmar compra'}
         </button>
         <button type="button" onClick={onCancelar} disabled={comprando}>Cancelar</button>

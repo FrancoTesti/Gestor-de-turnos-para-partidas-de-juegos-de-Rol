@@ -79,7 +79,7 @@ beforeEach(async () => {
   em.create(Inventario, { personaje: p, numInventario: 1, cantidadEspacio: 2 });
   em.create(Inventario, { personaje: q, numInventario: 1, cantidadEspacio: 2 });
   const tienda = em.create(Tienda, { nombre: 'Armería', claseTienda: 'Armas', clase });
-  const objeto = em.create(Objeto, { nombre: 'Espada', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, esUnico: false, posicion: 0, tienda, inventario: null });
+  const objeto = em.create(Objeto, { nombre: 'Espada', descripcion: 'Hierro', tipoObjeto: 'Arma', valor: 40, nivelObjeto: 1, esUnico: true, posicion: 0, tienda, inventario: null });
   await em.flush();
   ids = { host: h.idUsuario, player: u.idUsuario, other: o.idUsuario, game: partida.idPartida, character: p.idPersonaje, otherCharacter: q.idPersonaje, object: objeto.idObjeto, store: tienda.idTienda, class: clase.idClase };
   // Una app nueva por fixture evita que el rate limiter y las sesiones contaminen otros tests.
@@ -207,6 +207,51 @@ test('dos compras concurrentes a igual posición no duplican ni descuentan dos v
   assert.deepEqual(results.map(r => r.status).sort(), [200, 409]);
   assert.equal((await orm.em.fork().findOneOrFail(Personaje, { idPersonaje: ids.character })).dinero, 60);
 });
+test('compra de objeto no único (esUnico: false) es infinita: se clona en inventario y original queda en tienda', async () => {
+  const em = orm.em.fork();
+  const tienda = await em.findOneOrFail(Tienda, { idTienda: ids.store });
+  const pocion = em.create(Objeto, {
+    nombre: 'Poción de Vida',
+    descripcion: 'Restaura 50 PV',
+    tipoObjeto: 'Poción',
+    valor: 10,
+    nivelObjeto: 1,
+    esUnico: false,
+    posicion: 0,
+    tienda,
+  });
+  await em.flush();
+
+  const buy1 = await request(`/objetos/${pocion.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  assert.equal(buy1.status, 200);
+  assert.equal(buy1.body.dineroRestante, 90);
+  assert.notEqual(buy1.body.objeto.idObjeto, pocion.idObjeto);
+
+  const buy2 = await request(`/objetos/${pocion.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 1 }, playerCookie);
+  assert.equal(buy2.status, 200);
+  assert.equal(buy2.body.dineroRestante, 80);
+  assert.notEqual(buy2.body.objeto.idObjeto, pocion.idObjeto);
+  assert.notEqual(buy2.body.objeto.idObjeto, buy1.body.objeto.idObjeto);
+
+  const pocionTienda = await orm.em.fork().findOneOrFail(Objeto, { idObjeto: pocion.idObjeto });
+  assert.equal(pocionTienda.tienda?.idTienda, ids.store);
+  assert.equal(pocionTienda.inventario, null);
+
+  await request('/inventarios', 'POST', { idPersonaje: ids.character, numInventario: 2, cantidadEspacio: 4 }, playerCookie);
+  const concurrentResults = await Promise.all([
+    request(`/objetos/${pocion.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 2, posicion: 0 }, playerCookie),
+    request(`/objetos/${pocion.idObjeto}/comprar`, 'POST', { idPersonaje: ids.otherCharacter, numInventario: 1, posicion: 0 }, otherCookie),
+  ]);
+  assert.deepEqual(concurrentResults.map(r => r.status), [200, 200]);
+
+  // Venta de la instancia clonada: acredita el dinero y la instancia no queda en la tienda
+  const sellClone = await request(`/objetos/${buy1.body.objeto.idObjeto}/vender`, 'POST', { idPersonaje: ids.character, idTienda: ids.store, precio: 8 }, playerCookie);
+  assert.equal(sellClone.status, 200);
+  const cloneInDb = await orm.em.fork().findOne(Objeto, { idObjeto: buy1.body.objeto.idObjeto });
+  assert.equal(cloneInDb, null);
+  const storeItems = await orm.em.fork().find(Objeto, { tienda, nombre: 'Poción de Vida' });
+  assert.equal(storeItems.length, 1);
+});
 test('venta entre 70 y 100 %, no repetible, con control de propiedad', async () => {
   await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
   const path = `/objetos/${ids.object}/vender`; const data = { idPersonaje: ids.character, idTienda: ids.store, precio: 28 };
@@ -271,7 +316,7 @@ test('concurrencia de compra y venta de objeto único', async () => {
     descripcion: 'Objeto único para prueba de concurrencia',
     tipoObjeto: 'Reliquia',
     valor: 40,
-    nivelObjeto: 5,
+    nivelObjeto: 1,
     esUnico: true,
     posicion: 0,
     tienda,
@@ -308,13 +353,19 @@ test('casos borde: saldo insuficiente, objeto ajeno, venta a tienda de otra clas
   const em = orm.em.fork();
   const claseMago = em.create(Clase, { nombreClase: 'Mago', descripcionClase: 'Magia' });
   const tiendaMago = em.create(Tienda, { nombre: 'Boutique Mágica', claseTienda: 'Túnicá', clase: claseMago });
-  const objetoCaro = em.create(Objeto, { nombre: 'Artefacto Costoso', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 500, nivelObjeto: 10, esUnico: false, posicion: 0, tienda: tiendaMago });
+  const objetoCaro = em.create(Objeto, { nombre: 'Artefacto Costoso', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 500, nivelObjeto: 1, esUnico: false, posicion: 0, tienda: tiendaMago });
+  const objetoNivelAlto = em.create(Objeto, { nombre: 'Grimorio Superior', descripcion: 'Mágico', tipoObjeto: 'Reliquia', valor: 20, nivelObjeto: 10, esUnico: false, posicion: 0, tienda: tiendaMago });
   await em.flush();
 
   // 1. Saldo insuficiente (dinero del personaje = 100, valor = 500)
   const compraSinSaldo = await request(`/objetos/${objetoCaro.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
   assert.equal(compraSinSaldo.status, 409);
   assert.match(compraSinSaldo.body.message, /dinero suficiente/i);
+
+  // 1b. Nivel insuficiente (personaje nivel = 1, nivelObjeto = 10)
+  const compraNivelBajo = await request(`/objetos/${objetoNivelAlto.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
+  assert.equal(compraNivelBajo.status, 409);
+  assert.match(compraNivelBajo.body.message, /nivel del personaje es insuficiente/i);
 
   // 2. Comprar objeto normal para las siguientes pruebas
   await request(`/objetos/${ids.object}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 0 }, playerCookie);
@@ -330,7 +381,7 @@ test('casos borde: saldo insuficiente, objeto ajeno, venta a tienda de otra clas
 
   // 5. Movimiento a una posición ocupada
   const tiendaActual = await em.findOneOrFail(Tienda, { idTienda: ids.store });
-  const objeto2 = em.create(Objeto, { nombre: 'Daga', descripcion: 'Acero', tipoObjeto: 'Arma', valor: 20, nivelObjeto: 1, esUnico: false, posicion: 0, tienda: tiendaActual });
+  const objeto2 = em.create(Objeto, { nombre: 'Daga', descripcion: 'Acero', tipoObjeto: 'Arma', valor: 20, nivelObjeto: 1, esUnico: true, posicion: 0, tienda: tiendaActual });
   await em.flush();
   await request(`/objetos/${objeto2.idObjeto}/comprar`, 'POST', { idPersonaje: ids.character, numInventario: 1, posicion: 1 }, playerCookie);
 

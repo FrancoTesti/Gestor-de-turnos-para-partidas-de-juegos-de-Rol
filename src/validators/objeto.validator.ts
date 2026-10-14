@@ -6,7 +6,7 @@ const schema = z.object({
   tipoObjeto: z.string().trim().min(1).max(50), valor: entero,
   nivelObjeto: entero.min(1), esUnico: z.boolean().optional(), idTienda: entero.min(1).nullable().optional(), posicion: entero.optional(),
 }).strict();
-export const compraSchema = z.object({ idPersonaje: entero.min(1), numInventario: entero.min(1), posicion: entero }).strict();
+export const compraSchema = z.object({ idPersonaje: entero.min(1), numInventario: entero.min(1), posicion: entero.optional() }).strict();
 function parse<T>(schema: z.ZodType<T>, body: unknown): T {
   const result = schema.safeParse(body);
   if (!result.success) throw new ErrorValidacionObjeto(result.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; '));

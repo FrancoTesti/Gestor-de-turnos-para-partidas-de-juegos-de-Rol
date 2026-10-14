@@ -67,3 +67,35 @@ it('muestra el encabezado de nickname del anfitrión formateado y separado', asy
   expect(screen.getByText('Nickname Anfitrión')).toBeInTheDocument();
 });
 
+it('mantiene el detalle abierto y recarga los datos al actualizar en inventarios', async () => {
+  const inventario = { idPersonaje: 10, numInventario: 1, cantidadEspacio: 4, objetos: [{ idObjeto: 5, nombre: 'Daga', posicion: 0, valor: 20 }] };
+  const inventarioActualizado = { idPersonaje: 10, numInventario: 1, cantidadEspacio: 4, objetos: [{ idObjeto: 5, nombre: 'Daga', posicion: 2, valor: 20 }] };
+
+  mocks.api.mockImplementation(async (path: string, method = 'GET') => {
+    if (path === '/inventarios' && method === 'GET') return [inventario];
+    if (path === '/inventarios/10/1' && method === 'GET') return inventarioActualizado;
+    if (path === '/objetos' && method === 'GET') return [{ idObjeto: 5, idPersonaje: 10, nombre: 'Daga', posicion: 0, valor: 20, numInventario: 1 }];
+    if (path === '/inventarios/10/1/mover' && method === 'POST') return {};
+    return [];
+  });
+
+  render(<ModulePage resource="inventarios" />);
+  await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+
+  fireEvent.click(screen.getByRole('button', { name: /Ver detalle/i }));
+  await waitFor(() => expect(screen.getByRole('heading', { name: 'Detalle' })).toBeInTheDocument());
+
+  // Realizar movimiento
+  await waitFor(() => expect(screen.getByLabelText(/Objeto del personaje/i)).toBeInTheDocument());
+  fireEvent.change(screen.getByLabelText(/Objeto del personaje/i), { target: { value: '5' } });
+  fireEvent.change(screen.getByLabelText(/Posición destino/i), { target: { value: '2' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Mover objeto' }));
+
+  // Detalle debe seguir visible y haber llamado a recargar el inventario
+  await waitFor(() => {
+    expect(screen.getByRole('heading', { name: 'Detalle' })).toBeInTheDocument();
+  });
+  expect(mocks.api).toHaveBeenCalledWith('/inventarios/10/1/mover', 'POST', { idObjeto: 5, posicion: 2 });
+  expect(mocks.api).toHaveBeenCalledWith('/inventarios/10/1');
+});
+

@@ -61,6 +61,13 @@ export class PosicionOcupadaError extends Error {
   }
 }
 
+export class NivelInsuficienteError extends Error {
+  constructor() {
+    super('El nivel del personaje es insuficiente para comprar este objeto');
+    this.name = 'NivelInsuficienteError';
+  }
+}
+
 export class ObjetoService {
   private em: EntityManager;
 
@@ -155,6 +162,7 @@ export class ObjetoService {
         { populate: ['partida'], lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!personaje) throw new PersonajeNoEncontradoError();
+      if (personaje.nivel < objeto.nivelObjeto) throw new NivelInsuficienteError();
 
       if (objeto.esUnico && personaje.partida) {
         const objetoExistente = await em.findOne(Objeto, {
@@ -173,28 +181,67 @@ export class ObjetoService {
         { populate: ['personaje'], lockMode: LockMode.PESSIMISTIC_WRITE },
       );
       if (!inventario) throw new InventarioNoEncontradoError();
-      if (data.posicion >= inventario.cantidadEspacio) throw new ErrorValidacionObjeto('La posición debe ser menor que la capacidad del inventario');
+      if (data.posicion !== undefined && data.posicion >= inventario.cantidadEspacio) {
+        throw new ErrorValidacionObjeto('La posición debe ser menor que la capacidad del inventario');
+      }
       if (personaje.dinero < objeto.valor) throw new DineroInsuficienteError();
 
       const objetosGuardados = await em.count(Objeto, { inventario });
       if (objetosGuardados >= inventario.cantidadEspacio) throw new InventarioLlenoError();
 
-      const objetoEnPosicion = await em.findOne(
-        Objeto,
-        { inventario, posicion: data.posicion },
-        { lockMode: LockMode.PESSIMISTIC_WRITE },
-      );
-      if (objetoEnPosicion) throw new PosicionOcupadaError();
+      let targetPosicion: number;
+      if (data.posicion !== undefined) {
+        const objetoEnPosicion = await em.findOne(
+          Objeto,
+          { inventario, posicion: data.posicion },
+          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        );
+        if (objetoEnPosicion) throw new PosicionOcupadaError();
+        targetPosicion = data.posicion;
+      } else {
+        const objetosInventario = await em.find(
+          Objeto,
+          { inventario },
+          { lockMode: LockMode.PESSIMISTIC_WRITE },
+        );
+        const posicionesOcupadas = new Set(objetosInventario.map((o) => o.posicion));
+        let libre = -1;
+        for (let i = 0; i < inventario.cantidadEspacio; i++) {
+          if (!posicionesOcupadas.has(i)) {
+            libre = i;
+            break;
+          }
+        }
+        if (libre === -1) throw new InventarioLlenoError();
+        targetPosicion = libre;
+      }
 
       personaje.dinero -= objeto.valor;
-      objeto.tienda = null;
-      objeto.inventario = inventario;
-      objeto.posicion = data.posicion;
+
+      let objetoComprado: Objeto;
+      if (objeto.esUnico) {
+        objeto.tienda = null;
+        objeto.inventario = inventario;
+        objeto.posicion = targetPosicion;
+        objetoComprado = objeto;
+      } else {
+        objetoComprado = em.create(Objeto, {
+          nombre: objeto.nombre,
+          descripcion: objeto.descripcion,
+          tipoObjeto: objeto.tipoObjeto,
+          valor: objeto.valor,
+          nivelObjeto: objeto.nivelObjeto,
+          esUnico: false,
+          posicion: targetPosicion,
+          tienda: null,
+          inventario,
+        });
+      }
 
       await em.flush();
 
       return {
-        objeto: this.aObjetoPublico(objeto),
+        objeto: this.aObjetoPublico(objetoComprado),
         idPersonaje: personaje.idPersonaje,
         numInventario: inventario.numInventario,
         dineroRestante: personaje.dinero,

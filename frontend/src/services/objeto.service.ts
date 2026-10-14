@@ -22,7 +22,7 @@ export type ActualizarObjetoData = Partial<CrearObjetoData>;
 export interface ComprarObjetoData {
   idPersonaje: number;
   numInventario: number;
-  posicion: number;
+  posicion?: number;
 }
 
 export interface ResultadoCompraObjeto {

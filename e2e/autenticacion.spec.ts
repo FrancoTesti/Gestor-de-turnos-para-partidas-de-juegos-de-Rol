@@ -148,6 +148,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await host.getByLabel('Valor', { exact: true }).fill('40');
     await host.getByLabel('Nivel', { exact: true }).fill('1');
     await host.getByRole('combobox', { name: 'Tienda (opcional)', exact: true }).selectOption({ label: 'Armería E2E' });
+    await host.getByLabel(/Objeto Único/).check();
     const createdObject = host.waitForResponse(r => r.url().endsWith('/api/objetos') && r.request().method() === 'POST');
     await host.getByRole('button', { name: 'Guardar', exact: true }).click();
     const objectResponse = await createdObject;
@@ -172,8 +173,6 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByRole('combobox', { name: 'Objeto del personaje', exact: true }).selectOption(String(idObjeto));
     await player.getByRole('combobox', { name: /^Posición destino/ }).selectOption('2');
     await player.getByRole('button', { name: 'Mover objeto', exact: true }).click();
-    await expect(player.getByRole('heading', { name: 'Detalle', exact: true })).toHaveCount(0);
-    await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
     await expect(player.getByText('Casillero #2', { exact: true })).toBeVisible();
     await expect(player.getByText('Arco E2E', { exact: true })).toBeVisible();
     await player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).selectOption(String(idObjeto));
@@ -182,8 +181,6 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     const storeId = await storeSelect.locator('option').filter({ hasText: 'Armería E2E' }).getAttribute('value');
     await storeSelect.selectOption(storeId!);
     await player.getByRole('button', { name: 'Vender objeto', exact: true }).click();
-    await expect(player.getByRole('heading', { name: 'Detalle', exact: true })).toHaveCount(0);
-    await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
     await expect(player.getByRole('combobox', { name: 'Objeto a vender', exact: true }).locator('option', { hasText: 'Arco E2E' })).toHaveCount(0);
     await player.goto('/characters');
     await expect(stats.locator('.stat-item').filter({ hasText: 'Dinero' }).locator('.stat-val')).toContainText('188');

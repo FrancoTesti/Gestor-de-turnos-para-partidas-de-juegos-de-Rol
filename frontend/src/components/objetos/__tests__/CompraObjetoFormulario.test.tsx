@@ -83,4 +83,19 @@ describe('CompraObjetoFormulario', () => {
     expect(screen.getByRole('button', { name: 'Confirmar compra' })).toBeDisabled();
     expect(screen.getByText(/No hay personajes disponibles/i)).toBeInTheDocument();
   });
+
+  it('deshabilita el botón y muestra advertencia cuando el nivel del personaje es inferior al del objeto', () => {
+    const objetoAltoNivel = { ...objeto, nivelObjeto: 5 };
+    render(
+      <CompraObjetoFormulario
+        objeto={objetoAltoNivel}
+        personajes={[personaje]}
+        onComprar={() => undefined}
+        onCancelar={() => undefined}
+      />,
+    );
+
+    expect(screen.getByRole('button', { name: 'Confirmar compra' })).toBeDisabled();
+    expect(screen.getByText(/Nivel insuficiente/i)).toBeInTheDocument();
+  });
 });
