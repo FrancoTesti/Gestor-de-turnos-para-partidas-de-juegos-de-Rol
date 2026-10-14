@@ -311,16 +311,6 @@ export default function ObjetosPage() {
                 className="objeto-modal-mobile-content"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    style={{ padding: '0.25rem 0.65rem', fontSize: '0.85rem' }}
-                    onClick={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
-                  >
-                    ✕ Cerrar detalle
-                  </button>
-                </div>
                 <ObjetoDetalle
                   objeto={seleccionado}
                   cargando={cargandoDetalle}
