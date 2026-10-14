@@ -285,9 +285,7 @@ de usuarios y sin necesidad de ejecutarse en local. La evidencia de cada suite e
   base nueva.
 - **Copia de seguridad:** [respaldo.md](respaldo.md) pasó a `pg_dump`/`psql` y no se verificó, porque
   esas herramientas no estaban instaladas.
-- **Despliegue en un proveedor:** la aplicación no está publicada. Corre completa en una máquina contra
-  Supabase; los pasos para publicarla están en [despliegue.md](despliegue.md). La cátedra marca «deploy»
-  como TBD.
+- **Despliegue en un proveedor:** Completado y verificado. La aplicación está publicada y activa en Render ([https://gestor-de-turnos-para-partidas-de-juegos.onrender.com](https://gestor-de-turnos-para-partidas-de-juegos.onrender.com)), sirviendo el backend Express y el frontend Vite en un solo servicio conectado a PostgreSQL en Supabase.
 - **Latencia:** los tiempos medidos son desde otro continente hacia la región de la base. Con el backend
   publicado en una región cercana deberían bajar mucho, pero no está medido.
 - **Datos de prueba:** la base de Supabase contiene, además del catálogo de demostración, restos de la

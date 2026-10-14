@@ -5,9 +5,8 @@ frontend compilado, de modo que toda la aplicación puede publicarse como **un �
 Esta página documenta qué configuración necesita, **sin incluir ningún valor real**: las credenciales se
 cargan en el `.env` de cada máquina o en el panel del proveedor, nunca en el repositorio.
 
-> Estado: la aplicación corre completa con `npm start` contra Supabase (ver
-> [instalacion.md](instalacion.md#todo-desde-un-solo-servidor)). **Todavía no se publicó en ningún
-> proveedor de hosting**: los pasos de más abajo están previstos, no ejecutados.
+> **Estado:** La aplicación está desplegada y activa en **Render** conectada a **PostgreSQL en Supabase**:
+> **URL pública:** [https://gestor-de-turnos-para-partidas-de-juegos.onrender.com](https://gestor-de-turnos-para-partidas-de-juegos.onrender.com)
 
 ## Variables
 
