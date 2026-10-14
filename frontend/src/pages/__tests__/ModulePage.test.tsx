@@ -99,3 +99,90 @@ it('mantiene el detalle abierto y recarga los datos al actualizar en inventarios
   expect(mocks.api).toHaveBeenCalledWith('/inventarios/10/1');
 });
 
+it('separa Id de Personaje y Nombre en columnas distintas en inventarios y permite filtrar por ambos', async () => {
+  const inventarios = [
+    { idPersonaje: 10, numInventario: 1, cantidadEspacio: 10 },
+    { idPersonaje: 20, numInventario: 1, cantidadEspacio: 15 },
+  ];
+  const personajes = [
+    { idPersonaje: 10, nombreFicticio: 'Legolas' },
+    { idPersonaje: 20, nombreFicticio: 'Gimli' },
+  ];
+
+  mocks.api.mockImplementation(async (path: string, method = 'GET') => {
+    if (path === '/inventarios' && method === 'GET') return inventarios;
+    if (path === '/personajes' && method === 'GET') return personajes;
+    return [];
+  });
+
+  render(<ModulePage resource="inventarios" />);
+  await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+
+  // Encabezados separados
+  const ths = screen.getAllByRole('columnheader').map(th => th.textContent);
+  expect(ths).toContain('Id Personaje');
+  expect(ths).toContain('Personaje');
+  expect(ths).toContain('Núm. Inventario');
+  expect(ths).toContain('Capacidad');
+
+  // Valores en celdas separadas
+  expect(screen.getByText('#10')).toBeInTheDocument();
+  expect(screen.getByText('Legolas')).toBeInTheDocument();
+  expect(screen.getByText('#20')).toBeInTheDocument();
+  expect(screen.getByText('Gimli')).toBeInTheDocument();
+
+  // Filtrar por nombre del personaje
+  const inputBuscar = screen.getByPlaceholderText('Filtrar por cualquier campo...');
+  fireEvent.change(inputBuscar, { target: { value: 'Legolas' } });
+
+  expect(screen.getByText('Legolas')).toBeInTheDocument();
+  expect(screen.queryByText('Gimli')).not.toBeInTheDocument();
+
+  // Filtrar por ID del personaje
+  fireEvent.change(inputBuscar, { target: { value: '20' } });
+
+  expect(screen.queryByText('Legolas')).not.toBeInTheDocument();
+  expect(screen.getByText('Gimli')).toBeInTheDocument();
+});
+
+it('aplica las alineaciones requeridas a la tabla de inventarios (izq, centro, der)', async () => {
+  const inventarios = [
+    { idPersonaje: 10, numInventario: 1, cantidadEspacio: 10 },
+  ];
+  const personajes = [
+    { idPersonaje: 10, nombreFicticio: 'Legolas' },
+  ];
+
+  mocks.api.mockImplementation(async (path: string, method = 'GET') => {
+    if (path === '/inventarios' && method === 'GET') return inventarios;
+    if (path === '/personajes' && method === 'GET') return personajes;
+    return [];
+  });
+
+  render(<ModulePage resource="inventarios" />);
+  await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+
+  const ths = screen.getAllByRole('columnheader');
+  // Primer columna (Id Personaje): left
+  expect(ths[0]).toHaveStyle({ textAlign: 'left' });
+  // Columnas intermedias: center
+  expect(ths[1]).toHaveStyle({ textAlign: 'center' });
+  expect(ths[2]).toHaveStyle({ textAlign: 'center' });
+  expect(ths[3]).toHaveStyle({ textAlign: 'center' });
+  // Columna de acciones: right
+  expect(ths[ths.length - 1]).toHaveStyle({ textAlign: 'right' });
+
+  // Valores en celdas (td)
+  const tds = screen.getAllByRole('cell');
+  expect(tds[0]).toHaveStyle({ textAlign: 'left' });
+  expect(tds[1]).toHaveStyle({ textAlign: 'center' });
+  expect(tds[2]).toHaveStyle({ textAlign: 'center' });
+  expect(tds[3]).toHaveStyle({ textAlign: 'center' });
+  expect(tds[tds.length - 1]).toHaveStyle({ textAlign: 'right' });
+
+  // El recuadro de búsqueda tiene ancho flexible para no cortar el texto
+  const inputBuscar = screen.getByPlaceholderText('Filtrar por cualquier campo...');
+  expect(inputBuscar).toHaveStyle({ maxWidth: '24rem', width: '100%' });
+});
+
+

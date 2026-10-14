@@ -1,3 +1,4 @@
+import { useMemo } from 'react';
 import type { ObjetoPublico } from '../../services/objeto.service';
 import Loading from '../ui/Loading';
 import { CoinIcon, StarIcon } from '../ui';
@@ -13,12 +14,16 @@ interface ObjetoListaProps {
 }
 
 export default function ObjetoLista({ objetos, seleccionadoId, cargando, onSeleccionar, onEditar, onEliminar }: ObjetoListaProps) {
+  const objetosOrdenados = useMemo(() => {
+    return [...objetos].sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: 'base' }));
+  }, [objetos]);
+
   if (cargando) return <Loading message="Cargando objetos..." />;
-  if (objetos.length === 0) return <p className="estado-lista">No hay objetos que coincidan con los filtros.</p>;
+  if (objetosOrdenados.length === 0) return <p className="estado-lista">No hay objetos que coincidan con los filtros.</p>;
 
   return (
     <div className="objeto-grid">
-      {objetos.map((objeto) => {
+      {objetosOrdenados.map((objeto) => {
         const tooltipText = `ID: #${objeto.idObjeto}\nNombre: ${objeto.nombre}\nDescripción: ${objeto.descripcion || 'Sin descripción'}\nTipo: ${objeto.tipoObjeto}\nNivel: ${objeto.nivelObjeto}\nValor: ${objeto.valor}\nCualidad: ${objeto.esUnico ? 'Único' : 'Estándar'}`;
 
         return (

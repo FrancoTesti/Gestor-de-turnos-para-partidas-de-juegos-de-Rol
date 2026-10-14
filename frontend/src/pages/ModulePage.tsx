@@ -128,6 +128,14 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             const anfitrion = String(r.nicknameAnfitrion ?? '').toLowerCase();
             matchesSearch = nombre.includes(term) || anfitrion.includes(term) || String(r.idPartida).includes(term);
           }
+        } else if (resource === 'inventarios') {
+          const cleanIdTerm = term.replace(/^#/, '').trim();
+          const p = refs.personajes?.find(x => x.idPersonaje === r.idPersonaje);
+          const pName = p ? label(p).toLowerCase() : '';
+          const matchesId = String(r.idPersonaje) === cleanIdTerm || String(r.idPersonaje).includes(cleanIdTerm);
+          const matchesName = pName.includes(term);
+          const matchesOther = Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
+          matchesSearch = matchesId || matchesName || matchesOther;
         } else {
           matchesSearch = Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
         }
@@ -160,13 +168,16 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     }
 
     return res;
-  }, [rows, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
-  const columns = [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
+  }, [rows, refs.personajes, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
+  const columns = resource === 'inventarios'
+    ? ['idPersonaje', 'personajeNombre', 'numInventario', 'cantidadEspacio']
+    : [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
   const columnLabel = (key: string): string => {
     if (key === 'nicknameAnfitrion') return 'Nickname Anfitrión';
     if (key === 'jugadorNombre') return 'Nombre del Jugador';
     if (key === 'idPartida') return 'Id de Partida';
-    if (key === 'idPersonaje') return 'Id de Personaje';
+    if (key === 'idPersonaje') return resource === 'inventarios' ? 'Id Personaje' : 'Id de Personaje';
+    if (key === 'personajeNombre') return 'Personaje';
     if (key === 'idClase') return 'Id de Clase';
     if (key === 'idTienda') return 'Id de Tienda';
     if (key === 'numInventario') return 'Núm. Inventario';
@@ -176,6 +187,13 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     return config.fields.find(f => f.key === key)?.label ?? key;
   };
   const display = (r: Row, key: string) => {
+    if (resource === 'inventarios') {
+      if (key === 'idPersonaje') return `#${r.idPersonaje}`;
+      if (key === 'personajeNombre') {
+        const pj = refs.personajes?.find(x => x.idPersonaje === r.idPersonaje);
+        return pj ? label(pj) : '—';
+      }
+    }
     const f = config.fields.find(f => f.key === key);
     const referenced = f?.ref && refs[f.ref]?.find(x => x[idKeys[f.ref!]] === r[key]);
     if (referenced) return `${r[key]} — ${label(referenced)}`;
@@ -209,9 +227,15 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       <button className="btn-primary" disabled={busy} type="submit">Guardar</button><button className="btn-secondary" type="button" disabled={busy} onClick={() => setEditing(false)}>Cancelar</button>
     </form> : <>
       <div style={{ marginTop: '1.5rem', marginBottom: '1.5rem', display: 'flex', gap: '1.25rem', alignItems: 'center', background: 'var(--bg-card)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', flexWrap: 'wrap' }}>
-        <label htmlFor="modulo-buscar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
+        <label htmlFor="modulo-buscar" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)', flex: '1 1 auto', flexWrap: 'wrap', maxWidth: '100%' }}>
           {resource === 'partidas' ? 'Buscar por Id de Partida:' : 'Buscar:'}
-          <input id="modulo-buscar" value={search} placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'} onChange={e => setSearch(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }} />
+          <input
+            id="modulo-buscar"
+            value={search}
+            placeholder={resource === 'partidas' ? 'Buscar por Id de Partida' : 'Filtrar por cualquier campo...'}
+            onChange={e => setSearch(e.target.value)}
+            style={{ padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none', width: '100%', maxWidth: '24rem', boxSizing: 'border-box' }}
+          />
         </label>
         {resource === 'personajes' && (
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
@@ -266,7 +290,92 @@ export default function ModulePage({ resource }: { resource: Resource }) {
           </button>
         )}
       </div>
-      <div className="module-table"><table><thead><tr>{columns.map(k => <th key={k}>{columnLabel(k)}</th>)}<th>Acciones</th></tr></thead><tbody>{filtered.map(r => <tr key={url(r)}>{columns.map(k => { const val = display(r, k); return <td key={k} title={val.length > 25 ? val : undefined}><div className="table-cell-content truncate" style={{ maxWidth: 220 }}>{val}</div></td>; })}<td><button className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => void detail(r)} aria-label={`Ver detalle de ${label(r) || 'registro'}`}>Ver detalle</button>{allowed(r) && <><button className="btn-primary" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: '0.5rem' }} onClick={() => startEdit(r)} aria-label={`Editar ${label(r) || 'registro'}`}>Editar</button><button className="btn-danger" style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }} disabled={busy} onClick={() => { if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE')); }} aria-label={`Eliminar ${label(r) || 'registro'}`}>Eliminar</button></>}</td></tr>)}</tbody></table></div>
+      <div className="module-table">
+        <table>
+          <thead>
+            <tr>
+              {columns.map((k, idx) => (
+                <th
+                  key={k}
+                  style={resource === 'inventarios' ? { textAlign: idx === 0 ? 'left' : 'center' } : undefined}
+                >
+                  {columnLabel(k)}
+                </th>
+              ))}
+              <th style={resource === 'inventarios' ? { textAlign: 'right' } : undefined}>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filtered.map(r => (
+              <tr key={url(r)}>
+                {columns.map((k, idx) => {
+                  const val = display(r, k);
+                  const align = resource === 'inventarios' ? (idx === 0 ? 'left' : 'center') : undefined;
+                  return (
+                    <td
+                      key={k}
+                      title={val.length > 25 ? val : undefined}
+                      style={align ? { textAlign: align } : undefined}
+                    >
+                      <div
+                        className="table-cell-content truncate"
+                        style={{
+                          maxWidth: 220,
+                          textAlign: align,
+                          margin: align === 'center' ? '0 auto' : undefined,
+                        }}
+                      >
+                        {val}
+                      </div>
+                    </td>
+                  );
+                })}
+                <td style={resource === 'inventarios' ? { textAlign: 'right' } : undefined}>
+                  <div
+                    style={
+                      resource === 'inventarios'
+                        ? { display: 'flex', justifyContent: 'flex-end', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }
+                        : undefined
+                    }
+                  >
+                    <button
+                      className="btn-secondary"
+                      style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' ? undefined : '0.5rem' }}
+                      onClick={() => void detail(r)}
+                      aria-label={`Ver detalle de ${label(r) || 'registro'}`}
+                    >
+                      Ver detalle
+                    </button>
+                    {allowed(r) && (
+                      <>
+                        <button
+                          className="btn-primary"
+                          style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem', marginRight: resource === 'inventarios' ? undefined : '0.5rem' }}
+                          onClick={() => startEdit(r)}
+                          aria-label={`Editar ${label(r) || 'registro'}`}
+                        >
+                          Editar
+                        </button>
+                        <button
+                          className="btn-danger"
+                          style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
+                          disabled={busy}
+                          onClick={() => {
+                            if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE'));
+                          }}
+                          aria-label={`Eliminar ${label(r) || 'registro'}`}
+                        >
+                          Eliminar
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
       {selected && <article><h2>Detalle</h2><dl>{columns.map(k => <div key={k}><dt>{columnLabel(k)}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
         {resource === 'partidas' && (
@@ -320,7 +429,9 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
     }
     const isFull = freePositions.length === 0;
     const selling = objects.find(o => String(o.idObjeto) === object);
-    const moveOptions = characterObjects.length > 0 ? characterObjects : objects;
+    const moveOptions = (characterObjects.length > 0 ? characterObjects : objects)
+      .slice()
+      .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }));
 
     return (
       <div className="inventario-modulo" style={{ marginTop: '1rem' }}>
@@ -451,7 +562,9 @@ function Workflow({ resource, row, refs, busy, perform, onNotifyError }: { resou
               style={{ display: 'block', width: '100%', padding: '0.4rem', marginTop: '0.2rem' }}
             >
               <option value="">Seleccionar objeto</option>
-              {objects.map(o => (
+              {[...objects]
+                .sort((a, b) => String(a.nombre || label(a) || '').localeCompare(String(b.nombre || label(b) || ''), undefined, { sensitivity: 'base' }))
+                .map(o => (
                 <option key={String(o.idObjeto)} value={String(o.idObjeto)}>
                   {label(o)} (Posición {String(o.posicion)}, Valor ${String(o.valor)})
                 </option>

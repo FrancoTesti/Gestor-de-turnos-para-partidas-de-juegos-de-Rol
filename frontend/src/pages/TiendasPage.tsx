@@ -223,7 +223,9 @@ export default function TiendasPage() {
   // Objetos para la tienda seleccionada
   const objetosDeTienda = useMemo(() => {
     if (!seleccionada) return [];
-    return objetos.filter((o) => o.idPersonaje === null && o.idTienda === seleccionada.idTienda);
+    return objetos
+      .filter((o) => o.idPersonaje === null && o.idTienda === seleccionada.idTienda)
+      .sort((a, b) => a.nombre.localeCompare(b.nombre, undefined, { sensitivity: 'base' }));
   }, [seleccionada, objetos]);
 
   return (
@@ -337,8 +339,8 @@ export default function TiendasPage() {
       )}
 
       {/* Filtros */}
-      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
-        <label htmlFor="filtro-buscar-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+      <div className="tienda-filtros" style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+        <label htmlFor="filtro-buscar-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>
           <span>Buscar:</span>
         </label>
         <input
@@ -348,9 +350,9 @@ export default function TiendasPage() {
           placeholder="Nombre o tipo"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
-          style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '200px', maxWidth: '100%', boxSizing: 'border-box' }}
+          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', width: '180px', maxWidth: '100%', boxSizing: 'border-box' }}
         />
-        <label htmlFor="filtro-tipo-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <label htmlFor="filtro-tipo-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>
           <span>Tipo:</span>
         </label>
         <select
@@ -358,7 +360,7 @@ export default function TiendasPage() {
           aria-label="Filtrar por tipo"
           value={filtroTipo}
           onChange={(e) => setFiltroTipo(e.target.value)}
-          style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+          style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
         >
           <option value="">Todos los tipos</option>
           {tiposTienda.map((t) => (
@@ -367,7 +369,7 @@ export default function TiendasPage() {
         </select>
         {partidas.length > 0 && (
           <>
-            <label htmlFor="filtro-partida-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <label htmlFor="filtro-partida-tienda" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>
               <span>Partida:</span>
             </label>
             <select
@@ -375,7 +377,7 @@ export default function TiendasPage() {
               aria-label="Filtrar por partida"
               value={filtroPartida}
               onChange={(e) => setFiltroPartida(e.target.value)}
-              style={{ padding: '0.55rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
+              style={{ padding: '0.45rem 0.75rem', fontSize: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
             >
               <option value="">Todas las partidas</option>
               {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
@@ -387,7 +389,7 @@ export default function TiendasPage() {
           </>
         )}
         {(busqueda || filtroTipo || filtroPartida) && (
-          <button type="button" className="btn-secondary" onClick={() => { setBusqueda(''); setFiltroTipo(''); setFiltroPartida(''); }}>
+          <button type="button" className="btn-secondary" style={{ padding: '0.4rem 0.75rem', fontSize: '0.85rem' }} onClick={() => { setBusqueda(''); setFiltroTipo(''); setFiltroPartida(''); }}>
             Quitar filtros
           </button>
         )}

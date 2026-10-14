@@ -168,7 +168,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await player.getByLabel('Número de inventario', { exact: true }).fill('2');
     await player.getByLabel('Capacidad', { exact: true }).fill('3');
     await player.getByRole('button', { name: 'Guardar', exact: true }).click();
-    const inventoryRow = player.locator('tbody tr').filter({ has: player.locator('td:nth-child(2)', { hasText: /^2$/ }) });
+    const inventoryRow = player.locator('tbody tr').filter({ has: player.locator('td:nth-child(2), td:nth-child(3)', { hasText: /^2$/ }) });
     await inventoryRow.getByRole('button', { name: 'Ver detalle' }).click();
     await player.getByRole('combobox', { name: 'Objeto del personaje', exact: true }).selectOption(String(idObjeto));
     await player.getByRole('combobox', { name: /^Posición destino/ }).selectOption('2');

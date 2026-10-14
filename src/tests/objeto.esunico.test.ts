@@ -139,4 +139,19 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     expect(objetoUnico.tienda).toBeNull();
     expect(tx.flush).toHaveBeenCalledOnce();
   });
+
+  it('obtenerTodos consulta objetos ordenados alfabéticamente por nombre', async () => {
+    const em = {
+      find: vi.fn().mockResolvedValue([objetoUnico]),
+    } as unknown as EntityManager;
+
+    const service = new ObjetoService(em);
+    await service.obtenerTodos();
+
+    expect(em.find).toHaveBeenCalledWith(
+      Objeto,
+      {},
+      { populate: ['tienda', 'inventario.personaje'], orderBy: { nombre: 'ASC' } }
+    );
+  });
 });
