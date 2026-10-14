@@ -10,6 +10,7 @@ export function crearPartidaRouter(em: EntityManager): Router {
   const controller = new PartidaController(service);
 
   router.get('/', (req: any, res: any) => controller.obtenerTodas(req, res));
+  router.get('/activas', (req: any, res: any) => controller.obtenerActivas(req, res));
   router.get('/:id', (req: any, res: any) => controller.obtenerPorId(req, res));
   
   router.post('/', requireAnfitrionForPartida, (req: any, res: any) => controller.crearPartida(req, res));
