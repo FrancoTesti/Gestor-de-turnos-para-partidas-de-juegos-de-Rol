@@ -2,11 +2,13 @@ import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useTheme, type Theme, type AccentColor } from '../context/ThemeContext';
 import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
+import { AvatarUsuario } from '../components/usuarios/UsuarioLista';
 import Loading from '../components/ui/Loading';
 import { CheckIcon, AvisoModal } from '../components/ui';
 import { actualizarUsuario } from '../services/usuario.service';
 import { actualizarJugador, crearJugador, eliminarJugador } from '../services/jugador.service';
 import { crearAnfitrion, eliminarAnfitrion } from '../services/anfitrion.service';
+import '../components/usuarios/usuarios.css';
 import './ProfilesPage.css';
 
 // Pantalla de cuenta propia: datos del usuario y los dos perfiles que puede tener.
@@ -179,6 +181,17 @@ export default function ProfilesPage() {
           />
         ) : (
           <>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+              <div style={{ width: '76px', height: '76px', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <AvatarUsuario imagen={usuarioLogueado.imagen} nickname={usuarioLogueado.nickname} />
+              </div>
+              <div>
+                <span className="badge badge-primary" style={{ fontSize: '0.75rem', display: 'inline-block' }}>
+                  Avatar de usuario
+                </span>
+              </div>
+            </div>
+
             <dl className="perfil-datos">
               <dt>Nombre</dt><dd>{usuarioLogueado.nombreUsuario}</dd>
               <dt>Nickname</dt><dd>@{usuarioLogueado.nickname}</dd>

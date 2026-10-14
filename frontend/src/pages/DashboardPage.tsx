@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useUser } from '../context/UserContext';
 import Loading from '../components/ui/Loading';
 
 export default function DashboardPage() {
   const { usuarioLogueado, usuarios, jugadores, anfitriones, rolDe, cargandoSesion } = useUser();
+  const [paginaActual, setPaginaActual] = useState(1);
+  const ITEMS_POR_PAGINA = 20;
 
   if (cargandoSesion) {
     return (
@@ -23,6 +26,11 @@ export default function DashboardPage() {
 
   const jugadoresValidos = jugadores.filter(j => usuarios.some(u => u.idUsuario === j.idUsuario));
   const anfitrionesValidos = anfitriones.filter(a => usuarios.some(u => u.idUsuario === a.idUsuario));
+
+  const totalPaginas = Math.ceil(usuarios.length / ITEMS_POR_PAGINA) || 1;
+  const paginaValida = Math.min(Math.max(1, paginaActual), totalPaginas);
+  const inicio = (paginaValida - 1) * ITEMS_POR_PAGINA;
+  const usuariosPaginados = usuarios.slice(inicio, inicio + ITEMS_POR_PAGINA);
 
   return (
     <div style={{ width: '100%', maxWidth: 1040, margin: '1rem auto', padding: '0 0.75rem', boxSizing: 'border-box' }}>
@@ -55,14 +63,14 @@ export default function DashboardPage() {
             </span>
           </div>
 
-          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem' }}>
-            <div style={{ fontSize: '0.85rem' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', gap: '2rem', flexWrap: 'wrap', borderTop: '1px solid var(--border-subtle)', paddingTop: '1rem', alignItems: 'center' }}>
+            <div style={{ fontSize: '1.05rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>ID Usuario: </span>
-              <strong style={{ color: 'var(--text-h)', fontFamily: 'var(--mono)' }}>#{usuarioLogueado.idUsuario}</strong>
+              <strong style={{ color: 'var(--text-h)', fontFamily: 'var(--mono)', fontSize: '1.15rem' }}>#{usuarioLogueado.idUsuario}</strong>
             </div>
-            <div style={{ fontSize: '0.85rem' }}>
+            <div style={{ fontSize: '1.05rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>Rol actual: </span>
-              <strong style={{ color: 'var(--accent-text)', textTransform: 'capitalize' }}>{rol}</strong>
+              <strong style={{ color: 'var(--accent-text)', textTransform: 'capitalize', fontSize: '1.15rem' }}>{rol}</strong>
             </div>
           </div>
         </div>
@@ -131,13 +139,20 @@ export default function DashboardPage() {
 
         {/* Celda 6 (12 cols): Directorio de Usuarios */}
         <div className="bento-card bento-col-12">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-            <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
-              Directorio de usuarios registrados
-            </h3>
-            <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} className="tabular-nums">
-              Total: {usuarios.length}
-            </span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+            <div>
+              <h3 style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.15rem' }}>
+                Directorio de usuarios registrados
+              </h3>
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                Máximo {ITEMS_POR_PAGINA} usuarios por página
+              </span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }} className="tabular-nums">
+                Total: {usuarios.length} {usuarios.length === 1 ? 'usuario' : 'usuarios'} {totalPaginas > 1 ? `(Pág. ${paginaValida} de ${totalPaginas})` : ''}
+              </span>
+            </div>
           </div>
 
           {usuarios.length === 0 ? (
@@ -145,35 +160,93 @@ export default function DashboardPage() {
               <p style={{ margin: 0, fontStyle: 'italic' }}>No hay usuarios registrados aún.</p>
             </div>
           ) : (
-            <ul style={{
-              margin: 0,
-              padding: 0,
-              listStyle: 'none',
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-              gap: '0.75rem'
-            }}>
-              {usuarios.map((u) => (
-                <li key={u.idUsuario} style={{
-                  background: 'var(--bg-card-secondary)',
-                  border: '1px solid var(--border-subtle)',
-                  padding: '0.65rem 0.85rem',
-                  borderRadius: 'var(--radius-sm)',
-                  fontSize: '0.9rem',
+            <>
+              <ul style={{
+                margin: 0,
+                padding: 0,
+                listStyle: 'none',
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+                gap: '0.75rem'
+              }}>
+                {usuariosPaginados.map((u) => (
+                  <li key={u.idUsuario} style={{
+                    background: 'var(--bg-card-secondary)',
+                    border: '1px solid var(--border-subtle)',
+                    padding: '0.65rem 0.85rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.9rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: '0.5rem'
+                  }}>
+                    <span className="truncate" style={{ fontWeight: 600, color: 'var(--text-h)' }} title={u.nickname}>
+                      {u.nickname}
+                    </span>
+                    <span className={`badge badge-${rolDe(u.idUsuario)}`} style={{ fontSize: '0.7rem' }}>
+                      {rolDe(u.idUsuario)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              {totalPaginas > 1 && (
+                <div style={{
                   display: 'flex',
-                  alignItems: 'center',
                   justifyContent: 'space-between',
-                  gap: '0.5rem'
+                  alignItems: 'center',
+                  marginTop: '1.25rem',
+                  paddingTop: '1rem',
+                  borderTop: '1px solid var(--border-subtle)',
+                  flexWrap: 'wrap',
+                  gap: '0.75rem'
                 }}>
-                  <span className="truncate" style={{ fontWeight: 600, color: 'var(--text-h)' }} title={u.nickname}>
-                    {u.nickname}
-                  </span>
-                  <span className={`badge badge-${rolDe(u.idUsuario)}`} style={{ fontSize: '0.7rem' }}>
-                    {rolDe(u.idUsuario)}
-                  </span>
-                </li>
-              ))}
-            </ul>
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.85rem', padding: '0.35rem 0.75rem' }}
+                    onClick={() => setPaginaActual(p => Math.max(1, p - 1))}
+                    disabled={paginaValida === 1}
+                  >
+                    ← Anterior
+                  </button>
+
+                  <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
+                      <button
+                        key={num}
+                        type="button"
+                        className={num === paginaValida ? 'btn btn-primary' : 'btn btn-secondary'}
+                        style={{
+                          minWidth: '2rem',
+                          height: '2rem',
+                          padding: '0 0.5rem',
+                          fontSize: '0.85rem',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                        onClick={() => setPaginaActual(num)}
+                        aria-current={num === paginaValida ? 'page' : undefined}
+                      >
+                        {num}
+                      </button>
+                    ))}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    style={{ fontSize: '0.85rem', padding: '0.35rem 0.75rem' }}
+                    onClick={() => setPaginaActual(p => Math.min(totalPaginas, p + 1))}
+                    disabled={paginaValida === totalPaginas}
+                  >
+                    Siguiente →
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

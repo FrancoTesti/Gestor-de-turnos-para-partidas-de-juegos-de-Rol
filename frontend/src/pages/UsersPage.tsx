@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
 import UsuarioLista from '../components/usuarios/UsuarioLista';
 import UsuarioDetalle from '../components/usuarios/UsuarioDetalle';
@@ -14,6 +14,17 @@ export default function UsersPage() {
   const [editing, setEditing] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selected && !editing) {
+        setSelected(undefined);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selected, editing]);
+
   const own = selected?.idUsuario === usuarioLogueado?.idUsuario;
   const save = async (data: UsuarioFormData) => {
     try {
@@ -47,9 +58,37 @@ export default function UsersPage() {
       onClose={() => setError('')}
     />
     {usuarioLogueado && rolDe(usuarioLogueado.idUsuario) === 'anfitrion' && !editing && <button className="btn-primary" onClick={() => { setSelected(undefined); setEditing(true); }}>Nuevo usuario</button>}
-    {editing ? <UsuarioFormulario usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} /> : <>
-      <UsuarioLista usuarios={usuarios} onSeleccionar={setSelected} cargando={busy || (cargandoSesion && usuarios.length === 0)} usuarioSeleccionadoId={selected?.idUsuario} />
-      <UsuarioDetalle usuario={selected} onCerrar={() => setSelected(undefined)} onEditar={own ? () => setEditing(true) : undefined} onEliminar={own ? remove : undefined} />
-    </>}
+    {editing ? (
+      <UsuarioFormulario usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} />
+    ) : (
+      <>
+        <UsuarioLista
+          usuarios={usuarios}
+          onSeleccionar={setSelected}
+          cargando={busy || (cargandoSesion && usuarios.length === 0)}
+          usuarioSeleccionadoId={selected?.idUsuario}
+        />
+        {selected && (
+          <div
+            className="usuario-modal-overlay"
+            onClick={() => setSelected(undefined)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              className="usuario-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UsuarioDetalle
+                usuario={selected}
+                onCerrar={() => setSelected(undefined)}
+                onEditar={own ? () => setEditing(true) : undefined}
+                onEliminar={own ? remove : undefined}
+              />
+            </div>
+          </div>
+        )}
+      </>
+    )}
   </section>;
 }
