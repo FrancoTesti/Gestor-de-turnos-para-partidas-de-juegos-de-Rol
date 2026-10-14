@@ -48,16 +48,28 @@ export default function ObjetoDetalle({
         <div><dt>Posición</dt><dd>{objeto.posicion}</dd></div>
         <div><dt>Ubicación</dt><dd>{nombreTienda ?? (objeto.idPersonaje ? `Inventario ${objeto.numInventario} del personaje #${objeto.idPersonaje}` : 'Sin asignar')}</dd></div>
       </dl>
-      {objeto.idTienda !== null && (onComprar || deshabilitarCompra) && (
+      {objeto.esUnico && (objeto.idPersonaje !== null || objeto.idTienda === null) ? (
         <button
-          className="btn-comprar"
+          className="btn-comprar btn-ya-comprado"
           type="button"
-          disabled={deshabilitarCompra || !onComprar}
-          title={motivoDeshabilitado}
-          onClick={onComprar}
+          disabled
+          aria-disabled="true"
+          title="Este objeto único ya fue comprado"
         >
-          Comprar objeto
+          Ya comprado
         </button>
+      ) : (
+        objeto.idTienda !== null && (onComprar || deshabilitarCompra) && (
+          <button
+            className="btn-comprar"
+            type="button"
+            disabled={deshabilitarCompra || !onComprar}
+            title={motivoDeshabilitado}
+            onClick={onComprar}
+          >
+            Comprar objeto
+          </button>
+        )
       )}
     </div>
   );

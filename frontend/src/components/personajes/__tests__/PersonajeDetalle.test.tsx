@@ -40,6 +40,7 @@ describe('PersonajeDetalle', () => {
 
     const linkInventarios = screen.getByRole('link', { name: /ver inventarios/i });
     expect(linkInventarios).toBeInTheDocument();
+    expect(linkInventarios).toHaveClass('btn-emerald');
     expect(linkInventarios).toHaveAttribute(
       'href',
       '/inventory?personaje=Thorin%20Escudo%20de%20Roble'

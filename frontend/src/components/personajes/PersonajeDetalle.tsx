@@ -102,16 +102,16 @@ export default function PersonajeDetalle({
         {inRouter ? (
           <Link
             to={`/inventory?personaje=${encodeURIComponent(personaje.nombreFicticio)}`}
-            className="btn-primary"
-            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            className="btn btn-emerald"
+            style={{ textDecoration: 'none' }}
           >
             <PackageIcon size={16} /> Ver inventarios
           </Link>
         ) : (
           <a
             href={`/inventory?personaje=${encodeURIComponent(personaje.nombreFicticio)}`}
-            className="btn-primary"
-            style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            className="btn btn-emerald"
+            style={{ textDecoration: 'none' }}
           >
             <PackageIcon size={16} /> Ver inventarios
           </a>
