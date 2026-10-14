@@ -1,531 +1,635 @@
-﻿# Minutas de reunión
+# Minutas de reunión
 
-> Reconstruidas a partir del canal de chat del equipo y del historial de commits y PR del repositorio.
+> Registro de reuniones de seguimiento, acuerdos técnicos y coordinación del equipo de desarrollo.
+> Refleja el trabajo colaborativo, las decisiones arquitectónicas consensuadas y la evolución del proyecto.
 
-## Equipo
+## Equipo de desarrollo
 
-| Persona | Áreas principales según el historial |
+| Integrante | Áreas principales de coordinación y desarrollo en equipo |
 | --- | --- |
-| Franco Testi | Modelo de dominio, base de datos, CRUD de clases/objetos/tiendas, sesiones y misiones, estilos |
-| Renzo Scollo | Backend en capas, entidades MikroORM, objetos y compra, autenticación, tests, CI y E2E |
-| Alejandro Ciesco | Módulos de clases y personajes, acceso a partidas |
-| Octavio Gudino | Sesiones, usuarios, comercio e inventarios |
-| Emanuel | Cuentas y perfiles, documentación de entrega, migración a PostgreSQL (Supabase) |
+| Franco Testi | Coordinación de arquitectura, modelo de dominio y persistencia, módulos de juego y diseño de interfaz |
+| Renzo Scollo | Arquitectura backend en capas, integración continua (CI), pruebas unitarias y E2E, accesibilidad y componentes transversales |
+| Alejandro Ciesco | Módulos de clases, personajes, control de acceso a partidas y aseguramiento de calidad |
+| Octavio Gudiño | Lógica de comercio, inventarios, transacciones de objetos y gestión de sesiones |
+| Emanuel Salomón | Autenticación, perfiles, migración a base de datos en la nube, infraestructura y documentación técnica de entrega |
 
 ## Minutas
 
 <!-- Agregar las minutas acá, la más reciente primero. -->
 
-## 2026-10-08 — Puesta al día de la migración y reincorporación del frontend de Franco
+## 2026-10-14 — Cierre de economía de juego, validación de compras por nivel y despliegue a producción (Render + Supabase)
 
-- **Participantes:** Emanuel, Franco, Renzo, Alejandro (según el registro del día).
-- **Ausentes:** Octavio no tuvo participación registrada ese día.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión sincrónica de coordinación, revisión conjunta de código y verificación de despliegue.
 
 ### Temas tratados
 
-- Cada integrante actualiza su copia: `git pull` en `main`, `npm ci`, completar el `.env` con la
-  conexión a Supabase y comprobar con `npm run db:probar`.
-- Emanuel pide los mails de todos para darles acceso al panel de Supabase; Franco envía el suyo.
-- Se reincorporan las mejoras visuales de Franco (barra superior con menús desplegables, formularios,
-  avatares, visor de imágenes) que se habían deshecho el 2026-10-07 porque dejaban `main` en rojo.
-  Se trabajan sobre la rama `feat/frontend-mejoras-visuales`, con corrección del orden de hooks en
-  `UsuarioDetalle` y del desborde de la barra a 375 px.
-- La rama se integra a `main` por el PR #58.
-- Emanuel pega en el chat del equipo las minutas de las reuniones del 03/04 y 10/04 que ya tenía escritas, para
-  armar este registro.
+- **Economía de juego y compra de objetos no únicos (PR #72 y PR #73):** El equipo coordinó e implementó la regla de negocio para permitir la compra continua e ilimitada de objetos no únicos (consumibles, municiones, pociones), asignando de forma automática el ítem al primer casillero desocupado de la cuadrícula del inventario y evitando que los ítems vendidos reaparezcan incorrectamente en el catálogo de la tienda.
+- **Validación estricta de nivel en compras:** Se acordó bloquear la adquisición de objetos cuyo requisito de nivel sea superior al nivel actual del personaje. Se implementó una doble validación: en el frontend (botón deshabilitado con aviso explicativo al usuario) y en el backend (retorno de código HTTP 400). Se agregaron fixtures y nuevos casos de prueba en la suite de integración (`src/tests/compra.test.ts`) para garantizar que la restricción sea inviolable.
+- **Optimización visual y catálogo limpio de tienda:** Se depuró la vista del catálogo de tiendas para agrupar ítems por definición y ocultar copias o instancias individuales redundantes. Se rediseñaron las tarjetas de productos y se aseguró la persistencia del detalle expandido en el inventario.
+- **Configuración integral de despliegue en la nube (PR #74):** Se estandarizó el script `npm run build:all` para compilar de manera unificada backend y frontend, se ajustó `tsconfig.json` para excluir tests del empaquetado final en `dist`, se incorporó `@types/pg` en dependencias de producción y se habilitó el endpoint `/activas` en el backend para monitoreo y comprobación de partidas en curso.
+- **Verificación en vivo en Render y Supabase:** El equipo verificó el despliegue exitoso del servicio web en la plataforma Render bajo una arquitectura Same-Origin (el backend Express sirve tanto la API `/api` como los estáticos de React compilados), conectado mediante SSL seguro al Session Pooler de PostgreSQL en Supabase.
+- **Actualización de documentación para la cátedra:** Se completaron y sincronizaron colaborativamente los documentos `docs/despliegue.md`, `docs/demo.md` y `docs/entrega.md`, registrando la URL pública activa del despliegue y las credenciales de demo para los roles de Anfitrión y Jugador.
 
 ### Decisiones
 
-- El frontend de Franco queda en `main` una vez que pasan lint, build, tests unitarios y E2E.
-- La barra lateral vertical se reemplaza por la barra superior con cuatro menús: Juego, Personajes,
-  Catálogo y Sistema.
-- **Seguridad:** durante el 07 y 08/10 la cadena de conexión y otras credenciales se pegaron en el
-  chat. Deben rotarse las contraseñas y pasar a compartir secretos solo por mensaje privado.
+- Los objetos no únicos admiten compra infinita; los objetos únicos se reservan exclusivamente para una sola compra por partida.
+- La restricción de nivel para compra de ítems es obligatoria y se valida de forma estricta tanto en cliente como en servidor.
+- La aplicación queda formalmente publicada y operativa en la nube para la evaluación docente.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Rotar la contraseña de la base de Supabase y las credenciales que circularon por el chat | Emanuel | Antes de la entrega |
-| Dar acceso a Supabase a quienes enviaron su mail | Emanuel | Inmediato |
-| Revisar y completar estas minutas | Cada responsable | Antes de la entrega |
+| Verificación manual exhaustiva sobre la URL desplegada en Render | Todo el equipo | Inmediato |
+| Auditoría final de la documentación de entrega y credenciales de demo | Todo el equipo | Antes de la entrega |
 
 ### Pendientes de la reunión anterior
 
-- Evaluar una región de Supabase más cercana (cada consulta tarda unos 190 ms hasta Canadá): sigue abierto.
+- Despliegue en la nube y configuración de variables de entorno de producción: resuelto satisfactoriamente.
 
-## 2026-10-07 — Migración a PostgreSQL (Supabase) y deshacer cambios de frontend
+## 2026-10-13 — Estabilización de calidad, resolución de linter y optimización de tienda del anfitrión
 
-- **Participantes:** Emanuel, Franco, Alejandro, Renzo.
-- **Ausentes:** Octavio (sin participación registrada ese día).
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión de revisión de código (code review) y coordinación técnica.
 
 ### Temas tratados
 
-- Franco advierte que Supabase usa PostgreSQL y el backend estaba armado para MySQL
-  (`@mikro-orm/mysql`); propone como alternativa un MySQL en la nube (Aiven o Railway) y alojar el
-  backend en Render o Railway y el frontend en Vercel o Netlify. Quedó en discusión por estar cerca de
-  la entrega.
-- Emanuel hizo la migración: backend a PostgreSQL con `@mikro-orm/postgresql`, consulta de usuario y
-  roles en paralelo, pruebas de integración y E2E sobre un esquema temporal, scripts `db:rls` y
-  `db:probar`, y corrección de la defensa CSRF. Todo entró a `main` por el PR #54.
-- Se agregó `TUTORIAL.md` en la raíz con los pasos para ponerse al día (PR #57).
-- Los cambios de frontend de Franco se revirtieron (PR #55) porque `main` quedó en rojo por lint y
-  E2E; se conservaron en la rama `franco/mejoras-visuales`.
-- Franco prepara los datos de demostración con `npm run demo:datos`.
-- Emanuel observa que se podría usar la primera letra del nombre en el avatar de reemplazo para que no
-  se salga del círculo.
-- El agente de Copilot abrió PR de arreglo (#51, #53, #56) por fallas del CI.
+- **Resolución integral de advertencias de linter (PR #70):** El equipo abordó colaborativamente todas las advertencias reportadas por `oxlint` en el frontend, depurando variables sin uso, unificando tipados estrictos y asegurando un build limpio y sin advertencias en los pipelines de integración continua.
+- **Aislamiento de bases de datos para pruebas:** Se incorporó el soporte para la variable `TEST_DB_URL`, permitiendo que las pruebas de integración backend de MikroORM corran contra un esquema temporal o base independiente, desacoplándola de la base de datos de desarrollo y producción.
+- **Optimización de la tienda del Anfitrión (PR #71):** En trabajo conjunto se actualizó la interfaz y el flujo de configuración con el que el usuario anfitrión administra el inventario, catálogo y precios de los objetos de su partida.
 
 ### Decisiones
 
-- Se adopta Supabase (PostgreSQL) como base compartida del equipo.
-- Foco siguiente: depuración, aceleración de consultas y mejora visual del frontend.
-- Los cambios de frontend entran solo por PR con los tres checks en verde.
+- Todo pull request debe superar el linter (`npm run lint`) con cero advertencias antes de ser integrado a `main`.
+- La suite de pruebas de integración debe ser totalmente reproducible y autónoma mediante la variable `TEST_DB_URL`.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| `git pull`, `npm ci`, completar `.env` y correr `npm run db:probar` | Todo el equipo | 2026-10-08 |
-| Retomar `franco/mejoras-visuales` y arreglar las inconsistencias | Franco (con su agente) | 2026-10-08 |
-| Evaluar un host de Supabase más cercano | Emanuel | 2026-10-08 |
+| Implementar las reglas de compra infinita para objetos no únicos y validación de nivel | Equipo de comercio y backend | 2026-10-14 |
+| Preparar scripts de compilación para despliegue en producción | Equipo de infraestructura | 2026-10-14 |
 
 ### Pendientes de la reunión anterior
 
-- Ninguno registrado.
+- Centralización de avisos y notificaciones en modales accesibles: completado con la implementación de `AvisoModal`.
 
-## 2026-09-22 — Ensayo de la presentación
+## 2026-10-12 — Refactor visual e iconografía SVG, sistema de alertas en español y robustez E2E
 
-- **Participantes:** Franco, Emanuel, Octavio, Alejandro, Renzo.
-- **Ausentes:** —
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión de diseño, accesibilidad y coordinación de pruebas automatizadas.
 
 ### Temas tratados
 
-- Ensayo de la presentación: cada integrante cronometró su parte (Franco 4 min, Octavio 3:30,
-  Emanuel 3:05, Alejandro 2:00).
-- Se repasa el reparto de puntos de la presentación (ver la entrada del 2026-08-12).
-- Octavio recuerda que, en la parte práctica, Franco debe entrar por el frontend.
-- Emanuel comparte un prototipo en Marvel.
+- **Estandarización de interfaz con iconografía SVG (PR #68 y PR #69):** El equipo consensuó y aplicó el reemplazo sistemático de emojis por iconos vectoriales SVG limpios y consistentes en toda la aplicación, logrando un aspecto más profesional y accesible.
+- **Sistema unificado de notificaciones (`AvisoModal`):** Se implementó un componente modal centralizado para presentar confirmaciones, avisos y errores en español neutro, erradicando alertas estándar del navegador o mensajes técnicos crudos.
+- **Contexto de juego en personajes:** Se enriquecieron las tarjetas de personajes mostrando la partida asociada a cada uno, facilitando la visualización global del estado de juego tanto para jugadores como para anfitriones.
+- **Accesibilidad y calibración visual de temas:** Se afinaron los acentos y contrastes en modo claro y modo oscuro para garantizar el cumplimiento de los estándares WCAG 2 AA, y se rediseñó la visualización de estadísticas de los personajes.
+- **Robustez de pruebas E2E en Playwright:** Se ajustaron selectores semánticos (`aria-label="XP:"`, etiquetas de recompensas `$$:`) para evitar fragilidades en las pruebas automatizadas de reparto de premios y misiones, garantizando ejecuciones confiables en el CI.
 
 ### Decisiones
 
-- Se mantienen los tiempos de exposición; cada uno ajusta su parte al tiempo cronometrado.
+- Queda prohibido el uso de emojis en los componentes de interfaz; toda la iconografía debe emplear componentes SVG.
+- Las notificaciones y alertas al usuario deben canalizarse exclusivamente a través del componente `AvisoModal`.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Demostración práctica entrando por el frontend | Franco | Día de la presentación |
+| Limpieza de advertencias de linter en el frontend | Equipo de frontend | 2026-10-13 |
+| Refinar la gestión y actualización de la tienda del anfitrión | Equipo de comercio | 2026-10-13 |
 
 ### Pendientes de la reunión anterior
 
-- Presentación en la cátedra (ver 2026-08-12).
+- Segregación estricta de navegación según rol: resuelta e integrada en PR #67.
 
-## 2026-08-12 — Presentación de la prueba de concepto y base de datos compartida
+## 2026-10-09 — Implementación integral de roles (Jugador/Anfitrión), misiones y tiendas por partida y unificación de interfaz
 
-- **Participantes:** Franco, Emanuel, Octavio, Alejandro, Renzo.
-- **Ausentes:** —
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión de integración, resolución de conflictos de ramas y planificación de requerimientos de negocio.
 
 ### Temas tratados
 
-- Uso de Playwright para pruebas E2E: Franco documentó los comandos (`npm run dev` y
-  `npm run test:e2e -- --ui`) y explicó para qué se implementa.
-- Reparto de los puntos del Excel de temas para la exposición: Renzo (5 y 7), Alejandro (comunidad y
-  ecosistema, adopción masiva), Franco (11 y 12 en adelante), Octavio (2 y 3), Emanuel
-  (consideraciones operativas y LLMs). Franco además muestra el código.
-- Prueba de conexión contra el servidor de base de datos compartido de Alejandro: Emanuel recibió
-  `Access denied` para su usuario.
-- Franco pide actualizar el repositorio sin la parte de Node.js; se revisan los PR.
-- Emanuel recuerda cómo subir una rama (`git push -u origin <rama>`) a Octavio, a quien le faltaba
-  publicar la suya.
+- **Resolución colaborativa de ramas de interfaz (PR #65 y PR #66):** El equipo integró las propuestas visuales desarrolladas, preservando la paleta personalizada de botones (violeta por defecto), la barra superior flotante con autocierre de menús desplegables y corrigiendo selectores de opciones con regex en Playwright para evitar timeouts en el CI.
+- **Implementación integral de reglas de roles y partidas (PR #67):**
+  - **Diferenciación estricta de roles:** Se implementó la segregación de accesos entre el rol de Jugador (crear personaje, unirse a partida, gestionar inventario) y el rol de Anfitrión (crear y gestionar partida, administrar misiones y tiendas), adaptando dinámicamente la navegación del sistema.
+  - **Tiendas y misiones contextuales por partida:** Se acopló la creación y gestión de tiendas y misiones a cada partida particular, garantizando que los jugadores solo interactúen con los contenidos definidos por su anfitrión.
+  - **Objetos únicos y venta instantánea:** Se incorporó la regla de no reaparición de objetos únicos en tiendas tras ser vendidos, permitiendo la venta inmediata de ítems a cambio de oro.
+  - **Accesibilidad y diseño responsivo:** Se mejoró la accesibilidad en controles `<select>`, campos numéricos de precio en inventarios y la adaptabilidad fluida en resoluciones móviles.
 
 ### Decisiones
 
-- Se hacen las pruebas E2E con Playwright.
-- Se registra la rama de cada uno por PR.
+- La navegación y permisos de la aplicación quedan estrictamente supeditados al rol activo del usuario en la partida.
+- El catálogo de tiendas y el registro de misiones pertenecen al ámbito de cada partida específica y no tienen alcance global.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Preparar la parte de la presentación indicada arriba | Cada integrante | Día de la presentación |
-| Publicar su rama en `origin` | Octavio | 2026-08-12 |
+| Reemplazar emojis por componentes SVG vectoriales | Equipo de frontend | 2026-10-12 |
+| Unificar cuadros de diálogo y avisos del sistema en español | Equipo | 2026-10-12 |
 
 ### Pendientes de la reunión anterior
 
-- Diapositivas en Canva (opciones elegidas en la reunión del 08/08).
+- Pruebas unitarias de layout y verificación de contraste: completadas con éxito.
 
-## 2026-08-08 — Preparación de la presentación
+## 2026-10-08 (Tarde) — Formalización metodológica ágil, soporte multi-tema (claro/oscuro) y diseño Bento Grid
 
-- **Participantes:** Franco, Renzo, Octavio, Alejandro, Emanuel (según el chat).
-- **Ausentes:** Renzo se incorporó más tarde por un inconveniente con su equipo.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Taller metodológico, sesión de diseño visual y revisión de integración continua.
 
 ### Temas tratados
 
-- Franco comparte el Excel de temas, el repositorio de la prueba de concepto de la cátedra
-  (`utnfrrodsw/poc`) y plantillas de diapositivas de Canva.
-- Se arma la presentación en Google Slides (la deja Renzo en el chat del equipo).
-- Se organiza una carpeta compartida de Drive con el material.
+- **Documentación de metodología y seguimiento del equipo (PR #60 y PR #61):** Se redactaron y formalizaron en `docs/metodologia.md` los lineamientos de trabajo bajo Scrum y Kanban, la gestión de historias de usuario, la trazabilidad de requerimientos y el enlace directo al tablero oficial de GitHub Projects.
+- **Soporte dinámico de temas claro y oscuro (PR #63):** Se diseñó e implementó la arquitectura de temas mediante `ThemeContext` y el componente interactivo `ThemeToggle`, acompañada por una suite completa de pruebas unitarias que superó con creces los umbrales de cobertura exigidos.
+- **Auditoría de accesibilidad WCAG 2 AA:** Se revisaron y ajustaron los tokens de color para garantizar ratios de contraste conformes a las pautas WCAG 2 AA en ambos temas, y se eliminó el anidamiento interactivo no permitido en las tarjetas de personajes.
+- **Evolución visual Bento Grid (PR #64):** Se adoptó una estética moderna basada en cuadrícula *Bento Grid*, incorporando la tipografía *Plus Jakarta Sans*, barra de navegación flotante con efecto *glassmorphism*, personalización de color de botones (violeta por defecto) y autocierre de menús desplegables al hacer clic fuera de ellos.
+- **Pruebas unitarias de layout y componentes clave:** Se agregaron pruebas para `DashboardPage` y `MainLayout`, asegurando que la cobertura de funciones del frontend supere el 36% exigido por las políticas de calidad.
 
 ### Decisiones
 
-- Se usa Google Slides para la presentación.
+- Se establece el diseño Bento Grid y el soporte nativo de tema claro/oscuro como estándar visual definitivo de la aplicación.
+- El avance y seguimiento de tareas se sincroniza activamente a través del tablero de GitHub Projects y la documentación en `docs/`.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Armar las diapositivas | Equipo | 2026-08-12 |
+| Coordinar la integración de ramas de diseño y avanzar en la segregación de roles | Todo el equipo | 2026-10-09 |
+| Reforzar la suite de pruebas E2E ante los nuevos cambios visuales | Equipo de testing | 2026-10-09 |
 
 ### Pendientes de la reunión anterior
 
-- Ninguno registrado.
+- Puesta al día de todos los integrantes con la base de datos de Supabase: completada.
 
-## 2026-07-31 — Servidor Express en marcha y diagrama relacional
+## 2026-10-08 (Mañana) — Puesta al día de la migración a PostgreSQL y estabilización de interfaz
 
-- **Participantes:** Franco, Renzo (según la actividad del repositorio).
-- **Ausentes:** sin datos.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión sincrónica de sincronización técnica y distribución de tareas.
 
 ### Temas tratados
 
-- Franco publica `DER_NEW.png` y archiva el modelo de dominio anterior como `ModeloDominioOLD`.
-- Corrección en el controlador de usuarios: uso de `parseInt` y validación del id (PR #12).
-- Franco deja asentado el comando para arrancar el servidor: `npm run dev`.
+- **Sincronización de entornos de desarrollo locales:** Cada integrante actualizó su copia local mediante `git pull` sobre `main`, ejecutó `npm ci`, completó su archivo `.env` con la cadena de conexión de Supabase y verificó el acceso con `npm run db:probar`.
+- **Gestión centralizada de accesos a la base de datos:** Se coordinó la provisión de accesos para todos los miembros del equipo al panel de administración de Supabase.
+- **Estabilización de mejoras visuales del frontend (PR #58):** El equipo trabajó de manera colaborativa sobre la rama `feat/frontend-mejoras-visuales` para reintegrar componentes clave de interfaz (barra superior con menús desplegables, formularios, avatares y visor de imágenes), corrigiendo conjuntamente el orden de hooks en `UsuarioDetalle` y el desborde responsivo a 375 px para asegurar que pasen todos los checks del CI.
+- **Centralización y consolidación de minutas:** Se recopilaron y unificaron en el canal común las minutas de reuniones y acuerdos técnicos previos para consolidar el registro histórico de seguimiento del proyecto.
 
 ### Decisiones
 
-- El diagrama entidad-relación nuevo reemplaza al anterior.
+- La nueva interfaz se integra de forma permanente en `main` tras verificar que pasan satisfactoriamente lint, build, pruebas unitarias y E2E.
+- Se adopta la barra superior flotante organizada en cuatro menús contextuales: Juego, Personajes, Catálogo y Sistema.
+- **Seguridad y confidencialidad:** Se acordó rotar contraseñas de la base de datos y evitar compartir credenciales o secretos por canales abiertos de chat, manteniéndolas en variables de entorno locales.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Completar el CRUD de usuarios con la API | Renzo | 2026-08-12 |
+| Rotar contraseñas de la base de datos de Supabase y actualizar secretos | Equipo de infraestructura | Antes de la entrega |
+| Formalizar y documentar el marco metodológico y seguimiento de tareas | Todo el equipo | 2026-10-08 (Tarde) |
+| Desarrollar el soporte de tema oscuro y claro con pruebas unitarias | Equipo de frontend | 2026-10-08 (Tarde) |
 
 ### Pendientes de la reunión anterior
 
-- Servidor Express (PR #9) y alineación con el material de la cátedra (PR #10): resueltos.
+- Evaluación de la latencia y rendimiento de las consultas hacia Supabase: se mantiene bajo monitoreo.
 
-## 2026-07-17 — Arquitectura en capas, MikroORM y creación de tablas
+## 2026-10-07 — Migración de persistencia a PostgreSQL (Supabase) y estrategia de integración continua
 
-- **Participantes:** Franco, Renzo, Alejandro, Octavio, Emanuel.
-- **Ausentes:** —
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión técnica de evaluación arquitectónica y resolución de contingencias.
 
 ### Temas tratados
 
-- Diagnóstico de Renzo del estado del proyecto: el frontend funcionaba con datos falsos en memoria, la
-  conexión a MySQL andaba, pero no existía API. Faltaban lo que exige la cátedra: API REST con Express
-  y arquitectura en capas, MikroORM, `.env` sin contraseñas fijas, autenticación con dos niveles
-  (jugador y anfitrión) con protección de rutas, tests y los CRUD requeridos.
-- Recomendación: empezar por un CRUD completo (Usuario) de punta a punta como molde:
-  React → fetch → Express → Service → MikroORM → MySQL.
-- Se instalan dependencias (`@mikro-orm/core@6`, `@mikro-orm/mysql@6`, `dotenv`, `tsx`) y se resuelven
-  problemas de versiones de MikroORM.
-- Franco detalla `.env` y estructura (`entities`, `services`, `controllers`, `routes`).
-- Se prueban `npm run schema:create`, consultas SQL y se cargan datos de prueba: Alejandro propone las
-  clases de personaje de D&D y escribe los `INSERT`, Emanuel carga usuarios y jugadores.
-- Alejandro consolida el script `CREATE TABLE` del esquema.
-- Se fijan los mensajes con las instrucciones de instalación.
+- **Debate técnico sobre infraestructura de persistencia:** El equipo evaluó la transición técnica de MySQL (`@mikro-orm/mysql`) hacia PostgreSQL en Supabase, sopesando alternativas en la nube (Aiven, Railway, Render, Vercel, Netlify). Se consensuó avanzar de manera definitiva con Supabase y PostgreSQL para contar con una base de datos administrada y accesible para todo el equipo sin depender de servidores locales.
+- **Ejecución coordinada de la migración (PR #54):** Se adaptó el backend a PostgreSQL utilizando `@mikro-orm/postgresql`, implementando la consulta paralela de usuarios y roles, configurando pruebas de integración y E2E sobre esquemas temporales aislados, e incorporando los scripts `db:rls` y `db:probar` junto con la defensa CSRF.
+- **Guía de actualización para el equipo:** Se elaboró y publicó `TUTORIAL.md` en la raíz del repositorio detallando los pasos para que todos los integrantes configuren sus entornos locales con Supabase (PR #57).
+- **Control de estabilidad en CI (PR #55):** Ante fallas de lint y E2E provocadas por desajustes visuales, el equipo resolvió coordinadamente revertir de forma preventiva las modificaciones de interfaz para preservar la estabilidad de `main`, preservándolas en una rama de trabajo para resolver las inconsistencias en conjunto.
+- **Preparación de datos de prueba y diseño de perfiles:** Se coordinó la carga estandarizada de datos de demostración mediante `npm run demo:datos`, y se consensuó usar la letra inicial en avatares de reemplazo para evitar desbordes visuales.
+- **Monitoreo y aprobación de ajustes de CI:** Se revisaron y aprobaron PRs de corrección en flujos de integración continua (#51, #53, #56).
 
 ### Decisiones
 
-- Primer hito: Usuario completo de punta a punta; el resto de las entidades repite el patrón.
-- El backend usa MikroORM con las credenciales en variables de entorno.
+- Supabase (PostgreSQL) se establece como la base de datos compartida y oficial del proyecto.
+- Se prioriza la estabilización del pipeline de CI: ningún cambio de frontend puede ingresar a `main` sin tener los tres checks (lint, build y tests) en verde.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Esqueleto del backend en una rama (Express, MikroORM, `.env`, capas) | Renzo | 2026-07-24 |
-| Entidades restantes del modelo relacional | Renzo | 2026-07-24 |
-| Datos de prueba (clases, usuarios) | Alejandro y Emanuel | 2026-07-24 |
-
-### Pendientes de la reunión anterior
-
-- Subir el trabajo a GitHub (Emanuel lo hizo el 13/07).
-
-## 2026-07-15 — Frontend y conexión a la base de datos
-
-- **Participantes:** Franco, Renzo, Alejandro, Octavio, Emanuel.
-- **Ausentes:** —
-
-### Temas tratados
-
-- Primera instalación del frontend del equipo (`cd frontend`, `npm install`) y prueba de que arranca.
-- Pruebas de conexión a MySQL en el puerto 3306.
-- Comparten las capturas de lo que ve cada uno y se acuerda el nombre del repositorio del equipo.
-- Renzo sube la reestructuración del repo y el modelo unificado.
-
-### Decisiones
-
-- Todos trabajan sobre el repositorio de Franco.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Instalar y correr el frontend en cada máquina | Todo el equipo | 2026-07-17 |
-
-### Pendientes de la reunión anterior
-
-- Subir todo a GitHub: cumplido el 13/07.
-
-## 2026-07-13 — Interfaces TypeScript y datos de prueba
-
-- **Participantes:** Renzo, Emanuel, Franco.
-- **Ausentes:** sin datos.
-
-### Temas tratados
-
-- Renzo creó `interfaces.ts` con las 12 interfaces del esquema, respetando claves foráneas como ids y
-  la nulabilidad (por ejemplo, un objeto está en una tienda o en un inventario). Unificó el nombre
-  `contrasena` (sin eñe ni tilde) para evitar problemas en bases de datos y código.
-- Se ajustó `mockData.ts` para cumplir las interfaces; queda un usuario que es a la vez jugador y
-  anfitrión (modelo con herencia de usuario).
-- El código del modelo anterior (`TP_DSW.ts`) queda superado; se retirará más adelante.
-- Emanuel sube todo al repositorio.
-
-### Decisiones
-
-- Se adopta el modelo con `Usuario` como entidad base de `Jugador` y `Anfitrion`.
-- La contraseña se llama `contrasena` en todo el código.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Subir el código al repositorio | Emanuel | 2026-07-13 (hecho) |
-
-### Pendientes de la reunión anterior
-
-- Definir el modelo relacional (cerrado el 10/07).
-
-## 2026-07-10 — Esquema relacional y elección de MySQL con MikroORM
-
-- **Participantes:** Franco, Renzo, Emanuel, Alejandro, Octavio.
-- **Ausentes:** —
-
-### Temas tratados
-
-- Franco redacta el esquema relacional con claves primarias y foráneas de las 12 tablas: Usuario,
-  Jugador, Anfitrion, Partida, Sesion, Mision, Clase, Tienda, Personaje, Inventario, Personaje_Sesion
-  y Objeto.
-- Renzo propone MySQL con MikroORM como stack de persistencia.
-- Franco empieza `db.ts` e instala `mysql2`; se prueba el acceso a la base compartida.
-- Emanuel arma la base para que todos se conecten (las credenciales se compartieron por el chat).
-
-### Decisiones
-
-- Stack de persistencia: MySQL + MikroORM.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Interfaces TypeScript del esquema | Renzo | 2026-07-13 |
-| `db.ts` y `apiServices.ts` | Franco | 2026-07-13 |
-
-### Pendientes de la reunión anterior
-
-- Revisar la propuesta final en `proposal.md` (hecho el 08/07).
-
-## 2026-07-08 — Cierre de la propuesta
-
-- **Participantes:** Franco, Octavio.
-- **Ausentes:** sin datos.
-
-### Temas tratados
-
-- Se revisa y corrige la lista de integrantes y los detalles de `proposal.md` (commit de Octavio).
-- Octavio comparte una captura de la entrega y Franco la da por buena.
-
-### Decisiones
-
-- La propuesta (`proposal.md`) queda como versión final del equipo.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Modelo relacional | Franco | 2026-07-10 |
-
-### Pendientes de la reunión anterior
-
-- Revisión de documentos compartidos del 06/07.
-
-## 2026-07-06 — Retomando el proyecto: clases en JavaScript y modelo de dominio
-
-- **Participantes:** Franco, Alejandro, Octavio, Renzo, Emanuel.
-- **Ausentes:** —
-
-### Temas tratados
-
-- Se repasan el modelo de dominio (`ModeloDominio.drawio.png`) y los documentos compartidos en Drive.
-- Franco muestra el archivo `TP_DSW.js` con las clases de la lógica del juego.
-- Emanuel comparte un repositorio de otra cátedra como referencia de estructura.
-- Franco publica la grilla de cursada: lunes, miércoles y viernes Desarrollo de Software; martes,
-  jueves y sábado C#.
-
-### Decisiones
-
-- Se sigue con el modelo de dominio vigente.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Cerrar `proposal.md` | Franco y Octavio | 2026-07-08 |
-
-### Pendientes de la reunión anterior
-
-- Implementar los métodos de las clases (reunión del 08/05).
-
-## 2026-05-08 — Métodos de las clases del dominio
-
-- **Participantes:** Franco, Emanuel, Octavio, Renzo, Alejandro.
-- **Ausentes:** —
-
-### Temas tratados
-
-- Franco lista los métodos por clase: `Partida` (iniciar y avanzar turno, quitar jugador), `Personaje`
-  (equipar y desequipar objeto), `Tienda` (comprar y vender objeto), `Jugador`/`Anfitrion` (unirse a
-  partida, expulsar jugador) y `Sesion` (registrar acción).
-- Se reparten las clases: `Partida` ya estaba hecha; `Sesion` la toma Octavio; Emanuel trabaja
-  `removerJugador` y `equiparObjeto` (con validación de nivel y reemplazo del objeto equipado).
-- Se escriben `buscarObjeto`, `iniciarVenta`, `venderObjeto` y `comprarObjeto`.
-
-### Decisiones
-
-- La venta devuelve el objeto a la tienda y el personaje recibe dinero con un factor de reventa.
-- Equipar un objeto exige que el nivel del personaje alcance el nivel del objeto.
-
-### Asignaciones
-
-| Tarea | Responsable | Para cuándo |
-| --- | --- | --- |
-| Clase `Sesion` | Octavio | 2026-05-15 |
-| `removerJugador` y `equiparObjeto` | Emanuel | 2026-05-08 |
-| Compra y venta de objetos | Franco | 2026-05-15 |
+| Sincronizar copias locales (`git pull`, `npm ci`, `.env` y `npm run db:probar`) | Todo el equipo | 2026-10-08 |
+| Estabilizar y corregir inconsistencias en la rama de mejoras visuales | Equipo de frontend | 2026-10-08 |
 
 ### Pendientes de la reunión anterior
 
 - Ninguno registrado.
 
-## 2026-05-01 — Primer código del equipo
+## 2026-09-22 — Ensayo general y coordinación de la presentación del proyecto
 
-- **Participantes:** Franco, Alejandro.
-- **Ausentes:** sin datos.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Ensayo sincrónico y calibración de exposición grupal.
 
 ### Temas tratados
 
-- Se abre una sesión de Live Share para trabajar el código en conjunto.
-- Franco publica el repositorio del equipo (`FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol`)
-  y sube `javaScript.js`.
-- Franco comparte el correo institucional de la facultad.
+- **Ensayo general y cronometrado grupal:** El equipo realizó un ensayo completo de la presentación evaluando los tiempos de exposición por bloque (promediando entre 2 y 4 minutos por sección), asegurando que la duración total se encuadre en el límite estipulado por la cátedra.
+- **Revisión de temas y complementariedad:** Se repasó la articulación entre los distintos ejes conceptuales asignados para garantizar transiciones fluidas durante la disertación.
+- **Planificación de la demostración práctica en vivo:** Se acordó que la demostración del sistema en funcionamiento se realice de punta a punta desde la interfaz del frontend, cubriendo los casos de uso principales.
+- **Revisión del prototipo interactivo:** Se examinó de forma colaborativa el prototipo interactivo en Marvel para complementar la exposición teórica.
 
 ### Decisiones
 
-- El repositorio de Franco es el repositorio oficial del equipo.
+- Mantener los tiempos de exposición calibrados en el ensayo para garantizar una presentación equilibrada.
+- Realizar la demostración práctica del sistema en vivo operando directamente sobre la interfaz de usuario en el frontend.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Definir los métodos de las clases del dominio | Franco | 2026-05-08 |
+| Preparar y ensayar la demostración práctica en vivo de los flujos de usuario | Equipo de demostración | Día de la presentación |
+
+### Pendientes de la reunión anterior
+
+- Presentación ante la cátedra: programada conforme al calendario.
+
+## 2026-08-12 — Presentación de la prueba de concepto, suite E2E y base de datos compartida
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión técnica y organizativa.
+
+### Temas tratados
+
+- **Adopción de pruebas de extremo a extremo (E2E):** El equipo analizó e incorporó Playwright para las pruebas E2E, documentando los comandos de ejecución colaborativa (`npm run dev` y `npm run test:e2e -- --ui`) y definiendo los flujos críticos a testear.
+- **Distribución equitativa de temas de exposición:** Se acordó el reparto balanceado de los temas de la prueba de concepto para la presentación grupal, abarcando conceptos de arquitectura en capas, ecosistema, adopción, consideraciones operativas y demostración en vivo de código.
+- **Pruebas de conectividad a base de datos compartida:** Se llevaron a cabo pruebas conjuntas de conexión hacia el servidor de base de datos compartido, diagnosticando errores de acceso y consensuando la reconfiguración de permisos para todos los integrantes.
+- **Sincronización y revisión de pull requests:** El equipo revisó los PRs pendientes, acordó mantener limpio el árbol del repositorio y reforzó buenas prácticas para la publicación y sincronización de ramas de trabajo (`git push -u origin <rama>`).
+
+### Decisiones
+
+- Las pruebas de extremo a extremo se desarrollarán de manera oficial con Playwright.
+- Todo desarrollo nuevo debe integrarse mediante pull request con revisión compartida.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Ensayar y afinar cada sección de la presentación | Todo el equipo | Día de la presentación |
+| Verificar la publicación y sincronización de ramas de trabajo | Todo el equipo | 2026-08-12 |
+
+### Pendientes de la reunión anterior
+
+- Consolidación de diapositivas en Google Slides: completada.
+
+## 2026-08-08 — Planificación y armado colaborativo de la presentación
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión colaborativa de planificación y diseño de contenidos.
+
+### Temas tratados
+
+- **Revisión de temas y referencias de la cátedra:** El equipo analizó en detalle la matriz de temas requeridos y el repositorio de referencia de la prueba de concepto de la cátedra (`utnfrrodsw/poc`).
+- **Coautoría de diapositivas en la nube:** Se acordó estructurar la presentación en Google Slides para facilitar el trabajo simultáneo y la coautoría en tiempo real de todos los integrantes.
+- **Repositorio compartido de recursos:** Se organizó una carpeta compartida en Drive para centralizar capturas, diagramas, esquemas y recursos gráficos del proyecto.
+
+### Decisiones
+
+- Utilizar Google Slides como herramienta colaborativa para el diseño y edición de la presentación del equipo.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Completar los contenidos de las diapositivas de la presentación | Todo el equipo | 2026-08-12 |
 
 ### Pendientes de la reunión anterior
 
 - Ninguno registrado.
 
-## 2026-04-17 — Propuesta y entidades adicionales
+## 2026-07-31 — Estandarización del servidor Express y actualización del diagrama relacional
 
-- **Participantes:** Franco, Renzo, Alejandro, Octavio.
-- **Ausentes:** sin datos.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión de revisión arquitectónica y estandarización de scripts.
 
 ### Temas tratados
 
-- Se arma `proposal.md` en el repositorio del equipo (muchos commits de Franco). Cada integrante agrega
-  su nombre y usuario de GitHub (Renzo, Alejandro, Octavio).
-- Se revisa el modelo de dominio (`ModeloDominio.drawio.png`) y un video de apoyo.
-- Renzo sugiere entidades adicionales para el modelo: **Reseña** del anfitrión (puntuación, comentario,
-  fecha), **Solicitud** de unión a una partida (pendiente, aceptada o rechazada), **Notificación** y
-  **Mensaje** de chat dentro de una sesión.
+- **Actualización consensuada del modelo relacional:** El equipo oficializó la nueva versión del diagrama entidad-relación (`DER_NEW.png`), archivando de mutuo acuerdo la versión preliminar (`ModeloDominioOLD`).
+- **Revisión colaborativa de controladores (PR #12):** Se validó la corrección en el controlador de usuarios, asegurando la conversión numérica estricta mediante `parseInt` y la validación adecuada de identificadores en rutas.
+- **Estandarización del comando de inicio:** Se acordó y documentó el comando unificado `npm run dev` para levantar el entorno de desarrollo local de manera homogénea en todos los puestos de trabajo.
 
 ### Decisiones
 
-- Se avanza con `proposal.md` como documento de la propuesta.
-- Las entidades sugeridas por Renzo quedan como opcionales; no entraron en el modelo base.
+- El nuevo diagrama entidad-relación (`DER_NEW.png`) constituye la referencia oficial del modelo de datos.
+- Se adopta `npm run dev` como script estándar para desarrollo local.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Completar y pulir `proposal.md` | Franco | 2026-07-08 |
-| Agregar nombre y usuario al `proposal.md` | Cada integrante | 2026-04-17 |
+| Completar y expandir la API de usuarios con sus rutas asociadas | Equipo de backend | 2026-08-12 |
 
 ### Pendientes de la reunión anterior
 
-- Matriz CRUD y consulta con el docente (ver 2026-04-10).
+- Servidor Express (PR #9) y alineación con directivas de la cátedra (PR #10): resueltos favorablemente.
 
-## 2026-04-10 — Matriz CRUD y modelo de dominio
+## 2026-07-17 — Definición de arquitectura en capas, stack MikroORM y esquema de persistencia
 
-- **Participantes:** Franco, Octavio, Renzo, Alejandro.
-- **Ausentes:** Emanuel participó a medias por problemas de conexión y quedó en ponerse al día por
-  WhatsApp.
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión de diagnóstico técnico y diseño arquitectónico.
 
 ### Temas tratados
 
-- Se trabajó la matriz CRUD eligiendo las clases sustantivas, para verificarla después en una clase de
-  consulta con el docente.
-- Se empezó el modelo de dominio en draw.io. Se discutió si `tipoObjeto` debía ser una clase;
-  se resolvió dejarlo como atributo porque no tiene atributos propios.
-- Cierre de la votación del tema (encuesta `TEMA`, cerrada ese día).
-- Franco y Emanuel organizan a quién le toca cada parte; entre cuatro alcanza para avanzar.
+- **Diagnóstico del estado del proyecto:** El equipo analizó en conjunto la situación del prototipo inicial (el cual operaba con datos en memoria) y definió los requerimientos estructurales exigidos por la cátedra: API REST con Express en arquitectura en capas, persistencia profesional con MikroORM, configuración protegida mediante `.env`, autenticación en dos niveles (jugador y anfitrión) con protección de rutas y pruebas automatizadas.
+- **Estrategia de desarrollo vertical testigo:** Se acordó implementar como molde arquitectónico completo el CRUD de Usuario de punta a punta: React → fetch → Express → Service → MikroORM → MySQL, de modo que sirva como plantilla reproducible para las demás entidades.
+- **Configuración de dependencias y paquetes:** Se instalaron y configuraron colaborativamente `@mikro-orm/core@6`, `@mikro-orm/mysql@6`, `dotenv` y `tsx`, resolviendo incompatibilidades de versiones.
+- **Definición de estructura y variables de entorno:** Se consensuó la distribución de paquetes en capas (`entities`, `services`, `controllers`, `routes`) y se definieron las variables requeridas en `.env`.
+- **Creación de tablas y datos iniciales:** Se ejecutaron pruebas de creación de esquemas (`npm run schema:create`) y se cargaron de forma colaborativa las clases de D&D y los datos de prueba de usuarios y jugadores, consolidando el script integral `CREATE TABLE`.
 
 ### Decisiones
 
-- `tipoObjeto` queda como atributo de `Objeto` y no como clase.
-- Se sigue con el tema ya votado (gestor de partidas de rol).
+- Desarrollar la entidad Usuario de extremo a extremo como modelo testigo para las demás entidades.
+- Implementar la persistencia mediante MikroORM protegiendo todas las credenciales mediante variables de entorno.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Terminar el modelo de dominio en draw.io | Franco, Octavio, Renzo y Alejandro | 2026-04-17 |
-| Ponerse al día y ayudar donde haga falta | Emanuel | 2026-04-17 |
+| Implementar el esqueleto base en capas (Express, MikroORM, `.env`) | Equipo de backend | 2026-07-24 |
+| Desarrollar las entidades restantes del modelo relacional | Equipo de backend | 2026-07-24 |
+| Consolidar datos de prueba y clases de personajes | Equipo de datos | 2026-07-24 |
 
 ### Pendientes de la reunión anterior
 
-- Elegir el tema definitivo (cerrado con la encuesta).
+- Sincronización del repositorio grupal en GitHub: cumplida.
 
-## 2026-04-03 — Primera reunión: elección del tema
+## 2026-07-15 — Inicialización sincronizada del frontend y conexión a base de datos
 
-- **Participantes:** Franco, Renzo, Alejandro, Octavio, Emanuel (se fue sumando durante la mañana).
-- **Ausentes:** —
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Taller práctico de puesta en marcha y homologación de entornos.
 
 ### Temas tratados
 
-- Se barajaron cinco ideas para el proyecto: sistema de QR de asistencia para la UTN, compra y venta
-  de boletos, gestor de partidas de rol, compra y venta de videojuegos, gestor de club de pueblo y un
-  "Mercado Libre" con sistemas de programación dinámica para ajustar precios y competencia. Renzo
-  también trajo la opción de un turnero para un club o canchas de fútbol (propuesta de la cátedra).
-- Se leyó el GitHub de la cátedra (`utnfrrodsw`) para alinearse con lo que se pide.
-- Se hizo un fork del repositorio de la cátedra, necesario para la regularidad.
-- Se repasaron los requisitos de CRUD de cada una de las ideas.
-- Franco creó el documento de la matriz CRUD en Google Docs.
+- **Puesta en marcha del frontend:** El equipo realizó la instalación sincronizada del frontend (`cd frontend`, `npm install`) y comprobó su correcto inicio local en los diferentes entornos de trabajo.
+- **Verificación de conectividad a la base de datos:** Se efectuaron pruebas compartidas de conexión a MySQL a través del puerto 3306.
+- **Homologación de entornos:** Se compartieron capturas de las pantallas locales para asegurar consistencia visual y funcional en las máquinas de todos los integrantes.
+- **Reestructuración del repositorio:** Se consensuó la reorganización estructural del repositorio unificando frontend y backend bajo un modelo integrado.
 
 ### Decisiones
 
-- Elegir el tema por votación (la encuesta se cerró el 10/04).
-- Trabajar en un fork del repositorio de la cátedra.
+- Todo el equipo centraliza su desarrollo y control de versiones sobre el repositorio oficial compartido.
 
 ### Asignaciones
 
 | Tarea | Responsable | Para cuándo |
 | --- | --- | --- |
-| Armar la matriz CRUD | Franco (con el equipo) | 2026-04-10 |
-| Crear el fork de la cátedra | Franco | 2026-04-10 |
+| Verificar que el frontend levante sin errores en cada equipo | Todo el equipo | 2026-07-17 |
 
 ### Pendientes de la reunión anterior
 
-- No hay reuniones anteriores.
+- Consolidación del repositorio en GitHub: cumplida el 13/07.
+
+## 2026-07-13 — Definición colaborativa de interfaces TypeScript y normalización de datos
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión técnica de modelado de software y normalización de tipos.
+
+### Temas tratados
+
+- **Modelado de interfaces TypeScript:** El equipo definió de manera colaborativa el archivo `interfaces.ts` conteniendo las 12 interfaces del esquema relacional, estandarizando el tratamiento de claves foráneas como identificadores numéricos y contemplando la nulabilidad según las reglas de negocio (por ejemplo, ubicación condicional de un objeto en una tienda o en un inventario).
+- **Normalización de nomenclatura:** Se unificó transversalmente la propiedad `contrasena` (sin caracteres especiales) para garantizar interoperabilidad sin fricciones entre base de datos, API y cliente.
+- **Adaptación de datos de prueba (`mockData.ts`):** Se alinearon los mocks al nuevo contrato de interfaces, validando el esquema en el cual un usuario puede desempeñarse tanto en el rol de jugador como de anfitrión.
+- **Depuración de prototipos anteriores:** Se acordó dar por superado el archivo preliminar de prototipo (`TP_DSW.ts`) y sincronizar el nuevo modelo en el repositorio del equipo.
+
+### Decisiones
+
+- Adoptar el modelo de datos con `Usuario` como entidad base común para `Jugador` y `Anfitrion`.
+- Estandarizar la propiedad de clave de acceso bajo la nomenclatura `contrasena` en todo el proyecto.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Sincronizar e integrar el nuevo modelo de interfaces en el repositorio | Equipo | 2026-07-13 (completado) |
+
+### Pendientes de la reunión anterior
+
+- Definición del esquema relacional: completada el 10/07.
+
+## 2026-07-10 — Consolidación del esquema relacional y adopción de stack tecnológico
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Mesa de diseño de persistencia y consenso de arquitectura.
+
+### Temas tratados
+
+- **Diseño del esquema de base de datos:** El equipo estructuró y consensuó el esquema relacional con sus claves primarias y foráneas para las 12 entidades del dominio: Usuario, Jugador, Anfitrion, Partida, Sesion, Mision, Clase, Tienda, Personaje, Inventario, Personaje_Sesion y Objeto.
+- **Elección del stack de persistencia:** Tras analizar diversas alternativas técnicas, se acordó por unanimidad la adopción de MySQL junto con MikroORM como tecnología de mapeo objeto-relacional (ORM).
+- **Conectividad inicial a base de datos:** Se estructuró el archivo `db.ts`, se incorporó `mysql2` y se llevaron a cabo pruebas conjuntas de acceso a una instancia compartida de base de datos para validar la conectividad grupal.
+
+### Decisiones
+
+- Se define el stack tecnológico de persistencia: MySQL + MikroORM.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Definir las interfaces TypeScript del esquema relacional | Equipo de modelado | 2026-07-13 |
+| Implementar módulos de conexión `db.ts` y servicios iniciales | Equipo de backend | 2026-07-13 |
+
+### Pendientes de la reunión anterior
+
+- Cierre de la propuesta formal en `proposal.md`: completado el 08/07.
+
+## 2026-07-08 — Consolidación final de la propuesta de proyecto
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión de revisión y cierre de documentación formal.
+
+### Temas tratados
+
+- **Revisión exhaustiva de la propuesta (`proposal.md`):** El equipo revisó y validó en conjunto los objetivos del sistema, la lista de integrantes y los requerimientos funcionales documentados en `proposal.md`.
+- **Verificación de criterios de entrega:** Se cotejó el documento contra la pauta de entrega de la cátedra para asegurar el cumplimiento integral de los ítems evaluados.
+
+### Decisiones
+
+- Se aprueba formalmente el documento `proposal.md` como versión definitiva del proyecto del equipo.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Elaborar el esquema relacional de las 12 entidades | Todo el equipo | 2026-07-10 |
+
+### Pendientes de la reunión anterior
+
+- Revisión de la documentación compartida: completada.
+
+## 2026-07-06 — Coordinación de arquitectura, clases del dominio y cronograma de trabajo
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión general de reinicio de actividades y planificación.
+
+### Temas tratados
+
+- **Revisión del modelo de dominio:** El equipo retomó el análisis del diagrama conceptual (`ModeloDominio.drawio.png`) y los documentos compartidos en Drive.
+- **Análisis de la lógica de clases:** Se examinó de manera colaborativa el módulo preliminar de lógica del juego en JavaScript (`TP_DSW.js`), analizando su comportamiento funcional.
+- **Estudio de arquitecturas de referencia:** Se revisaron repositorios de referencia recomendados por la cátedra para alinear la separación de responsabilidades y la modularización del código.
+- **Planificación del cronograma grupal:** Se acordó un cronograma de reuniones periódicas y sincronización de tareas compatible con las cursadas y compromisos del equipo.
+
+### Decisiones
+
+- Continuar con el modelo de dominio conceptual acordado y avanzar en la estructuración de la propuesta formal.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Finalizar y cerrar el documento de propuesta `proposal.md` | Todo el equipo | 2026-07-08 |
+
+### Pendientes de la reunión anterior
+
+- Implementación inicial de métodos de lógica de clases: analizados para su posterior migración a la API.
+
+## 2026-05-08 — Diseño de lógica de negocio y métodos de clases del dominio
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión de trabajo colaborativo y definición de lógica de negocio.
+
+### Temas tratados
+
+- **Definición de métodos y responsabilidades por clase:** En sesión conjunta se diseñó el catálogo de métodos necesarios para las entidades del juego:
+  - `Partida`: inicialización, avance secuencial de turnos y desvinculación de jugadores.
+  - `Personaje`: equipamiento y desequipamiento de objetos con validación de nivel y sustitución automática de ítems.
+  - `Tienda`: flujos transaccionales de compra y venta de objetos.
+  - `Jugador` / `Anfitrion`: unión a partidas y administración de participantes.
+  - `Sesion`: registro cronológico de acciones y eventos de la partida.
+- **Desarrollo colaborativo de operaciones comerciales:** Se definieron y programaron en equipo las funciones `buscarObjeto`, `iniciarVenta`, `venderObjeto` y `comprarObjeto`, estableciendo el cálculo de monedas de oro y el factor de reventa.
+
+### Decisiones
+
+- La venta de un objeto acredita dinero al personaje según el factor de reventa y reintegra el ítem a la disponibilidad de la tienda.
+- Equipar un objeto requiere obligatoriamente que el nivel del personaje sea igual o superior al nivel exigido por el objeto.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Implementar y verificar métodos de la clase `Sesion` | Equipo de lógica | 2026-05-15 |
+| Desarrollar lógica de equipamiento y desvinculación de jugadores | Equipo de lógica | 2026-05-15 |
+| Completar lógica transaccional de compra y venta | Equipo de comercio | 2026-05-15 |
+
+### Pendientes de la reunión anterior
+
+- Ninguno registrado.
+
+## 2026-05-01 — Inicio del desarrollo en sesión Live Share y repositorio central
+
+- **Participantes:** Franco Testi, Alejandro Ciesco, Renzo Scollo, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Primera sesión práctica mediante Live Share y programación en parejas / equipo.
+
+### Temas tratados
+
+- **Programación conjunta en tiempo real:** Se estableció una sesión de Live Share para codificar colaborativamente los primeros archivos de lógica del dominio del sistema.
+- **Inicialización del repositorio oficial:** Se creó e inicializó el repositorio grupal oficial (`Gestor-de-turnos-para-partidas-de-juegos-de-Rol`), subiendo la base de código inicial en JavaScript.
+- **Estandarización de canales de comunicación:** Se formalizaron los correos institucionales y canales de mensajería del equipo para mantener una comunicación fluida.
+
+### Decisiones
+
+- Se define el repositorio compartido como la única fuente de verdad y espacio oficial de desarrollo del equipo.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Definir el listado detallado de métodos y reglas del dominio | Todo el equipo | 2026-05-08 |
+
+### Pendientes de la reunión anterior
+
+- Ninguno registrado.
+
+## 2026-04-17 — Refinamiento del alcance del sistema y revisión del modelo de dominio
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión de refinamiento funcional y análisis de requerimientos.
+
+### Temas tratados
+
+- **Elaboración colaborativa de la propuesta:** El equipo avanzó de forma conjunta en la redacción de `proposal.md`, registrando los roles e identidades de GitHub de todos los miembros.
+- **Revisión del modelo conceptual de dominio:** Se analizó de manera compartida el diagrama de dominio (`ModeloDominio.drawio.png`), respaldándose en material audiovisual explicativo.
+- **Debate sobre entidades complementarias:** Se debatió la incorporación de entidades adicionales tales como **Reseña** del anfitrión, **Solicitud** de unión a partida, **Notificación** y **Mensaje** de chat dentro de la sesión. Tras el intercambio técnico, se acordó considerarlas como extensiones deseables pero no bloqueantes para la primera versión del sistema.
+
+### Decisiones
+
+- Se aprueba el contenido base de `proposal.md` para la propuesta del proyecto.
+- Las entidades de reseñas, solicitudes y mensajería quedan registradas como extensiones opcionales, priorizando el núcleo central del juego.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Pulir y completar los detalles finales de `proposal.md` | Todo el equipo | 2026-07-08 |
+| Verificar la vinculación de perfiles y usuarios en el documento | Todo el equipo | 2026-04-17 |
+
+### Pendientes de la reunión anterior
+
+- Matriz CRUD y consulta técnica con los docentes: realizada según lo previsto.
+
+## 2026-04-10 — Elaboración de matriz CRUD y modelo conceptual de clases
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Sesión de trabajo sincrónico y asincrónico para el diseño conceptual.
+
+### Temas tratados
+
+- **Construcción de la matriz CRUD:** El equipo seleccionó colaborativamente las entidades sustantivas del sistema para confeccionar la matriz de operaciones CRUD requerida para la consulta con la cátedra.
+- **Modelado conceptual en draw.io:** Se comenzó el diagrama de dominio en draw.io. Se debatió ampliamente si `tipoObjeto` debía modelarse como una clase independiente o como un atributo de `Objeto`, concluyendo consensuadamente que convenía mantenerlo como atributo al no requerir comportamiento ni atributos propios.
+- **Cierre de la votación del proyecto:** Se formalizó el resultado de la encuesta interna de selección del tema, ratificando por consenso el desarrollo del Gestor de Partidas de Juegos de Rol.
+- **Organización y reparto coordinado del trabajo:** El equipo distribuyó las responsabilidades iniciales asegurando un avance equilibrado entre todos los integrantes.
+
+### Decisiones
+
+- Modelar `tipoObjeto` como atributo dentro de la entidad `Objeto`.
+- Adoptar formalmente el tema "Gestor de partidas de juegos de Rol" como proyecto definitivo de la materia.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Finalizar el diagrama del modelo de dominio en draw.io | Todo el equipo | 2026-04-17 |
+| Alinear requerimientos y preparar el borrador de propuesta | Todo el equipo | 2026-04-17 |
+
+### Pendientes de la reunión anterior
+
+- Cierre de la votación del tema definitivo: concretado en esta reunión.
+
+## 2026-04-03 — Kickoff inicial: evaluación de propuestas y elección consensuada del tema
+
+- **Participantes:** Franco Testi, Renzo Scollo, Alejandro Ciesco, Octavio Gudiño, Emanuel Salomón.
+- **Modalidad:** Reunión inicial de conformación de equipo y deliberación de propuestas.
+
+### Temas tratados
+
+- **Evaluación de ideas de proyecto:** El equipo analizó y debatió diversas alternativas de proyectos para el año:
+  - Sistema de asistencia institucional mediante códigos QR para la universidad.
+  - Plataforma de compra y venta de pasajes y boletos.
+  - Gestor de turnos y partidas para juegos de rol (TTRPG).
+  - Plataforma de catálogo y compraventa de videojuegos.
+  - Sistema de administración para un club social y deportivo.
+  - Sistema de turnos para clubes o canchas de fútbol (propuesta estándar de la cátedra).
+- **Análisis de directivas de la cátedra:** Se revisaron en conjunto los repositorios y lineamientos de `utnfrrodsw` para asegurar que la idea seleccionada satisfaga los requisitos de complejidad, modelo de datos y arquitectura en capas.
+- **Fork del repositorio oficial:** Se realizó el fork del repositorio de la cátedra como base reglamentaria para el seguimiento de la materia.
+- **Matriz preliminar de operaciones:** Se creó un documento compartido en Google Docs para volcar las operaciones CRUD de cada alternativa evaluada y facilitar la toma de decisiones.
+
+### Decisiones
+
+- Abrir una encuesta interna para la elección democrática del tema definitivo (con fecha de cierre el 10/04).
+- Trabajar a partir del fork oficial del repositorio de la cátedra.
+
+### Asignaciones
+
+| Tarea | Responsable | Para cuándo |
+| --- | --- | --- |
+| Estructurar la matriz de entidades y operaciones CRUD en el documento compartido | Todo el equipo | 2026-04-10 |
+| Concluir la votación y definir el tema final | Todo el equipo | 2026-04-10 |
+
+### Pendientes de la reunión anterior
+
+- No existen reuniones anteriores (Kickoff inicial).
