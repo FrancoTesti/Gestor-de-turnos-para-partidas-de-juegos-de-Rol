@@ -5,6 +5,7 @@
     "dev": "nodemon --exec ts-node src/app.ts",
     "start": "node dist/app.js",
     "build": "tsc",
+    "build:all": "npm run build && npm --prefix frontend ci --include=dev && npm --prefix frontend run build",
     "test": "vitest run src/tests",
     "test:coverage": "vitest run --coverage",
     "test:coverage:integration": "npm run build && c8 --reporter=text --reporter=json-summary --reports-dir=coverage/integracion --check-coverage --lines 70 --statements 70 --branches 68 --functions 66 node --test --test-concurrency=1 dist/integration/juego.test.js",
