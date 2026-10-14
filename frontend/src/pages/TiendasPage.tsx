@@ -217,10 +217,21 @@ export default function TiendasPage() {
     setError(null);
     setMensaje(null);
     try {
+      const idNum = Number(personajeCompradorId);
+      const ocupadas = new Set(
+        objetos
+          .filter((o) => o.idPersonaje === idNum && (o.numInventario === 1 || o.numInventario === null))
+          .map((o) => o.posicion),
+      );
+      let proximaPosicion = 0;
+      while (ocupadas.has(proximaPosicion)) {
+        proximaPosicion++;
+      }
+
       await comprarObjeto(idObjeto, {
-        idPersonaje: Number(personajeCompradorId),
+        idPersonaje: idNum,
         numInventario: 1,
-        posicion: 0,
+        posicion: proximaPosicion,
       });
       setMensaje('¡Objeto comprado con éxito!');
       cargar();

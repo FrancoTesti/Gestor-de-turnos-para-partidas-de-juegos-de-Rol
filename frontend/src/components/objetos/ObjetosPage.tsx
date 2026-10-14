@@ -154,9 +154,12 @@ export default function ObjetosPage() {
     setMensaje(null);
     try {
       const resultado = await comprarObjeto(seleccionado.idObjeto, data);
-      setObjetos((actuales) =>
-        actuales.map((objeto) => objeto.idObjeto === resultado.objeto.idObjeto ? resultado.objeto : objeto),
-      );
+      setObjetos((actuales) => {
+        if (seleccionado.esUnico) {
+          return actuales.map((objeto) => (objeto.idObjeto === resultado.objeto.idObjeto ? resultado.objeto : objeto));
+        }
+        return [...actuales, resultado.objeto];
+      });
       setSeleccionado(resultado.objeto);
       setPersonajes((actuales) =>
         actuales.map((personaje) => personaje.idPersonaje === resultado.idPersonaje

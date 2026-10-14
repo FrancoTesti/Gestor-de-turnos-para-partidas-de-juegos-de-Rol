@@ -148,6 +148,7 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
     await host.getByLabel('Valor', { exact: true }).fill('40');
     await host.getByLabel('Nivel', { exact: true }).fill('1');
     await host.getByRole('combobox', { name: 'Tienda (opcional)', exact: true }).selectOption({ label: 'Armería E2E' });
+    await host.getByLabel(/Objeto Único/).check();
     const createdObject = host.waitForResponse(r => r.url().endsWith('/api/objetos') && r.request().method() === 'POST');
     await host.getByRole('button', { name: 'Guardar', exact: true }).click();
     const objectResponse = await createdObject;

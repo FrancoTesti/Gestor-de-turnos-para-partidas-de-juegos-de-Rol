@@ -37,7 +37,7 @@ export interface ObjetoPublicoDTO {
 export interface ComprarObjetoDTO {
   idPersonaje: number;
   numInventario: number;
-  posicion: number;
+  posicion?: number;
 }
 
 export interface ResultadoCompraObjetoDTO {
