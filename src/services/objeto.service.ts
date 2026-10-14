@@ -4,6 +4,7 @@ import { Objeto } from '../entities/Objeto.entity';
 import { Personaje } from '../entities/Personaje.entity';
 import { Tienda } from '../entities/Tienda.entity';
 import { ErrorValidacionObjeto, validarCompraObjeto } from '../validators/objeto.validator';
+import { calcularValorPorNivel } from './objeto.rules';
 import type {
   ActualizarObjetoDTO,
   ComprarObjetoDTO,
@@ -125,7 +126,11 @@ export class ObjetoService {
     if (data.nombre !== undefined) objeto.nombre = data.nombre;
     if (data.descripcion !== undefined) objeto.descripcion = data.descripcion;
     if (data.tipoObjeto !== undefined) objeto.tipoObjeto = data.tipoObjeto;
-    if (data.valor !== undefined) objeto.valor = data.valor;
+    if (data.valor !== undefined) {
+      objeto.valor = data.valor;
+    } else if (data.nivelObjeto !== undefined && data.nivelObjeto > objeto.nivelObjeto) {
+      objeto.valor = calcularValorPorNivel(objeto.valor, data.nivelObjeto, objeto.nivelObjeto);
+    }
     if (data.nivelObjeto !== undefined) objeto.nivelObjeto = data.nivelObjeto;
     if (data.esUnico !== undefined) objeto.esUnico = data.esUnico;
     if (data.posicion !== undefined) objeto.posicion = data.posicion;

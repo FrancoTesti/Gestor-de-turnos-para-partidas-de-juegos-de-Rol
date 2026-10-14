@@ -136,6 +136,27 @@ function ObjetoFormularioBody({
           <input type="number" min="0" step="1" value={form.posicion} onChange={(e) => cambiar('posicion', e.target.value)} disabled={guardando} />
         </Campo>
       </div>
+      <div style={{ margin: '0.25rem 0 0.75rem 0', fontSize: '0.8rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+        <span>💡 Progresión RPG: +25% de valor por nivel superior.</span>
+        {Number(form.nivelObjeto) > (objeto?.nivelObjeto ?? 1) && (
+          <button
+            type="button"
+            className="btn-secondary"
+            style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}
+            onClick={() => {
+              const nivelActual = Number(form.nivelObjeto) || 1;
+              const nivelBase = objeto?.nivelObjeto ?? 1;
+              const valorBase = objeto?.valor ?? (Number(form.valor) || 0);
+              if (nivelActual > nivelBase && valorBase > 0) {
+                const nuevoValor = Math.round(valorBase * (1 + (nivelActual - nivelBase) * 0.25));
+                cambiar('valor', String(nuevoValor));
+              }
+            }}
+          >
+            ⚡ Calcular valor para Nivel {form.nivelObjeto} (+{((Number(form.nivelObjeto) - (objeto?.nivelObjeto ?? 1)) * 25)}%)
+          </button>
+        )}
+      </div>
 
       <Campo label="Tienda (opcional)">
         <select value={form.idTienda} onChange={(e) => cambiar('idTienda', e.target.value)} disabled={guardando}>
