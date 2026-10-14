@@ -37,7 +37,28 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const [errorAvisoModal, setErrorAvisoModal] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('personaje') || params.get('search') || '';
+    }
+    return '';
+  });
+
+  useEffect(() => {
+    const syncFromUrl = () => {
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('personaje') || params.get('search');
+        if (q !== null) {
+          setSearch(q);
+        }
+      }
+    };
+    syncFromUrl();
+    window.addEventListener('popstate', syncFromUrl);
+    return () => window.removeEventListener('popstate', syncFromUrl);
+  }, [resource]);
   const [classFilter, setClassFilter] = useState('');
   const [activeOnly, setActiveOnly] = useState(false);
   const [sortField, setSortField] = useState<string>('idPartida');

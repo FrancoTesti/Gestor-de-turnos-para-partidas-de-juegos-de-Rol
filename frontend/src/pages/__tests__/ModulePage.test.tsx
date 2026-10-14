@@ -185,4 +185,37 @@ it('aplica las alineaciones requeridas a la tabla de inventarios (izq, centro, d
   expect(inputBuscar).toHaveStyle({ maxWidth: '24rem', width: '100%' });
 });
 
+it('inicializa el filtro de búsqueda desde query param personaje y filtra inventarios', async () => {
+  window.history.pushState({}, '', '/inventory?personaje=Gimli');
+
+  const inventarios = [
+    { idPersonaje: 10, numInventario: 1, cantidadEspacio: 10 },
+    { idPersonaje: 20, numInventario: 1, cantidadEspacio: 15 },
+  ];
+  const personajes = [
+    { idPersonaje: 10, nombreFicticio: 'Legolas' },
+    { idPersonaje: 20, nombreFicticio: 'Gimli' },
+  ];
+
+  mocks.api.mockImplementation(async (path: string, method = 'GET') => {
+    if (path === '/inventarios' && method === 'GET') return inventarios;
+    if (path === '/personajes' && method === 'GET') return personajes;
+    return [];
+  });
+
+  render(<ModulePage resource="inventarios" />);
+  await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
+
+  const inputBuscar = screen.getByPlaceholderText('Filtrar por cualquier campo...') as HTMLInputElement;
+  expect(inputBuscar.value).toBe('Gimli');
+
+  // Solo debe estar en el documento Gimli (#20), mientras Legolas (#10) queda filtrado
+  expect(screen.getByText('Gimli')).toBeInTheDocument();
+  expect(screen.queryByText('Legolas')).not.toBeInTheDocument();
+
+  // Restaurar URL
+  window.history.pushState({}, '', '/');
+});
+
+
 
