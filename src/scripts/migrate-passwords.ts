@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 import { MikroORM } from '@mikro-orm/postgresql';
 import config from '../mikro-orm.config';
-import { Usuario } from '../entities/Usuario.entity';
-import { Partida } from '../entities/Partida.entity';
+import { Usuario } from '../entities/User.entity';
+import { Partida } from '../entities/Match.entity';
 import { hashPassword, isPasswordHash } from '../security/password';
 
 async function main() {

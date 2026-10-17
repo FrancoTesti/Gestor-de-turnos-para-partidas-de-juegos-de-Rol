@@ -1,5 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
-import ObjetosPage from './components/objetos/ObjetosPage';
+import ItemsPage from './components/objetos/ItemsPage';
 import { UserProvider } from './context/UserContext';
 import { ThemeProvider } from './context/ThemeContext';
 import MainLayout from './layouts/MainLayout';
@@ -10,11 +10,11 @@ import UsersPage from './pages/UsersPage';
 import ModulePage from './pages/ModulePage';
 import ProfilesPage from './pages/ProfilesPage';
 import NotFoundPage from './pages/NotFoundPage';
-import ClasesPage from './pages/ClasesPage';     // clases: Alejandro Ciesco
-import PersonajesPage from './pages/PersonajesPage'; // personajes: Alejandro Ciesco
-import TiendasPage from './pages/TiendasPage';   // tiendas: Octavio Gudiño
-import SesionesPage from './pages/SesionesPage';
-import MisionesPage from './pages/MisionesPage';
+import ClassesPage from './pages/ClassesPage';     // clases: Alejandro Ciesco
+import CharactersPage from './pages/CharactersPage'; // personajes: Alejandro Ciesco
+import ShopsPage from './pages/ShopsPage';   // tiendas: Octavio Gudiño
+import SessionsPage from './pages/SessionsPage';
+import MissionsPage from './pages/MissionsPage';
 
 import './App.css';
 
@@ -30,23 +30,23 @@ export default function App() {
             <Route element={<MainLayout />}>
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/users" element={<UsersPage />} />
-              <Route path="/objects" element={<ObjetosPage />} />
+              <Route path="/objects" element={<ItemsPage />} />
 
               {/* Clases — Alejandro Ciesco */}
-              <Route path="/classes" element={<ClasesPage />} />
+              <Route path="/classes" element={<ClassesPage />} />
 
               {/* Tiendas — Octavio Gudiño */}
-              <Route path="/stores" element={<TiendasPage />} />
+              <Route path="/stores" element={<ShopsPage />} />
 
               {/* Partidas y sesiones usan el flujo unificado de ModulePage. */}
               <Route path="/games" element={<ModulePage key="partidas" resource="partidas" />} />
               <Route path="/partidas" element={<Navigate to="/games" replace />} />
 
               {/* Personajes — Alejandro Ciesco */}
-              <Route path="/characters" element={<PersonajesPage />} />
+              <Route path="/characters" element={<CharactersPage />} />
 
-              <Route path="/sessions" element={<SesionesPage />} />
-              <Route path="/missions" element={<MisionesPage />} />
+              <Route path="/sessions" element={<SessionsPage />} />
+              <Route path="/missions" element={<MissionsPage />} />
               <Route path="/inventory" element={<ModulePage key="inventarios" resource="inventarios" />} />
               <Route path="/profiles" element={<ProfilesPage />} />
             </Route>

@@ -24,7 +24,7 @@
 > `src/services/objeto.service.ts` y `src/services/juego.service.ts`.
 
 ## Descripción de la Prueba
-Esta prueba de integración valida la concurrencia de compra y venta de un objeto único (`esUnico: true`) conectándose a una instancia real de **PostgreSQL** (hasta septiembre, MySQL) mediante la suite [src/integration/juego.test.ts](../src/integration/juego.test.ts).
+Esta prueba de integración valida la concurrencia de compra y venta de un objeto único (`esUnico: true`) conectándose a una instancia real de **PostgreSQL** (hasta septiembre, MySQL) mediante la suite [src/integration/game.test.ts](../src/integration/game.test.ts).
 
 ### Casos de Concurrencia Verificados
 

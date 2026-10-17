@@ -8,16 +8,16 @@
     "build:all": "npm run build && npm --prefix frontend ci --include=dev && npm --prefix frontend run build",
     "test": "vitest run src/tests",
     "test:coverage": "vitest run --coverage",
-    "test:coverage:integration": "npm run build && c8 --reporter=text --reporter=json-summary --reports-dir=coverage/integracion --check-coverage --lines 70 --statements 70 --branches 68 --functions 66 node --test --test-concurrency=1 dist/integration/juego.test.js",
-    "docs:check": "node scripts/verificar-enlaces-docs.mjs",
-    "demo:datos": "node scripts/datos-demo.mjs",
+    "test:coverage:integration": "npm run build && c8 --reporter=text --reporter=json-summary --reports-dir=coverage/integracion --check-coverage --lines 70 --statements 70 --branches 68 --functions 66 node --test --test-concurrency=1 dist/integration/game.test.js",
+    "docs:check": "node scripts/verify-doc-links.mjs",
+    "demo:datos": "node scripts/demo-data.mjs",
     "test:e2e": "npm run build && playwright test",
-    "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/juego.test.js",
+    "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/game.test.js",
     "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
     "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
-    "schema:dump": "ts-node src/valida-entities.ts",
-    "db:rls": "node scripts/activar-rls.mjs",
-    "db:probar": "node scripts/probar-conexion-supabase.mjs"
+    "schema:dump": "ts-node src/validate-entities.ts",
+    "db:rls": "node scripts/enable-rls.mjs",
+    "db:probar": "node scripts/test-supabase-connection.mjs"
   },
   "dependencies": {
     "@mikro-orm/core": "^6.6.16",

@@ -1,8 +1,8 @@
 import type { RequestHandler } from 'express';
 import { EntityManager } from '@mikro-orm/core';
-import { Personaje } from '../entities/Personaje.entity';
-import { Partida } from '../entities/Partida.entity';
-import { Objeto } from '../entities/Objeto.entity';
+import { Personaje } from '../entities/Character.entity';
+import { Partida } from '../entities/Match.entity';
+import { Objeto } from '../entities/Item.entity';
 import { z } from 'zod';
 
 export class HttpError extends Error {

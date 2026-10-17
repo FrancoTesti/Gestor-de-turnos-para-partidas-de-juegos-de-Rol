@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { useUser } from '../context/UserContext';
 import { useTheme, type Theme, type AccentColor } from '../context/ThemeContext';
-import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
-import { AvatarUsuario } from '../components/usuarios/UsuarioLista';
+import { UsuarioFormulario, type UsuarioFormData } from '../components/usuarios/UserForm';
+import { AvatarUsuario } from '../components/usuarios/UserList';
 import Loading from '../components/ui/Loading';
 import { CheckIcon, AvisoModal } from '../components/ui';
-import { actualizarUsuario } from '../services/usuario.service';
-import { actualizarJugador, crearJugador, eliminarJugador } from '../services/jugador.service';
-import { crearAnfitrion, eliminarAnfitrion } from '../services/anfitrion.service';
-import '../components/usuarios/usuarios.css';
+import { actualizarUsuario } from '../services/user.service';
+import { actualizarJugador, crearJugador, eliminarJugador } from '../services/player.service';
+import { crearAnfitrion, eliminarAnfitrion } from '../services/host.service';
+import '../components/usuarios/users.css';
 import './ProfilesPage.css';
 
 // Pantalla de cuenta propia: datos del usuario y los dos perfiles que puede tener.

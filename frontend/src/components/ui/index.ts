@@ -2,9 +2,9 @@
 export { default as Alert } from './Alert';
 export { default as Loading } from './Loading';
 export { default as Modal } from './Modal';
-export { default as AvisoModal } from './AvisoModal';
+export { default as NoticeModal } from './NoticeModal';
+export { default as AvisoModal } from './NoticeModal';
 export { default as Table } from './Table';
 export { default as Form } from './Form';
 export type { FormField } from './Form';
 export * from './Icons';
-

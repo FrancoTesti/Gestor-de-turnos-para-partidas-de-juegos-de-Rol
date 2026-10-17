@@ -1,18 +1,18 @@
 import 'dotenv/config';
 import { EntityCaseNamingStrategy } from '@mikro-orm/core';
 import { defineConfig } from '@mikro-orm/postgresql';
-import { Usuario } from './entities/Usuario.entity';
-import { Jugador } from './entities/Jugador.entity';
-import { Anfitrion } from './entities/Anfitrion.entity';
-import { Clase } from './entities/Clase.entity';
-import { Partida } from './entities/Partida.entity';
-import { Sesion } from './entities/Sesion.entity';
-import { Mision } from './entities/Mision.entity';
-import { Tienda } from './entities/Tienda.entity';
-import { Personaje } from './entities/Personaje.entity';
-import { Inventario } from './entities/Inventario.entity';
-import { PersonajeSesion } from './entities/PersonajeSesion.entity';
-import { Objeto } from './entities/Objeto.entity';
+import { Usuario } from './entities/User.entity';
+import { Jugador } from './entities/Player.entity';
+import { Anfitrion } from './entities/Host.entity';
+import { Clase } from './entities/Class.entity';
+import { Partida } from './entities/Match.entity';
+import { Sesion } from './entities/Session.entity';
+import { Mision } from './entities/Mission.entity';
+import { Tienda } from './entities/Shop.entity';
+import { Personaje } from './entities/Character.entity';
+import { Inventario } from './entities/Inventory.entity';
+import { PersonajeSesion } from './entities/CharacterSession.entity';
+import { Objeto } from './entities/Item.entity';
 
 /**
  * Supabase exige TLS y su pooler presenta un certificado propio, por eso no se valida la cadena.

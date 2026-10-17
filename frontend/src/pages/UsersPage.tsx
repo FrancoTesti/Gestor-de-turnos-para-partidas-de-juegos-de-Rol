@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useUser } from '../context/UserContext';
-import UsuarioLista from '../components/usuarios/UsuarioLista';
-import UsuarioDetalle from '../components/usuarios/UsuarioDetalle';
-import UsuarioFormulario, { type UsuarioFormData } from '../components/usuarios/UsuarioFormulario';
-import { AvisoModal } from '../components/ui';
+import UserList from '../components/usuarios/UserList';
+import UserDetail from '../components/usuarios/UserDetail';
+import UserForm, { type UserFormData } from '../components/usuarios/UserForm';
+import { NoticeModal } from '../components/ui';
 import type { Usuario } from '../interfaces';
 import { api } from '../services/api';
 import './UsersPage.css';
@@ -26,7 +26,7 @@ export default function UsersPage() {
   }, [selected, editing]);
 
   const own = selected?.idUsuario === usuarioLogueado?.idUsuario;
-  const save = async (data: UsuarioFormData) => {
+  const save = async (data: UserFormData) => {
     try {
       setError('');
       setBusy(true);
@@ -51,7 +51,7 @@ export default function UsersPage() {
   return <section className="users-page">
     <h1>Gestión de Usuarios</h1>
     {error && <p role="alert">{error}</p>}
-    <AvisoModal
+    <NoticeModal
       isOpen={Boolean(error)}
       titulo="Aviso de Usuarios"
       mensaje={error}
@@ -59,10 +59,10 @@ export default function UsersPage() {
     />
     {usuarioLogueado && rolDe(usuarioLogueado.idUsuario) === 'anfitrion' && !editing && <button className="btn-primary" onClick={() => { setSelected(undefined); setEditing(true); }}>Nuevo usuario</button>}
     {editing ? (
-      <UsuarioFormulario usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} />
+      <UserForm usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} />
     ) : (
       <>
-        <UsuarioLista
+        <UserList
           usuarios={usuarios}
           onSeleccionar={setSelected}
           cargando={busy || (cargandoSesion && usuarios.length === 0)}
@@ -79,7 +79,7 @@ export default function UsersPage() {
               className="usuario-modal-content"
               onClick={(e) => e.stopPropagation()}
             >
-              <UsuarioDetalle
+              <UserDetail
                 usuario={selected}
                 onCerrar={() => setSelected(undefined)}
                 onEditar={own ? () => setEditing(true) : undefined}
