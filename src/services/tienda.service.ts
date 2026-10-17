@@ -11,17 +11,25 @@ export class TiendaService {
     this.em = em;
   }
 
-  async obtenerTodos(): Promise<TiendaPublicaDTO[]> {
+  async getAll(): Promise<TiendaPublicaDTO[]> {
     const tiendas = await this.em.find(Tienda, {}, { populate: ['clase'] });
-    return tiendas.map((t) => this.aTiendaPublica(t));
+    return tiendas.map((t) => this.toPublicDTO(t));
+  }
+
+  async obtenerTodos(): Promise<TiendaPublicaDTO[]> {
+    return this.getAll();
+  }
+
+  async getById(id: number): Promise<TiendaPublicaDTO | null> {
+    const tienda = await this.em.findOne(Tienda, { idTienda: id }, { populate: ['clase'] });
+    return tienda ? this.toPublicDTO(tienda) : null;
   }
 
   async obtenerPorId(id: number): Promise<TiendaPublicaDTO | null> {
-    const tienda = await this.em.findOne(Tienda, { idTienda: id }, { populate: ['clase'] });
-    return tienda ? this.aTiendaPublica(tienda) : null;
+    return this.getById(id);
   }
 
-  async crearTienda(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
+  async create(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
     let clase: Clase | null = null;
     if (data.idClase != null) {
       clase = await this.em.findOne(Clase, { idClase: data.idClase });
@@ -35,10 +43,14 @@ export class TiendaService {
     });
 
     await this.em.flush();
-    return this.aTiendaPublica(tienda);
+    return this.toPublicDTO(tienda);
   }
 
-  async actualizarTienda(id: number, data: ActualizarTiendaDTO): Promise<TiendaPublicaDTO | null> {
+  async crearTienda(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
+    return this.create(data);
+  }
+
+  async update(id: number, data: ActualizarTiendaDTO): Promise<TiendaPublicaDTO | null> {
     const tienda = await this.em.findOne(Tienda, { idTienda: id });
     if (!tienda) return null;
 
@@ -51,10 +63,14 @@ export class TiendaService {
     if (data.claseTienda !== undefined) tienda.claseTienda = data.claseTienda;
 
     await this.em.flush();
-    return this.aTiendaPublica(tienda);
+    return this.toPublicDTO(tienda);
   }
 
-  async eliminarTienda(id: number): Promise<boolean> {
+  async actualizarTienda(id: number, data: ActualizarTiendaDTO): Promise<TiendaPublicaDTO | null> {
+    return this.update(id, data);
+  }
+
+  async delete(id: number): Promise<boolean> {
     const tienda = await this.em.findOne(Tienda, { idTienda: id });
     if (!tienda) return false;
 
@@ -62,12 +78,20 @@ export class TiendaService {
     return true;
   }
 
-  private aTiendaPublica(t: Tienda): TiendaPublicaDTO {
+  async eliminarTienda(id: number): Promise<boolean> {
+    return this.delete(id);
+  }
+
+  private toPublicDTO(t: Tienda): TiendaPublicaDTO {
     return {
       idTienda: t.idTienda,
       nombre: t.nombre,
       claseTienda: t.claseTienda,
       idClase: t.clase ? t.clase.idClase : null,
     };
+  }
+
+  private aTiendaPublica(t: Tienda): TiendaPublicaDTO {
+    return this.toPublicDTO(t);
   }
 }

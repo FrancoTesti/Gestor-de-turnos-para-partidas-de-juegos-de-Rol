@@ -17,26 +17,32 @@ export interface CrearPersonajeData {
 
 export type ActualizarPersonajeData = Partial<Omit<CrearPersonajeData, 'contrasenaPartida'>>;
 
-export async function obtenerPersonajes(idClase?: number): Promise<Personaje[]> {
+export async function getCharacters(idClase?: number): Promise<Personaje[]> {
   const path = idClase ? `${PERSONAJES_URL}?idClase=${idClase}` : PERSONAJES_URL;
   return api<Personaje[]>(path);
 }
 
-export async function obtenerPersonajePorId(idPersonaje: number): Promise<Personaje> {
+export async function getCharacterById(idPersonaje: number): Promise<Personaje> {
   return api<Personaje>(`${PERSONAJES_URL}/${idPersonaje}`);
 }
 
-export async function crearPersonaje(data: CrearPersonajeData): Promise<Personaje> {
+export async function createCharacter(data: CrearPersonajeData): Promise<Personaje> {
   return api<Personaje>(PERSONAJES_URL, 'POST', data);
 }
 
-export async function actualizarPersonaje(
+export async function updateCharacter(
   idPersonaje: number,
   data: ActualizarPersonajeData,
 ): Promise<Personaje> {
   return api<Personaje>(`${PERSONAJES_URL}/${idPersonaje}`, 'PUT', data);
 }
 
-export async function eliminarPersonaje(idPersonaje: number): Promise<void> {
+export async function deleteCharacter(idPersonaje: number): Promise<void> {
   await api<void>(`${PERSONAJES_URL}/${idPersonaje}`, 'DELETE');
 }
+
+export const obtenerPersonajes = getCharacters;
+export const obtenerPersonajePorId = getCharacterById;
+export const crearPersonaje = createCharacter;
+export const actualizarPersonaje = updateCharacter;
+export const eliminarPersonaje = deleteCharacter;

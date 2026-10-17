@@ -58,7 +58,7 @@ export function crearJuegoRouter(em: EntityManager) {
   r.post('/objetos/:id/vender', async (req: any, res: any) => res.json(await service.sell(req.identity!.idUsuario, routeId(req.params.id), req.body)));
   r.get('/objetos/sugeridos/:character', async (req: any, res: any) => {
     const p = await ownedCharacter(em, routeId(req.params.character), req.identity!.idUsuario);
-    res.json(await new ObjetoService(em).obtenerSugeridos(p.clase.idClase));
+    res.json(await new ObjetoService(em).getSuggested(p.clase.idClase));
   });
   return r;
 }

@@ -24,7 +24,7 @@ export class PersonajeService {
     this.em = em;
   }
 
-  async obtenerTodos(filtros?: { idClase?: number }): Promise<PersonajePublicoDTO[]> {
+  async getAll(filtros?: { idClase?: number }): Promise<PersonajePublicoDTO[]> {
     const whereClause: Record<string, unknown> = {};
     if (filtros?.idClase) {
       whereClause.clase = { idClase: filtros.idClase };
@@ -36,24 +36,36 @@ export class PersonajeService {
       { populate: ['clase', 'jugador', 'jugador.usuario', 'partida'] },
     );
 
-    return personajes.map((p) => this.aPersonajePublico(p));
+    return personajes.map((p) => this.toPublicDTO(p));
   }
 
-  async obtenerPorId(id: number): Promise<PersonajePublicoDTO | null> {
+  async obtenerTodos(filtros?: { idClase?: number }): Promise<PersonajePublicoDTO[]> {
+    return this.getAll(filtros);
+  }
+
+  async getById(id: number): Promise<PersonajePublicoDTO | null> {
     const personaje = await this.em.findOne(
       Personaje,
       { idPersonaje: id },
       { populate: ['clase', 'jugador', 'jugador.usuario', 'partida'] },
     );
 
-    return personaje ? this.aPersonajePublico(personaje) : null;
+    return personaje ? this.toPublicDTO(personaje) : null;
+  }
+
+  async obtenerPorId(id: number): Promise<PersonajePublicoDTO | null> {
+    return this.getById(id);
+  }
+
+  async create(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
+    return this.em.transactional(async tx => new PersonajeService(tx).createInTransaction(data));
   }
 
   async crearPersonaje(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
-    return this.em.transactional(async tx => new PersonajeService(tx).crearEnTransaccion(data));
+    return this.create(data);
   }
 
-  private async crearEnTransaccion(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
+  private async createInTransaction(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
     const clase = await this.em.findOne(Clase, { idClase: data.idClase });
     if (!clase) {
       throw new ErrorReferenciaNoEncontrada(`No existe la Clase con ID ${data.idClase}`);
@@ -90,10 +102,14 @@ export class PersonajeService {
     this.em.create(Inventario, { personaje: nuevoPersonaje, numInventario: 1, cantidadEspacio: 10 });
     await this.em.flush();
     await this.em.populate(nuevoPersonaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);
-    return this.aPersonajePublico(nuevoPersonaje);
+    return this.toPublicDTO(nuevoPersonaje);
   }
 
-  async actualizarPersonaje(id: number, data: ActualizarPersonajeDTO): Promise<PersonajePublicoDTO | null> {
+  private async crearEnTransaccion(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
+    return this.createInTransaction(data);
+  }
+
+  async update(id: number, data: ActualizarPersonajeDTO): Promise<PersonajePublicoDTO | null> {
     const personaje = await this.em.findOne(
       Personaje,
       { idPersonaje: id },
@@ -135,14 +151,22 @@ export class PersonajeService {
     await this.em.flush();
     await this.em.populate(personaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);
 
-    return this.aPersonajePublico(personaje);
+    return this.toPublicDTO(personaje);
+  }
+
+  async actualizarPersonaje(id: number, data: ActualizarPersonajeDTO): Promise<PersonajePublicoDTO | null> {
+    return this.update(id, data);
+  }
+
+  async delete(id: number): Promise<boolean> {
+    return this.em.transactional(async tx => new PersonajeService(tx).deleteInTransaction(id));
   }
 
   async eliminarPersonaje(id: number): Promise<boolean> {
-    return this.em.transactional(async tx => new PersonajeService(tx).eliminarEnTransaccion(id));
+    return this.delete(id);
   }
 
-  private async eliminarEnTransaccion(id: number): Promise<boolean> {
+  private async deleteInTransaction(id: number): Promise<boolean> {
     const personaje = await this.em.findOne(Personaje, { idPersonaje: id });
     if (!personaje) return false;
 
@@ -155,7 +179,11 @@ export class PersonajeService {
     return true;
   }
 
-  private aPersonajePublico(p: Personaje): PersonajePublicoDTO {
+  private async eliminarEnTransaccion(id: number): Promise<boolean> {
+    return this.deleteInTransaction(id);
+  }
+
+  private toPublicDTO(p: Personaje): PersonajePublicoDTO {
     return {
       idPersonaje: p.idPersonaje,
       nombreFicticio: p.nombreFicticio,
@@ -170,5 +198,9 @@ export class PersonajeService {
       idPartida: p.partida ? p.partida.idPartida : 0,
       partidaNombre: p.partida ? p.partida.nombre : undefined,
     };
+  }
+
+  private aPersonajePublico(p: Personaje): PersonajePublicoDTO {
+    return this.toPublicDTO(p);
   }
 }

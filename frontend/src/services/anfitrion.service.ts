@@ -11,7 +11,12 @@ export interface AnfitrionExtendido extends Anfitrion {
 // El karma y la cantidad de partidas activas los calcula el servidor: solo se envía el dueño.
 export type CrearAnfitrionData = { idUsuario: number };
 
-export const obtenerAnfitriones = () => api<AnfitrionExtendido[]>('/anfitriones');
-export const obtenerAnfitrionPorId = (id: number) => api<AnfitrionExtendido>(`/anfitriones/${id}`);
-export const crearAnfitrion = (data: CrearAnfitrionData) => api<AnfitrionExtendido>('/anfitriones', 'POST', data);
-export const eliminarAnfitrion = (id: number) => api<void>(`/anfitriones/${id}`, 'DELETE');
+export const getHosts = () => api<AnfitrionExtendido[]>('/anfitriones');
+export const getHostById = (id: number) => api<AnfitrionExtendido>(`/anfitriones/${id}`);
+export const createHost = (data: CrearAnfitrionData) => api<AnfitrionExtendido>('/anfitriones', 'POST', data);
+export const deleteHost = (id: number) => api<void>(`/anfitriones/${id}`, 'DELETE');
+
+export const obtenerAnfitriones = getHosts;
+export const obtenerAnfitrionPorId = getHostById;
+export const crearAnfitrion = createHost;
+export const eliminarAnfitrion = deleteHost;

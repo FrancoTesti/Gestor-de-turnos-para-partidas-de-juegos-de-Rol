@@ -13,12 +13,12 @@ export function crearUsuarioRouter(em: EntityManager): Router {
   const usuarioService = new UsuarioService(usuarioRepository);
   const usuarioController = new UsuarioController(usuarioService);
 
-  router.get('/', (req: any, res: any) => usuarioController.obtenerTodos(req, res));
-  router.get('/:id', (req: any, res: any) => usuarioController.obtenerPorId(req, res));
+  router.get('/', (req: any, res: any) => usuarioController.getAll(req, res));
+  router.get('/:id', (req: any, res: any) => usuarioController.getById(req, res));
   
-  router.post('/', requireCreateUserAsAnfitrion, validar(crearUsuarioSchema), (req: any, res: any) => usuarioController.crearUsuario(req, res));
-  router.put('/:id', requireOwnUser('id'), validar(actualizarUsuarioSchema), (req: any, res: any) => usuarioController.actualizarUsuario(req, res));
-  router.delete('/:id', requireOwnUser('id'), (req: any, res: any) => usuarioController.eliminarUsuario(req, res));
+  router.post('/', requireCreateUserAsAnfitrion, validar(crearUsuarioSchema), (req: any, res: any) => usuarioController.create(req, res));
+  router.put('/:id', requireOwnUser('id'), validar(actualizarUsuarioSchema), (req: any, res: any) => usuarioController.update(req, res));
+  router.delete('/:id', requireOwnUser('id'), (req: any, res: any) => usuarioController.delete(req, res));
   
   return router;
 }

@@ -29,20 +29,28 @@ export class JugadorService {
   }
 
   // trae todos los jugadores y los convierte al formato público
-  async obtenerTodos(): Promise<JugadorPublicoDTO[]> {
+  async getAll(): Promise<JugadorPublicoDTO[]> {
     // populate: ['usuario'] le dice a MikroORM que también cargue los datos del Usuario asociado
     const jugadores = await this.em.find(Jugador, {}, { populate: ['usuario'] });
-    return jugadores.map((j) => this.aJugadorPublico(j));
+    return jugadores.map((j) => this.toPublicDTO(j));
+  }
+
+  async obtenerTodos(): Promise<JugadorPublicoDTO[]> {
+    return this.getAll();
   }
 
   // busca un jugador por el idUsuario (que es su clave primaria)
-  async obtenerPorId(idUsuario: number): Promise<JugadorPublicoDTO | null> {
+  async getById(idUsuario: number): Promise<JugadorPublicoDTO | null> {
     const jugador = await this.em.findOne(Jugador, idUsuario as any, { populate: ['usuario'] });
-    return jugador ? this.aJugadorPublico(jugador) : null;
+    return jugador ? this.toPublicDTO(jugador) : null;
+  }
+
+  async obtenerPorId(idUsuario: number): Promise<JugadorPublicoDTO | null> {
+    return this.getById(idUsuario);
   }
 
   // registra a un Usuario existente como Jugador
-  async crearJugador(data: CrearJugadorDTO): Promise<JugadorPublicoDTO> {
+  async create(data: CrearJugadorDTO): Promise<JugadorPublicoDTO> {
     // regla 1: el Usuario debe existir antes de registrarlo como Jugador
     const usuario = await this.em.findOne(Usuario, { idUsuario: data.idUsuario });
     if (!usuario) {
@@ -62,22 +70,30 @@ export class JugadorService {
     });
 
     await this.em.flush(); // hace el INSERT real en la base de datos
-    return this.aJugadorPublico(jugador);
+    return this.toPublicDTO(jugador);
+  }
+
+  async crearJugador(data: CrearJugadorDTO): Promise<JugadorPublicoDTO> {
+    return this.create(data);
   }
 
   // actualiza el estado de un Jugador existente
-  async actualizarJugador(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
+  async update(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
     const jugador = await this.em.findOne(Jugador, idUsuario as any, { populate: ['usuario'] });
     if (!jugador) return null;
 
     // assign actualiza solo los campos que vienen en data (Partial)
     this.em.assign(jugador, data);
     await this.em.flush();
-    return this.aJugadorPublico(jugador);
+    return this.toPublicDTO(jugador);
+  }
+
+  async actualizarJugador(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
+    return this.update(idUsuario, data);
   }
 
   // quita el rol de Jugador a un Usuario (no borra el Usuario, solo la fila de jugadores)
-  async eliminarJugador(idUsuario: number): Promise<boolean> {
+  async delete(idUsuario: number): Promise<boolean> {
     const jugador = await this.em.findOne(Jugador, idUsuario as any);
     if (!jugador) return false;
 
@@ -85,8 +101,12 @@ export class JugadorService {
     return true;
   }
 
+  async eliminarJugador(idUsuario: number): Promise<boolean> {
+    return this.delete(idUsuario);
+  }
+
   // convierte la entidad interna al DTO público (sin datos sensibles)
-  private aJugadorPublico(j: Jugador): JugadorPublicoDTO {
+  private toPublicDTO(j: Jugador): JugadorPublicoDTO {
     return {
       idUsuario: j.usuario.idUsuario,
       estado: j.estado,
@@ -95,5 +115,9 @@ export class JugadorService {
       nickname: j.usuario.nickname,
       imagen: j.usuario.imagen,
     };
+  }
+
+  private aJugadorPublico(j: Jugador): JugadorPublicoDTO {
+    return this.toPublicDTO(j);
   }
 }

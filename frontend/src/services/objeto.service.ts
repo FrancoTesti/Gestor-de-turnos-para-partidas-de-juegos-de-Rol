@@ -45,11 +45,11 @@ export interface ResultadoVentaObjeto {
   precio: number;
 }
 
-export async function obtenerObjetos(): Promise<ObjetoPublico[]> {
+export async function getObjects(): Promise<ObjetoPublico[]> {
   return api<ObjetoPublico[]>(OBJETOS_URL);
 }
 
-export async function obtenerObjetoPorId(idObjeto: number): Promise<ObjetoPublico> {
+export async function getObjectById(idObjeto: number): Promise<ObjetoPublico> {
   return api<ObjetoPublico>(`${OBJETOS_URL}/${idObjeto}`);
 }
 
@@ -57,32 +57,41 @@ export async function obtenerObjetoPorId(idObjeto: number): Promise<ObjetoPublic
  * Obtiene objetos sugeridos para un personaje según su clase.
  * Usa la ruta autenticada GET /api/objetos/sugeridos/:character
  */
-export async function obtenerSugeridos(idPersonaje: number): Promise<ObjetoPublico[]> {
+export async function getSuggested(idPersonaje: number): Promise<ObjetoPublico[]> {
   return api<ObjetoPublico[]>(`${OBJETOS_URL}/sugeridos/${idPersonaje}`);
 }
 
-export async function crearObjeto(data: CrearObjetoData): Promise<ObjetoPublico> {
+export async function createObject(data: CrearObjetoData): Promise<ObjetoPublico> {
   return api<ObjetoPublico>(OBJETOS_URL, 'POST', data);
 }
 
-export async function actualizarObjeto(idObjeto: number, data: ActualizarObjetoData): Promise<ObjetoPublico> {
+export async function updateObject(idObjeto: number, data: ActualizarObjetoData): Promise<ObjetoPublico> {
   return api<ObjetoPublico>(`${OBJETOS_URL}/${idObjeto}`, 'PUT', data);
 }
 
-export async function eliminarObjeto(idObjeto: number): Promise<void> {
+export async function deleteObject(idObjeto: number): Promise<void> {
   await api<void>(`${OBJETOS_URL}/${idObjeto}`, 'DELETE');
 }
 
-export async function comprarObjeto(
+export async function buyObject(
   idObjeto: number,
   data: ComprarObjetoData,
 ): Promise<ResultadoCompraObjeto> {
   return api<ResultadoCompraObjeto>(`${OBJETOS_URL}/${idObjeto}/comprar`, 'POST', data);
 }
 
-export async function venderObjeto(
+export async function sellObject(
   idObjeto: number,
   data: VenderObjetoData,
 ): Promise<ResultadoVentaObjeto> {
   return api<ResultadoVentaObjeto>(`${OBJETOS_URL}/${idObjeto}/vender`, 'POST', data);
 }
+
+export const obtenerObjetos = getObjects;
+export const obtenerObjetoPorId = getObjectById;
+export const obtenerSugeridos = getSuggested;
+export const crearObjeto = createObject;
+export const actualizarObjeto = updateObject;
+export const eliminarObjeto = deleteObject;
+export const comprarObjeto = buyObject;
+export const venderObjeto = sellObject;

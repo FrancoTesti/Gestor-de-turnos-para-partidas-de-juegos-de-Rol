@@ -43,27 +43,37 @@ export class PartidaController {
   }
 
   // GET /api/partidas
-  async obtenerTodas(_req: Request, res: Response): Promise<void> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const partidas = await this.partidaService.obtenerTodas();
+      const getFn = this.partidaService.getAll ? this.partidaService.getAll.bind(this.partidaService) : this.partidaService.obtenerTodas.bind(this.partidaService);
+      const partidas = await getFn();
       res.json(partidas);
     } catch (error) {
       responderError(error, res, 'Error al obtener partidas');
     }
   }
 
+  async obtenerTodas(req: Request, res: Response): Promise<void> {
+    return this.getAll(req, res);
+  }
+
   // GET /api/partidas/activas  ← listado requerido por el plan de desarrollo
-  async obtenerActivas(_req: Request, res: Response): Promise<void> {
+  async getActive(_req: Request, res: Response): Promise<void> {
     try {
-      const partidas = await this.partidaService.obtenerActivas();
+      const getActiveFn = this.partidaService.getActive ? this.partidaService.getActive.bind(this.partidaService) : this.partidaService.obtenerActivas.bind(this.partidaService);
+      const partidas = await getActiveFn();
       res.json(partidas);
     } catch (error) {
       responderError(error, res, 'Error al obtener partidas activas');
     }
   }
 
+  async obtenerActivas(req: Request, res: Response): Promise<void> {
+    return this.getActive(req, res);
+  }
+
   // GET /api/partidas/:id
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -71,7 +81,8 @@ export class PartidaController {
     }
 
     try {
-      const partida = await this.partidaService.obtenerPorId(id);
+      const getByIdFn = this.partidaService.getById ? this.partidaService.getById.bind(this.partidaService) : this.partidaService.obtenerPorId.bind(this.partidaService);
+      const partida = await getByIdFn(id);
       if (!partida) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
@@ -82,19 +93,28 @@ export class PartidaController {
     }
   }
 
+  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.getById(req, res);
+  }
+
   // POST /api/partidas
-  async crearPartida(req: Request, res: Response): Promise<void> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionPartida(req.body);
-      const nuevaPartida = await this.partidaService.crearPartida(data);
+      const createFn = this.partidaService.create ? this.partidaService.create.bind(this.partidaService) : this.partidaService.crearPartida.bind(this.partidaService);
+      const nuevaPartida = await createFn(data);
       res.status(201).json(nuevaPartida);
     } catch (error) {
       responderError(error, res, 'Error al crear la partida');
     }
   }
 
+  async crearPartida(req: Request, res: Response): Promise<void> {
+    return this.create(req, res);
+  }
+
   // PUT /api/partidas/:id
-  async actualizarPartida(req: Request<IdParams>, res: Response): Promise<void> {
+  async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -103,7 +123,8 @@ export class PartidaController {
 
     try {
       const data = validarActualizacionPartida(req.body);
-      const actualizada = await this.partidaService.actualizarPartida(id, data);
+      const updateFn = this.partidaService.update ? this.partidaService.update.bind(this.partidaService) : this.partidaService.actualizarPartida.bind(this.partidaService);
+      const actualizada = await updateFn(id, data);
       if (!actualizada) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
@@ -114,8 +135,12 @@ export class PartidaController {
     }
   }
 
+  async actualizarPartida(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.update(req, res);
+  }
+
   // DELETE /api/partidas/:id
-  async eliminarPartida(req: Request<IdParams>, res: Response): Promise<void> {
+  async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -123,7 +148,8 @@ export class PartidaController {
     }
 
     try {
-      const eliminado = await this.partidaService.eliminarPartida(id);
+      const deleteFn = this.partidaService.delete ? this.partidaService.delete.bind(this.partidaService) : this.partidaService.eliminarPartida.bind(this.partidaService);
+      const eliminado = await deleteFn(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
@@ -132,5 +158,9 @@ export class PartidaController {
     } catch (error) {
       responderError(error, res, 'Error al eliminar la partida');
     }
+  }
+
+  async eliminarPartida(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.delete(req, res);
   }
 }

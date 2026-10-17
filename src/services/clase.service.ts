@@ -9,32 +9,48 @@ export class ClaseService {
     this.em = em;
   }
 
-  async obtenerTodos(): Promise<ClasePublicaDTO[]> {
+  async getAll(): Promise<ClasePublicaDTO[]> {
     const clases = await this.em.find(Clase, {});
-    return clases.map((c) => this.aClasePublica(c));
+    return clases.map((c) => this.toPublicDTO(c));
+  }
+
+  async obtenerTodos(): Promise<ClasePublicaDTO[]> {
+    return this.getAll();
+  }
+
+  async getById(id: number): Promise<ClasePublicaDTO | null> {
+    const clase = await this.em.findOne(Clase, { idClase: id });
+    return clase ? this.toPublicDTO(clase) : null;
   }
 
   async obtenerPorId(id: number): Promise<ClasePublicaDTO | null> {
-    const clase = await this.em.findOne(Clase, { idClase: id });
-    return clase ? this.aClasePublica(clase) : null;
+    return this.getById(id);
+  }
+
+  async create(data: CrearClaseDTO): Promise<ClasePublicaDTO> {
+    const clase = this.em.create(Clase, data);
+    await this.em.flush();
+    return this.toPublicDTO(clase);
   }
 
   async crearClase(data: CrearClaseDTO): Promise<ClasePublicaDTO> {
-    const clase = this.em.create(Clase, data);
-    await this.em.flush();
-    return this.aClasePublica(clase);
+    return this.create(data);
   }
 
-  async actualizarClase(id: number, data: ActualizarClaseDTO): Promise<ClasePublicaDTO | null> {
+  async update(id: number, data: ActualizarClaseDTO): Promise<ClasePublicaDTO | null> {
     const clase = await this.em.findOne(Clase, { idClase: id });
     if (!clase) return null;
 
     this.em.assign(clase, data);
     await this.em.flush();
-    return this.aClasePublica(clase);
+    return this.toPublicDTO(clase);
   }
 
-  async eliminarClase(id: number): Promise<boolean> {
+  async actualizarClase(id: number, data: ActualizarClaseDTO): Promise<ClasePublicaDTO | null> {
+    return this.update(id, data);
+  }
+
+  async delete(id: number): Promise<boolean> {
     const clase = await this.em.findOne(Clase, { idClase: id });
     if (!clase) return false;
 
@@ -42,11 +58,19 @@ export class ClaseService {
     return true;
   }
 
-  private aClasePublica(c: Clase): ClasePublicaDTO {
+  async eliminarClase(id: number): Promise<boolean> {
+    return this.delete(id);
+  }
+
+  private toPublicDTO(c: Clase): ClasePublicaDTO {
     return {
       idClase: c.idClase,
       nombreClase: c.nombreClase,
       descripcionClase: c.descripcionClase,
     };
+  }
+
+  private aClasePublica(c: Clase): ClasePublicaDTO {
+    return this.toPublicDTO(c);
   }
 }

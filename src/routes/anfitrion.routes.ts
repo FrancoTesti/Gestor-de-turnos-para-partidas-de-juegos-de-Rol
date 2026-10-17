@@ -9,11 +9,11 @@ export function crearAnfitrionRouter(em: EntityManager): Router {
   const service = new AnfitrionService(em);
   const controller = new AnfitrionController(service);
 
-  router.get('/', (req: any, res: any) => controller.obtenerTodos(req, res));
-  router.get('/:id', (req: any, res: any) => controller.obtenerPorId(req, res));
-  router.post('/', requireCreateOwnProfile, (req: any, res: any) => controller.crearAnfitrion(req, res));
-  router.put('/:id', requireOwnProfile('id'), anfitrionPutProtection, (req: any, res: any) => controller.actualizarAnfitrion(req, res));
-  router.delete('/:id', requireOwnProfile('id'), (req: any, res: any) => controller.eliminarAnfitrion(req, res));
+  router.get('/', (req: any, res: any) => controller.getAll(req, res));
+  router.get('/:id', (req: any, res: any) => controller.getById(req, res));
+  router.post('/', requireCreateOwnProfile, (req: any, res: any) => controller.create(req, res));
+  router.put('/:id', requireOwnProfile('id'), anfitrionPutProtection, (req: any, res: any) => controller.update(req, res));
+  router.delete('/:id', requireOwnProfile('id'), (req: any, res: any) => controller.delete(req, res));
 
   return router;
 }

@@ -24,9 +24,10 @@ export class TiendaController {
     this.tiendaService = tiendaService;
   }
 
-  async obtenerTodos(_req: Request, res: Response): Promise<void> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const tiendas = await this.tiendaService.obtenerTodos();
+      const getFn = this.tiendaService.getAll ? this.tiendaService.getAll.bind(this.tiendaService) : this.tiendaService.obtenerTodos.bind(this.tiendaService);
+      const tiendas = await getFn();
       res.json(tiendas);
     } catch (error) {
       console.error('Error al obtener tiendas:', error);
@@ -34,7 +35,11 @@ export class TiendaController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+  async obtenerTodos(req: Request, res: Response): Promise<void> {
+    return this.getAll(req, res);
+  }
+
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -42,7 +47,8 @@ export class TiendaController {
     }
 
     try {
-      const tienda = await this.tiendaService.obtenerPorId(id);
+      const getByIdFn = this.tiendaService.getById ? this.tiendaService.getById.bind(this.tiendaService) : this.tiendaService.obtenerPorId.bind(this.tiendaService);
+      const tienda = await getByIdFn(id);
       if (!tienda) {
         res.status(404).json({ message: 'Tienda no encontrada' });
         return;
@@ -54,10 +60,15 @@ export class TiendaController {
     }
   }
 
-  async crearTienda(req: Request, res: Response): Promise<void> {
+  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.getById(req, res);
+  }
+
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionTienda(req.body);
-      const nuevaTienda = await this.tiendaService.crearTienda(data);
+      const createFn = this.tiendaService.create ? this.tiendaService.create.bind(this.tiendaService) : this.tiendaService.crearTienda.bind(this.tiendaService);
+      const nuevaTienda = await createFn(data);
       res.status(201).json(nuevaTienda);
     } catch (error) {
       if (error instanceof ErrorValidacionTienda) {
@@ -69,7 +80,11 @@ export class TiendaController {
     }
   }
 
-  async actualizarTienda(req: Request<IdParams>, res: Response): Promise<void> {
+  async crearTienda(req: Request, res: Response): Promise<void> {
+    return this.create(req, res);
+  }
+
+  async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -78,7 +93,8 @@ export class TiendaController {
 
     try {
       const data = validarActualizacionTienda(req.body);
-      const tiendaActualizada = await this.tiendaService.actualizarTienda(id, data);
+      const updateFn = this.tiendaService.update ? this.tiendaService.update.bind(this.tiendaService) : this.tiendaService.actualizarTienda.bind(this.tiendaService);
+      const tiendaActualizada = await updateFn(id, data);
       if (!tiendaActualizada) {
         res.status(404).json({ message: 'Tienda no encontrada' });
         return;
@@ -94,7 +110,11 @@ export class TiendaController {
     }
   }
 
-  async eliminarTienda(req: Request<IdParams>, res: Response): Promise<void> {
+  async actualizarTienda(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.update(req, res);
+  }
+
+  async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -102,7 +122,8 @@ export class TiendaController {
     }
 
     try {
-      const eliminado = await this.tiendaService.eliminarTienda(id);
+      const deleteFn = this.tiendaService.delete ? this.tiendaService.delete.bind(this.tiendaService) : this.tiendaService.eliminarTienda.bind(this.tiendaService);
+      const eliminado = await deleteFn(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Tienda no encontrada' });
         return;
@@ -113,5 +134,9 @@ export class TiendaController {
       console.error('Error al eliminar la tienda:', error);
       res.status(500).json({ message: 'Error al eliminar la tienda' });
     }
+  }
+
+  async eliminarTienda(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.delete(req, res);
   }
 }

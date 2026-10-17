@@ -24,12 +24,13 @@ export class PersonajeController {
     this.personajeService = personajeService;
   }
 
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
+  async getAll(req: Request, res: Response): Promise<void> {
     try {
       const idClaseQuery = req.query.idClase ? Number(req.query.idClase) : undefined;
       const filtros = idClaseQuery && !isNaN(idClaseQuery) ? { idClase: idClaseQuery } : undefined;
 
-      const personajes = await this.personajeService.obtenerTodos(filtros);
+      const getFn = this.personajeService.getAll ? this.personajeService.getAll.bind(this.personajeService) : this.personajeService.obtenerTodos.bind(this.personajeService);
+      const personajes = await getFn(filtros);
       res.json(personajes);
     } catch (error) {
       console.error('Error al obtener personajes:', error);
@@ -37,7 +38,11 @@ export class PersonajeController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+  async obtenerTodos(req: Request, res: Response): Promise<void> {
+    return this.getAll(req, res);
+  }
+
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID de personaje inválido' });
@@ -45,7 +50,8 @@ export class PersonajeController {
     }
 
     try {
-      const personaje = await this.personajeService.obtenerPorId(id);
+      const getByIdFn = this.personajeService.getById ? this.personajeService.getById.bind(this.personajeService) : this.personajeService.obtenerPorId.bind(this.personajeService);
+      const personaje = await getByIdFn(id);
       if (!personaje) {
         res.status(404).json({ message: 'Personaje no encontrado' });
         return;
@@ -57,10 +63,15 @@ export class PersonajeController {
     }
   }
 
-  async crearPersonaje(req: Request, res: Response): Promise<void> {
+  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.getById(req, res);
+  }
+
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionPersonaje(req.body);
-      const nuevoPersonaje = await this.personajeService.crearPersonaje(data);
+      const createFn = this.personajeService.create ? this.personajeService.create.bind(this.personajeService) : this.personajeService.crearPersonaje.bind(this.personajeService);
+      const nuevoPersonaje = await createFn(data);
       res.status(201).json(nuevoPersonaje);
     } catch (error) {
       if (error instanceof ErrorValidacionPersonaje) {
@@ -76,7 +87,11 @@ export class PersonajeController {
     }
   }
 
-  async actualizarPersonaje(req: Request<IdParams>, res: Response): Promise<void> {
+  async crearPersonaje(req: Request, res: Response): Promise<void> {
+    return this.create(req, res);
+  }
+
+  async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID de personaje inválido' });
@@ -85,7 +100,8 @@ export class PersonajeController {
 
     try {
       const data = validarActualizacionPersonaje(req.body);
-      const personajeActualizado = await this.personajeService.actualizarPersonaje(id, data);
+      const updateFn = this.personajeService.update ? this.personajeService.update.bind(this.personajeService) : this.personajeService.actualizarPersonaje.bind(this.personajeService);
+      const personajeActualizado = await updateFn(id, data);
       if (!personajeActualizado) {
         res.status(404).json({ message: 'Personaje no encontrado' });
         return;
@@ -105,7 +121,11 @@ export class PersonajeController {
     }
   }
 
-  async eliminarPersonaje(req: Request<IdParams>, res: Response): Promise<void> {
+  async actualizarPersonaje(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.update(req, res);
+  }
+
+  async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID de personaje inválido' });
@@ -113,7 +133,8 @@ export class PersonajeController {
     }
 
     try {
-      const eliminado = await this.personajeService.eliminarPersonaje(id);
+      const deleteFn = this.personajeService.delete ? this.personajeService.delete.bind(this.personajeService) : this.personajeService.eliminarPersonaje.bind(this.personajeService);
+      const eliminado = await deleteFn(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Personaje no encontrado' });
         return;
@@ -125,5 +146,9 @@ export class PersonajeController {
       console.error('Error al eliminar el personaje:', error);
       res.status(500).json({ message: 'Error al eliminar el personaje' });
     }
+  }
+
+  async eliminarPersonaje(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.delete(req, res);
   }
 }

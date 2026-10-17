@@ -54,17 +54,22 @@ export class JugadorController {
   }
 
   // GET /api/jugadores
-  async obtenerTodos(_req: Request, res: Response): Promise<void> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const jugadores = await this.jugadorService.obtenerTodos();
+      const getFn = this.jugadorService.getAll ? this.jugadorService.getAll.bind(this.jugadorService) : this.jugadorService.obtenerTodos.bind(this.jugadorService);
+      const jugadores = await getFn();
       res.json(jugadores);
     } catch (error) {
       responderError(error, res, 'Error al obtener jugadores');
     }
   }
 
+  async obtenerTodos(req: Request, res: Response): Promise<void> {
+    return this.getAll(req, res);
+  }
+
   // GET /api/jugadores/:id
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -72,7 +77,8 @@ export class JugadorController {
     }
 
     try {
-      const jugador = await this.jugadorService.obtenerPorId(id);
+      const getByIdFn = this.jugadorService.getById ? this.jugadorService.getById.bind(this.jugadorService) : this.jugadorService.obtenerPorId.bind(this.jugadorService);
+      const jugador = await getByIdFn(id);
       if (!jugador) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
@@ -83,19 +89,28 @@ export class JugadorController {
     }
   }
 
+  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.getById(req, res);
+  }
+
   // POST /api/jugadores
-  async crearJugador(req: Request, res: Response): Promise<void> {
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionJugador(req.body);
-      const nuevoJugador = await this.jugadorService.crearJugador(data);
+      const createFn = this.jugadorService.create ? this.jugadorService.create.bind(this.jugadorService) : this.jugadorService.crearJugador.bind(this.jugadorService);
+      const nuevoJugador = await createFn(data);
       res.status(201).json(nuevoJugador); // 201 Created
     } catch (error) {
       responderError(error, res, 'Error al crear el jugador');
     }
   }
 
+  async crearJugador(req: Request, res: Response): Promise<void> {
+    return this.create(req, res);
+  }
+
   // PUT /api/jugadores/:id
-  async actualizarJugador(req: Request<IdParams>, res: Response): Promise<void> {
+  async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -104,7 +119,8 @@ export class JugadorController {
 
     try {
       const data = validarActualizacionJugador(req.body);
-      const actualizado = await this.jugadorService.actualizarJugador(id, data);
+      const updateFn = this.jugadorService.update ? this.jugadorService.update.bind(this.jugadorService) : this.jugadorService.actualizarJugador.bind(this.jugadorService);
+      const actualizado = await updateFn(id, data);
       if (!actualizado) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
@@ -115,8 +131,12 @@ export class JugadorController {
     }
   }
 
+  async actualizarJugador(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.update(req, res);
+  }
+
   // DELETE /api/jugadores/:id
-  async eliminarJugador(req: Request<IdParams>, res: Response): Promise<void> {
+  async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -124,7 +144,8 @@ export class JugadorController {
     }
 
     try {
-      const eliminado = await this.jugadorService.eliminarJugador(id);
+      const deleteFn = this.jugadorService.delete ? this.jugadorService.delete.bind(this.jugadorService) : this.jugadorService.eliminarJugador.bind(this.jugadorService);
+      const eliminado = await deleteFn(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
@@ -133,5 +154,9 @@ export class JugadorController {
     } catch (error) {
       responderError(error, res, 'Error al eliminar el jugador');
     }
+  }
+
+  async eliminarJugador(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.delete(req, res);
   }
 }

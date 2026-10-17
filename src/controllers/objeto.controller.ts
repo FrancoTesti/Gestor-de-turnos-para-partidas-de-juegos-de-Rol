@@ -33,9 +33,10 @@ export class ObjetoController {
     this.objetoService = objetoService;
   }
 
-  async obtenerTodos(_req: Request, res: Response): Promise<void> {
+  async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const objetos = await this.objetoService.obtenerTodos();
+      const getFn = this.objetoService.getAll ? this.objetoService.getAll.bind(this.objetoService) : this.objetoService.obtenerTodos.bind(this.objetoService);
+      const objetos = await getFn();
       res.json(objetos);
     } catch (error) {
       console.error('Error al obtener objetos:', error);
@@ -43,7 +44,11 @@ export class ObjetoController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+  async obtenerTodos(req: Request, res: Response): Promise<void> {
+    return this.getAll(req, res);
+  }
+
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -51,7 +56,8 @@ export class ObjetoController {
     }
 
     try {
-      const objeto = await this.objetoService.obtenerPorId(id);
+      const getByIdFn = this.objetoService.getById ? this.objetoService.getById.bind(this.objetoService) : this.objetoService.obtenerPorId.bind(this.objetoService);
+      const objeto = await getByIdFn(id);
       if (!objeto) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -63,10 +69,15 @@ export class ObjetoController {
     }
   }
 
-  async crearObjeto(req: Request, res: Response): Promise<void> {
+  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.getById(req, res);
+  }
+
+  async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionObjeto(req.body);
-      const nuevoObjeto = await this.objetoService.crearObjeto(data);
+      const createFn = this.objetoService.create ? this.objetoService.create.bind(this.objetoService) : this.objetoService.crearObjeto.bind(this.objetoService);
+      const nuevoObjeto = await createFn(data);
       res.status(201).json(nuevoObjeto);
     } catch (error) {
       if (error instanceof ErrorValidacionObjeto) {
@@ -78,7 +89,11 @@ export class ObjetoController {
     }
   }
 
-  async actualizarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+  async crearObjeto(req: Request, res: Response): Promise<void> {
+    return this.create(req, res);
+  }
+
+  async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -87,7 +102,8 @@ export class ObjetoController {
 
     try {
       const data = validarActualizacionObjeto(req.body);
-      const objetoActualizado = await this.objetoService.actualizarObjeto(id, data);
+      const updateFn = this.objetoService.update ? this.objetoService.update.bind(this.objetoService) : this.objetoService.actualizarObjeto.bind(this.objetoService);
+      const objetoActualizado = await updateFn(id, data);
       if (!objetoActualizado) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -103,7 +119,11 @@ export class ObjetoController {
     }
   }
 
-  async eliminarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+  async actualizarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.update(req, res);
+  }
+
+  async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -111,7 +131,8 @@ export class ObjetoController {
     }
 
     try {
-      const eliminado = await this.objetoService.eliminarObjeto(id);
+      const deleteFn = this.objetoService.delete ? this.objetoService.delete.bind(this.objetoService) : this.objetoService.eliminarObjeto.bind(this.objetoService);
+      const eliminado = await deleteFn(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -123,7 +144,11 @@ export class ObjetoController {
     }
   }
 
-  async comprarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+  async eliminarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.delete(req, res);
+  }
+
+  async buy(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
       res.status(400).json({ message: 'ID inválido' });
@@ -132,7 +157,8 @@ export class ObjetoController {
 
     try {
       const data = validarCompraObjeto(req.body);
-      const resultado = await this.objetoService.comprarObjeto(id, data);
+      const buyFn = this.objetoService.buy ? this.objetoService.buy.bind(this.objetoService) : this.objetoService.comprarObjeto.bind(this.objetoService);
+      const resultado = await buyFn(id, data);
       res.json(resultado);
     } catch (error) {
       if (error instanceof ErrorValidacionObjeto) {
@@ -161,7 +187,11 @@ export class ObjetoController {
     }
   }
 
-  async obtenerSugeridos(req: Request<{ idClase: string }>, res: Response): Promise<void> {
+  async comprarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
+    return this.buy(req, res);
+  }
+
+  async getSuggested(req: Request<{ idClase: string }>, res: Response): Promise<void> {
     const idClase = obtenerId(req.params.idClase);
     if (idClase === null) {
       res.status(400).json({ message: 'ID de clase inválido' });
@@ -169,12 +199,17 @@ export class ObjetoController {
     }
 
     try {
-      const sugeridos = await this.objetoService.obtenerSugeridos(idClase);
+      const getSuggestedFn = this.objetoService.getSuggested ? this.objetoService.getSuggested.bind(this.objetoService) : this.objetoService.obtenerSugeridos.bind(this.objetoService);
+      const sugeridos = await getSuggestedFn(idClase);
       res.json(sugeridos);
     } catch (error) {
       console.error('Error al obtener sugeridos:', error);
       res.status(500).json({ message: 'Error al obtener los objetos sugeridos' });
     }
+  }
+
+  async obtenerSugeridos(req: Request<{ idClase: string }>, res: Response): Promise<void> {
+    return this.getSuggested(req, res);
   }
 }
 

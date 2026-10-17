@@ -9,12 +9,12 @@ export function crearPartidaRouter(em: EntityManager): Router {
   const service = new PartidaService(em);
   const controller = new PartidaController(service);
 
-  router.get('/', (req: any, res: any) => controller.obtenerTodas(req, res));
-  router.get('/:id', (req: any, res: any) => controller.obtenerPorId(req, res));
+  router.get('/', (req: any, res: any) => controller.getAll(req, res));
+  router.get('/:id', (req: any, res: any) => controller.getById(req, res));
   
-  router.post('/', requireAnfitrionForPartida, (req: any, res: any) => controller.crearPartida(req, res));
-  router.put('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.actualizarPartida(req, res));
-  router.delete('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.eliminarPartida(req, res));
+  router.post('/', requireAnfitrionForPartida, (req: any, res: any) => controller.create(req, res));
+  router.put('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.update(req, res));
+  router.delete('/:id', requireHostedGameMiddleware(em, 'id'), (req: any, res: any) => controller.delete(req, res));
 
   return router;
 }

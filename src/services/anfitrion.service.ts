@@ -29,19 +29,27 @@ export class AnfitrionService {
   }
 
   // trae todos los anfitriones con los datos de su Usuario
-  async obtenerTodos(): Promise<AnfitrionPublicoDTO[]> {
+  async getAll(): Promise<AnfitrionPublicoDTO[]> {
     const anfitriones = await this.em.find(Anfitrion, {}, { populate: ['usuario'] });
-    return Promise.all(anfitriones.map((a) => this.aAnfitrionPublico(a)));
+    return Promise.all(anfitriones.map((a) => this.toPublicDTO(a)));
+  }
+
+  async obtenerTodos(): Promise<AnfitrionPublicoDTO[]> {
+    return this.getAll();
   }
 
   // busca un anfitrion por el idUsuario
-  async obtenerPorId(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
+  async getById(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
     const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
-    return anfitrion ? this.aAnfitrionPublico(anfitrion) : null;
+    return anfitrion ? this.toPublicDTO(anfitrion) : null;
+  }
+
+  async obtenerPorId(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
+    return this.getById(idUsuario);
   }
 
   // registra a un Usuario existente como Anfitrion
-  async crearAnfitrion(data: CrearAnfitrionDTO): Promise<AnfitrionPublicoDTO> {
+  async create(data: CrearAnfitrionDTO): Promise<AnfitrionPublicoDTO> {
     // regla 1: el Usuario debe existir antes de registrarlo como Anfitrion
     const usuario = await this.em.findOne(Usuario, { idUsuario: data.idUsuario });
     if (!usuario) {
@@ -61,21 +69,29 @@ export class AnfitrionService {
     });
 
     await this.em.flush();
-    return this.aAnfitrionPublico(anfitrion);
+    return this.toPublicDTO(anfitrion);
+  }
+
+  async crearAnfitrion(data: CrearAnfitrionDTO): Promise<AnfitrionPublicoDTO> {
+    return this.create(data);
   }
 
   // actualiza karma o cantPartidasActuales
-  async actualizarAnfitrion(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
+  async update(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
     const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
     if (!anfitrion) return null;
 
     this.em.assign(anfitrion, data);
     await this.em.flush();
-    return this.aAnfitrionPublico(anfitrion);
+    return this.toPublicDTO(anfitrion);
+  }
+
+  async actualizarAnfitrion(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
+    return this.update(idUsuario, data);
   }
 
   // quita el rol de Anfitrion (no borra el Usuario!!!!!!!!!!!!)
-  async eliminarAnfitrion(idUsuario: number): Promise<boolean> {
+  async delete(idUsuario: number): Promise<boolean> {
     const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any);
     if (!anfitrion) return false;
 
@@ -83,8 +99,12 @@ export class AnfitrionService {
     return true;
   }
 
+  async eliminarAnfitrion(idUsuario: number): Promise<boolean> {
+    return this.delete(idUsuario);
+  }
+
   // convierte la entidad al DTO público
-  private async aAnfitrionPublico(a: Anfitrion): Promise<AnfitrionPublicoDTO> {
+  private async toPublicDTO(a: Anfitrion): Promise<AnfitrionPublicoDTO> {
     return {
       idUsuario: a.usuario.idUsuario,
       cantPartidasActuales: await this.em.count(Partida, { anfitrion: a, estado: true }),
@@ -93,5 +113,9 @@ export class AnfitrionService {
       nickname: a.usuario.nickname,
       imagen: a.usuario.imagen,
     };
+  }
+
+  private async aAnfitrionPublico(a: Anfitrion): Promise<AnfitrionPublicoDTO> {
+    return this.toPublicDTO(a);
   }
 }
