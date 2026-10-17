@@ -73,11 +73,11 @@ export class CharacterController {
       const nuevoPersonaje = await this.characterService.createCharacter(data);
       res.status(201).json(nuevoPersonaje);
     } catch (error) {
-      if (error instanceof CharacterValidationError || error instanceof ErrorValidacionPersonaje) {
+      if (error instanceof CharacterValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
-      if (error instanceof ReferenceNotFoundError || error instanceof ErrorReferenciaNoEncontrada) {
+      if (error instanceof ReferenceNotFoundError) {
         res.status(404).json({ message: error.message });
         return;
       }
@@ -102,11 +102,11 @@ export class CharacterController {
       }
       res.json(personajeActualizado);
     } catch (error) {
-      if (error instanceof CharacterValidationError || error instanceof ErrorValidacionPersonaje) {
+      if (error instanceof CharacterValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
-      if (error instanceof ReferenceNotFoundError || error instanceof ErrorReferenciaNoEncontrada) {
+      if (error instanceof ReferenceNotFoundError) {
         res.status(404).json({ message: error.message });
         return;
       }
@@ -130,7 +130,7 @@ export class CharacterController {
       }
       res.status(204).send();
     } catch (error) {
-      if (error instanceof CharacterValidationError || error instanceof ErrorValidacionPersonaje) {
+      if (error instanceof CharacterValidationError) {
         res.status(409).json({ message: error.message });
         return;
       }
@@ -139,12 +139,6 @@ export class CharacterController {
       res.status(500).json({ message: 'Error al eliminar el personaje' });
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearPersonaje = this.createCharacter.bind(this);
-  actualizarPersonaje = this.updateCharacter.bind(this);
-  eliminarPersonaje = this.deleteCharacter.bind(this);
 }
 
 export const PersonajeController = CharacterController;

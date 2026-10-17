@@ -85,7 +85,7 @@ export class ItemController {
       const nuevoObjeto = await this.itemService.createItem(data);
       res.status(201).json(nuevoObjeto);
     } catch (error) {
-      if (error instanceof ItemValidationError || error instanceof ErrorValidacionObjeto) {
+      if (error instanceof ItemValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -110,7 +110,7 @@ export class ItemController {
       }
       res.json(objetoActualizado);
     } catch (error) {
-      if (error instanceof ItemValidationError || error instanceof ErrorValidacionObjeto) {
+      if (error instanceof ItemValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -151,32 +151,24 @@ export class ItemController {
       const resultado = await this.itemService.buyItem(id, data);
       res.json(resultado);
     } catch (error) {
-      if (error instanceof ItemValidationError || error instanceof ErrorValidacionObjeto) {
+      if (error instanceof ItemValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
       if (
         error instanceof ItemNotFoundError ||
-        error instanceof ObjetoNoEncontradoError ||
         error instanceof CharacterNotFoundError ||
-        error instanceof PersonajeNoEncontradoError ||
-        error instanceof InventoryNotFoundError ||
-        error instanceof InventarioNoEncontradoError
+        error instanceof InventoryNotFoundError
       ) {
         res.status(404).json({ message: error.message });
         return;
       }
       if (
         error instanceof ItemNotAvailableError ||
-        error instanceof ObjetoNoDisponibleError ||
         error instanceof InsufficientMoneyError ||
-        error instanceof DineroInsuficienteError ||
         error instanceof InventoryFullError ||
-        error instanceof InventarioLlenoError ||
         error instanceof PositionOccupiedError ||
-        error instanceof PosicionOcupadaError ||
-        error instanceof InsufficientLevelError ||
-        error instanceof NivelInsuficienteError
+        error instanceof InsufficientLevelError
       ) {
         res.status(409).json({ message: error.message });
         return;
@@ -201,14 +193,6 @@ export class ItemController {
       res.status(500).json({ message: 'Error al obtener los objetos sugeridos' });
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearObjeto = this.createItem.bind(this);
-  actualizarObjeto = this.updateItem.bind(this);
-  eliminarObjeto = this.deleteItem.bind(this);
-  comprarObjeto = this.buyItem.bind(this);
-  obtenerSugeridos = this.getSuggestedItems.bind(this);
 }
 
 export const ObjetoController = ItemController;

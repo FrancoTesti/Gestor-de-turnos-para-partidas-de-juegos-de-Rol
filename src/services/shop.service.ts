@@ -20,16 +20,10 @@ export class TiendaService {
     const tiendas = await this.em.find(Tienda, where, { populate: ['clase', 'partida'] });
     return tiendas.map((t) => this.toPublicShop(t));
   }
-  async obtenerTodos(filtros?: { idPartida?: number }): Promise<TiendaPublicaDTO[]> {
-    return this.getAll(filtros);
-  }
 
   async getById(id: number): Promise<TiendaPublicaDTO | null> {
     const tienda = await this.em.findOne(Tienda, { idTienda: id }, { populate: ['clase', 'partida'] });
     return tienda ? this.toPublicShop(tienda) : null;
-  }
-  async obtenerPorId(id: number): Promise<TiendaPublicaDTO | null> {
-    return this.getById(id);
   }
 
   async createShop(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
@@ -55,9 +49,6 @@ export class TiendaService {
     await this.em.flush();
     return this.toPublicShop(tienda);
   }
-  async crearTienda(data: CrearTiendaDTO): Promise<TiendaPublicaDTO> {
-    return this.createShop(data);
-  }
 
   async updateShop(id: number, data: ActualizarTiendaDTO): Promise<TiendaPublicaDTO | null> {
     const tienda = await this.em.findOne(Tienda, { idTienda: id });
@@ -79,9 +70,6 @@ export class TiendaService {
     await this.em.flush();
     return this.toPublicShop(tienda);
   }
-  async actualizarTienda(id: number, data: ActualizarTiendaDTO): Promise<TiendaPublicaDTO | null> {
-    return this.updateShop(id, data);
-  }
 
   async deleteShop(id: number): Promise<boolean> {
     const tienda = await this.em.findOne(Tienda, { idTienda: id });
@@ -89,9 +77,6 @@ export class TiendaService {
 
     await this.em.removeAndFlush(tienda);
     return true;
-  }
-  async eliminarTienda(id: number): Promise<boolean> {
-    return this.deleteShop(id);
   }
 
   private toPublicShop(t: Tienda): TiendaPublicaDTO {
@@ -103,9 +88,6 @@ export class TiendaService {
       ...(t.partida ? { idPartida: t.partida.idPartida, partidaNombre: t.partida.nombre } : {}),
     };
     return dto;
-  }
-  private aTiendaPublica(t: Tienda): TiendaPublicaDTO {
-    return this.toPublicShop(t);
   }
 }
 

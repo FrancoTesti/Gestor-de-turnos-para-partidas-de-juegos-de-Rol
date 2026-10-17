@@ -37,17 +37,11 @@ export class AnfitrionService {
     const anfitriones = await this.em.find(Anfitrion, {}, { populate: ['usuario'] });
     return Promise.all(anfitriones.filter((a) => !!a.usuario).map((a) => this.toPublicHost(a)));
   }
-  async obtenerTodos(): Promise<AnfitrionPublicoDTO[]> {
-    return this.getAll();
-  }
 
   // busca un anfitrion por el idUsuario
   async getById(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
     const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
     return anfitrion ? this.toPublicHost(anfitrion) : null;
-  }
-  async obtenerPorId(idUsuario: number): Promise<AnfitrionPublicoDTO | null> {
-    return this.getById(idUsuario);
   }
 
   // registra a un Usuario existente como Anfitrion
@@ -73,9 +67,6 @@ export class AnfitrionService {
     await this.em.flush();
     return this.toPublicHost(anfitrion);
   }
-  async crearAnfitrion(data: CrearAnfitrionDTO): Promise<AnfitrionPublicoDTO> {
-    return this.createHost(data);
-  }
 
   // actualiza karma o cantPartidasActuales
   async updateHost(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
@@ -86,9 +77,6 @@ export class AnfitrionService {
     await this.em.flush();
     return this.toPublicHost(anfitrion);
   }
-  async actualizarAnfitrion(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
-    return this.updateHost(idUsuario, data);
-  }
 
   // quita el rol de Anfitrion (no borra el Usuario!!!!!!!!!!!!)
   async deleteHost(idUsuario: number): Promise<boolean> {
@@ -97,9 +85,6 @@ export class AnfitrionService {
 
     await this.em.removeAndFlush(anfitrion);
     return true;
-  }
-  async eliminarAnfitrion(idUsuario: number): Promise<boolean> {
-    return this.deleteHost(idUsuario);
   }
 
   // convierte la entidad al DTO público
@@ -112,9 +97,6 @@ export class AnfitrionService {
       nickname: a.usuario.nickname,
       imagen: a.usuario.imagen,
     };
-  }
-  private async aAnfitrionPublico(a: Anfitrion): Promise<AnfitrionPublicoDTO> {
-    return this.toPublicHost(a);
   }
 }
 

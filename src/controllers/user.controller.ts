@@ -11,7 +11,7 @@ function respondError(error: unknown, res: Response, mensajeInterno: string): vo
     res.status(409).json({ message: 'La cuenta tiene personajes o partidas relacionados. Resolvé esas relaciones antes de eliminarla.' });
     return;
   }
-  if (error instanceof NicknameInUseError || error instanceof NicknameEnUsoError) {
+  if (error instanceof NicknameInUseError) {
     res.status(409).json({ message: error.message });
     return;
   }
@@ -40,8 +40,7 @@ export class UserController {
 
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const fn = (this.userService.getAll ?? this.userService.obtenerTodos).bind(this.userService);
-      const usuarios = await fn();
+      const usuarios = await this.userService.getAll();
       res.json(usuarios);
     } catch (error) {
       respondError(error, res, 'Error al obtener usuarios');
@@ -56,8 +55,7 @@ export class UserController {
     }
 
     try {
-      const fn = (this.userService.getById ?? this.userService.obtenerPorId).bind(this.userService);
-      const usuario = await fn(id);
+      const usuario = await this.userService.getById(id);
       if (!usuario) {
         res.status(404).json({ message: 'Usuario no encontrado' });
         return;
@@ -71,8 +69,7 @@ export class UserController {
 
   async createUser(req: Request, res: Response): Promise<void> {
     try {
-      const fn = (this.userService.createUser ?? this.userService.crearUsuario).bind(this.userService);
-      const nuevoUsuario = await fn(req.body);
+      const nuevoUsuario = await this.userService.createUser(req.body);
       res.status(201).json(nuevoUsuario);
     } catch (error) {
       respondError(error, res, 'Error al crear el usuario');
@@ -87,8 +84,7 @@ export class UserController {
     }
 
     try {
-      const fn = (this.userService.updateUser ?? this.userService.actualizarUsuario).bind(this.userService);
-      const usuarioActualizado = await fn(id, req.body);
+      const usuarioActualizado = await this.userService.updateUser(id, req.body);
       if (!usuarioActualizado) {
         res.status(404).json({ message: 'Usuario no encontrado para actualizar' });
         return;
@@ -108,8 +104,7 @@ export class UserController {
     }
 
     try {
-      const fn = (this.userService.deleteUser ?? this.userService.eliminarUsuario).bind(this.userService);
-      const eliminado = await fn(id);
+      const eliminado = await this.userService.deleteUser(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Usuario no encontrado' });
         return;
@@ -120,12 +115,6 @@ export class UserController {
       respondError(error, res, 'Error al eliminar el usuario');
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearUsuario = this.createUser.bind(this);
-  actualizarUsuario = this.updateUser.bind(this);
-  eliminarUsuario = this.deleteUser.bind(this);
 }
 
 export const UsuarioController = UserController;

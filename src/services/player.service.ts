@@ -38,17 +38,11 @@ export class JugadorService {
     const jugadores = await this.em.find(Jugador, {}, { populate: ['usuario'] });
     return jugadores.filter((j) => !!j.usuario).map((j) => this.toPublicPlayer(j));
   }
-  async obtenerTodos(): Promise<JugadorPublicoDTO[]> {
-    return this.getAll();
-  }
 
   // busca un jugador por el idUsuario (que es su clave primaria)
   async getById(idUsuario: number): Promise<JugadorPublicoDTO | null> {
     const jugador = await this.em.findOne(Jugador, idUsuario as any, { populate: ['usuario'] });
     return jugador ? this.toPublicPlayer(jugador) : null;
-  }
-  async obtenerPorId(idUsuario: number): Promise<JugadorPublicoDTO | null> {
-    return this.getById(idUsuario);
   }
 
   // registra a un Usuario existente como Jugador
@@ -74,9 +68,6 @@ export class JugadorService {
     await this.em.flush(); // hace el INSERT real en la base de datos
     return this.toPublicPlayer(jugador);
   }
-  async crearJugador(data: CrearJugadorDTO): Promise<JugadorPublicoDTO> {
-    return this.createPlayer(data);
-  }
 
   // actualiza el estado de un Jugador existente
   async updatePlayer(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
@@ -88,9 +79,6 @@ export class JugadorService {
     await this.em.flush();
     return this.toPublicPlayer(jugador);
   }
-  async actualizarJugador(idUsuario: number, data: ActualizarJugadorDTO): Promise<JugadorPublicoDTO | null> {
-    return this.updatePlayer(idUsuario, data);
-  }
 
   // quita el rol de Jugador a un Usuario (no borra el Usuario, solo la fila de jugadores)
   async deletePlayer(idUsuario: number): Promise<boolean> {
@@ -99,9 +87,6 @@ export class JugadorService {
 
     await this.em.removeAndFlush(jugador);
     return true;
-  }
-  async eliminarJugador(idUsuario: number): Promise<boolean> {
-    return this.deletePlayer(idUsuario);
   }
 
   // convierte la entidad interna al DTO público (sin datos sensibles)
@@ -114,9 +99,6 @@ export class JugadorService {
       nickname: j.usuario.nickname,
       imagen: j.usuario.imagen,
     };
-  }
-  private aJugadorPublico(j: Jugador): JugadorPublicoDTO {
-    return this.toPublicPlayer(j);
   }
 }
 

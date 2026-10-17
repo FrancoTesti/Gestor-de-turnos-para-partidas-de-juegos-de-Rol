@@ -67,7 +67,7 @@ export class ShopController {
       const nuevaTienda = await this.shopService.createShop(data);
       res.status(201).json(nuevaTienda);
     } catch (error) {
-      if (error instanceof ShopValidationError || error instanceof ErrorValidacionTienda) {
+      if (error instanceof ShopValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -92,7 +92,7 @@ export class ShopController {
       }
       res.json(tiendaActualizada);
     } catch (error) {
-      if (error instanceof ShopValidationError || error instanceof ErrorValidacionTienda) {
+      if (error instanceof ShopValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -121,12 +121,6 @@ export class ShopController {
       res.status(500).json({ message: 'Error al eliminar la tienda' });
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearTienda = this.createShop.bind(this);
-  actualizarTienda = this.updateShop.bind(this);
-  eliminarTienda = this.deleteShop.bind(this);
 }
 
 export const TiendaController = ShopController;

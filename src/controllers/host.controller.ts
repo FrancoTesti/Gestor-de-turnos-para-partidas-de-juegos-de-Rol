@@ -21,15 +21,15 @@ type IdParams = { id: string };
 
 function respondError(error: unknown, res: Response, mensajeInterno: string): void {
   if (persistenceError(error, res)) return;
-  if (error instanceof HostValidationError || error instanceof ErrorValidacionAnfitrion) {
+  if (error instanceof HostValidationError) {
     res.status(400).json({ message: error.message });
     return;
   }
-  if (error instanceof UserNotFoundError || error instanceof UsuarioNoEncontradoError) {
+  if (error instanceof UserNotFoundError) {
     res.status(404).json({ message: error.message });
     return;
   }
-  if (error instanceof HostAlreadyExistsError || error instanceof AnfitrionYaExisteError) {
+  if (error instanceof HostAlreadyExistsError) {
     res.status(409).json({ message: error.message });
     return;
   }
@@ -135,12 +135,6 @@ export class HostController {
       respondError(error, res, 'Error al eliminar el anfitrión');
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearAnfitrion = this.createHost.bind(this);
-  actualizarAnfitrion = this.updateHost.bind(this);
-  eliminarAnfitrion = this.deleteHost.bind(this);
 }
 
 export const AnfitrionController = HostController;

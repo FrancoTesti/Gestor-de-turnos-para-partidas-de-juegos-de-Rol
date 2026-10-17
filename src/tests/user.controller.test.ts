@@ -3,21 +3,21 @@ import { UserController, UsuarioController } from '../controllers/user.controlle
 import { UserService, UsuarioService, NicknameEnUsoError } from '../services/user.service';
 import type { Request, Response } from 'express';
 
-describe('UsuarioController', () => {
-  let mockService: Partial<UsuarioService>;
-  let controller: UsuarioController;
+describe('UserController', () => {
+  let mockService: Partial<UserService>;
+  let controller: UserController;
   let req: Partial<Request>;
   let res: Partial<Response>;
 
   beforeEach(() => {
     mockService = {
-      obtenerTodos: vi.fn(),
-      obtenerPorId: vi.fn(),
-      crearUsuario: vi.fn(),
-      actualizarUsuario: vi.fn(),
-      eliminarUsuario: vi.fn(),
+      getAll: vi.fn(),
+      getById: vi.fn(),
+      createUser: vi.fn(),
+      updateUser: vi.fn(),
+      deleteUser: vi.fn(),
     };
-    controller = new UsuarioController(mockService as UsuarioService);
+    controller = new UserController(mockService as UserService);
 
     req = {
       params: {},
@@ -31,22 +31,22 @@ describe('UsuarioController', () => {
     };
   });
 
-  describe('obtenerTodos', () => {
+  describe('getAll', () => {
     it('debe responder 200 con la lista de usuarios', async () => {
       const mockUsuarios = [{ idUsuario: 1, nombreUsuario: 'Juan', imagen: '', nickname: 'j1' }];
-      vi.mocked(mockService.obtenerTodos!).mockResolvedValue(mockUsuarios);
+      vi.mocked(mockService.getAll!).mockResolvedValue(mockUsuarios);
 
-      await controller.obtenerTodos(req as Request, res as Response);
+      await controller.getAll(req as Request, res as Response);
 
       expect(res.json).toHaveBeenCalledWith(mockUsuarios);
     });
   });
 
-  describe('obtenerPorId', () => {
+  describe('getById', () => {
     it('debe responder 400 cuando el ID es inválido', async () => {
       req.params = { id: 'invalido' };
 
-      await controller.obtenerPorId(req as Request, res as Response);
+      await controller.getById(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: 'ID inválido' });
@@ -54,9 +54,9 @@ describe('UsuarioController', () => {
 
     it('debe responder 404 cuando el usuario no existe', async () => {
       req.params = { id: '99' };
-      vi.mocked(mockService.obtenerPorId!).mockResolvedValue(null);
+      vi.mocked(mockService.getById!).mockResolvedValue(null);
 
-      await controller.obtenerPorId(req as Request, res as Response);
+      await controller.getById(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ message: 'Usuario no encontrado' });
@@ -65,21 +65,21 @@ describe('UsuarioController', () => {
     it('debe responder 200 con el usuario si existe', async () => {
       req.params = { id: '1' };
       const mockUsuario = { idUsuario: 1, nombreUsuario: 'Juan', imagen: '', nickname: 'j1' };
-      vi.mocked(mockService.obtenerPorId!).mockResolvedValue(mockUsuario);
+      vi.mocked(mockService.getById!).mockResolvedValue(mockUsuario);
 
-      await controller.obtenerPorId(req as Request, res as Response);
+      await controller.getById(req as Request, res as Response);
 
       expect(res.json).toHaveBeenCalledWith(mockUsuario);
     });
   });
 
-  describe('crearUsuario', () => {
+  describe('createUser', () => {
     it('debe responder 201 con el usuario creado', async () => {
       const nuevo = { idUsuario: 1, nombreUsuario: 'Ana', imagen: '', nickname: 'ana1' };
       req.body = { nombreUsuario: 'Ana', contrasena: '123456', nickname: 'ana1' };
-      vi.mocked(mockService.crearUsuario!).mockResolvedValue(nuevo);
+      vi.mocked(mockService.createUser!).mockResolvedValue(nuevo);
 
-      await controller.crearUsuario(req as Request, res as Response);
+      await controller.createUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(201);
       expect(res.json).toHaveBeenCalledWith(nuevo);
@@ -87,20 +87,20 @@ describe('UsuarioController', () => {
 
     it('debe responder 409 cuando el nickname ya está en uso', async () => {
       req.body = { nombreUsuario: 'Ana', contrasena: '123456', nickname: 'existente' };
-      vi.mocked(mockService.crearUsuario!).mockRejectedValue(new NicknameEnUsoError());
+      vi.mocked(mockService.createUser!).mockRejectedValue(new NicknameEnUsoError());
 
-      await controller.crearUsuario(req as Request, res as Response);
+      await controller.createUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(409);
       expect(res.json).toHaveBeenCalledWith({ message: 'El nickname ya está en uso' });
     });
   });
 
-  describe('actualizarUsuario', () => {
+  describe('updateUser', () => {
     it('debe responder 400 si el ID es inválido', async () => {
       req.params = { id: 'abc' };
 
-      await controller.actualizarUsuario(req as Request, res as Response);
+      await controller.updateUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({ message: 'ID inválido' });
@@ -109,9 +109,9 @@ describe('UsuarioController', () => {
     it('debe responder 404 si el usuario no existe', async () => {
       req.params = { id: '99' };
       req.body = { nombreUsuario: 'Nuevo' };
-      vi.mocked(mockService.actualizarUsuario!).mockResolvedValue(null);
+      vi.mocked(mockService.updateUser!).mockResolvedValue(null);
 
-      await controller.actualizarUsuario(req as Request, res as Response);
+      await controller.updateUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ message: 'Usuario no encontrado para actualizar' });
@@ -121,20 +121,20 @@ describe('UsuarioController', () => {
       req.params = { id: '1' };
       req.body = { nombreUsuario: 'Nuevo' };
       const actualizado = { idUsuario: 1, nombreUsuario: 'Nuevo', imagen: '', nickname: 'j1' };
-      vi.mocked(mockService.actualizarUsuario!).mockResolvedValue(actualizado);
+      vi.mocked(mockService.updateUser!).mockResolvedValue(actualizado);
 
-      await controller.actualizarUsuario(req as Request, res as Response);
+      await controller.updateUser(req as Request, res as Response);
 
       expect(res.json).toHaveBeenCalledWith(actualizado);
     });
   });
 
-  describe('eliminarUsuario', () => {
+  describe('deleteUser', () => {
     it('debe responder 204 al eliminar un usuario exitosamente', async () => {
       req.params = { id: '1' };
-      vi.mocked(mockService.eliminarUsuario!).mockResolvedValue(true);
+      vi.mocked(mockService.deleteUser!).mockResolvedValue(true);
 
-      await controller.eliminarUsuario(req as Request, res as Response);
+      await controller.deleteUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(204);
       expect(res.send).toHaveBeenCalled();
@@ -142,9 +142,9 @@ describe('UsuarioController', () => {
 
     it('debe responder 404 si el usuario a eliminar no existe', async () => {
       req.params = { id: '99' };
-      vi.mocked(mockService.eliminarUsuario!).mockResolvedValue(false);
+      vi.mocked(mockService.deleteUser!).mockResolvedValue(false);
 
-      await controller.eliminarUsuario(req as Request, res as Response);
+      await controller.deleteUser(req as Request, res as Response);
 
       expect(res.status).toHaveBeenCalledWith(404);
       expect(res.json).toHaveBeenCalledWith({ message: 'Usuario no encontrado' });

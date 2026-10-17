@@ -42,7 +42,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     } as unknown as EntityManager;
 
     const service = new ObjetoService(em);
-    const creado = await service.crearObjeto({
+    const creado = await service.createItem({
       nombre: 'Anillo Único',
       descripcion: 'Poderoso',
       tipoObjeto: 'Reliquia',
@@ -78,7 +78,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     const service = new ObjetoService(em);
 
     await expect(
-      service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 }),
+      service.buyItem(99, { idPersonaje: 10, numInventario: 1, posicion: 0 }),
     ).rejects.toThrow(ErrorValidacionObjeto);
 
     expect(tx.flush).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
 
     const service = new ObjetoService(em);
 
-    const resultado = await service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
+    const resultado = await service.buyItem(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
 
     expect(resultado.objeto.esUnico).toBe(true);
     expect(resultado.dineroRestante).toBe(200);
@@ -132,7 +132,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     const service = new ObjetoService(em);
 
     // Debe permitir comprarlo nuevamente porque COUNT = 0
-    const resultado = await service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
+    const resultado = await service.buyItem(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
 
     expect(resultado.objeto.esUnico).toBe(true);
     expect(objetoUnico.inventario).toBe(inventario);
@@ -140,13 +140,13 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     expect(tx.flush).toHaveBeenCalledOnce();
   });
 
-  it('obtenerTodos consulta objetos ordenados alfabéticamente por nombre', async () => {
+  it('getAll consulta objetos ordenados alfabéticamente por nombre', async () => {
     const em = {
       find: vi.fn().mockResolvedValue([objetoUnico]),
     } as unknown as EntityManager;
 
     const service = new ObjetoService(em);
-    await service.obtenerTodos();
+    await service.getAll();
 
     expect(em.find).toHaveBeenCalledWith(
       Objeto,

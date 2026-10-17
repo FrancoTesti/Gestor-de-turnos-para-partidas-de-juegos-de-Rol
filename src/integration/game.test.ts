@@ -186,7 +186,7 @@ test('compra valida enteros estrictos, posición, propiedad y dinero', async () 
 test('rollback real: falla tras escribir en MySQL y recupera dinero y ubicación', async () => {
   const em = orm.em.fork({ freshEventManager: true });
   em.getEventManager().registerSubscriber({ afterFlush() { throw new Error('Fallo después de escribir'); } });
-  await assert.rejects(new ObjetoService(em).comprarObjeto(ids.object, { idPersonaje: ids.character, numInventario: 1, posicion: 0 }), /Fallo después de escribir/);
+  await assert.rejects(new ObjetoService(em).buyItem(ids.object, { idPersonaje: ids.character, numInventario: 1, posicion: 0 }), /Fallo después de escribir/);
   const fresh = orm.em.fork();
   assert.equal((await fresh.findOneOrFail(Personaje, { idPersonaje: ids.character })).dinero, 100);
   const object = await fresh.findOneOrFail(Objeto, { idObjeto: ids.object });

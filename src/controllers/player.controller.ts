@@ -21,15 +21,15 @@ type IdParams = { id: string };
 
 function respondError(error: unknown, res: Response, mensajeInterno: string): void {
   if (persistenceError(error, res)) return;
-  if (error instanceof PlayerValidationError || error instanceof ErrorValidacionJugador) {
+  if (error instanceof PlayerValidationError) {
     res.status(400).json({ message: error.message });
     return;
   }
-  if (error instanceof UserNotFoundError || error instanceof UsuarioNoEncontradoError) {
+  if (error instanceof UserNotFoundError) {
     res.status(404).json({ message: error.message });
     return;
   }
-  if (error instanceof PlayerAlreadyExistsError || error instanceof JugadorYaExisteError) {
+  if (error instanceof PlayerAlreadyExistsError) {
     res.status(409).json({ message: error.message });
     return;
   }
@@ -135,12 +135,6 @@ export class PlayerController {
       respondError(error, res, 'Error al eliminar el jugador');
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearJugador = this.createPlayer.bind(this);
-  actualizarJugador = this.updatePlayer.bind(this);
-  eliminarJugador = this.deletePlayer.bind(this);
 }
 
 export const JugadorController = PlayerController;

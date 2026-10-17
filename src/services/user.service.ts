@@ -35,32 +35,22 @@ export class UsuarioService {
   }
   // Pide todos los usuarios al repo y los limpia (saca la contraseña) antes de devolverlos
   async getAll(): Promise<UsuarioPublicoDTO[]> {
-    const fn = (this.repo.findAll ?? this.repo.buscarTodos).bind(this.repo);
-    const usuarios = await fn();
+    const usuarios = await this.repo.findAll();
     return usuarios.map((usuario) => this.toPublicUser(usuario));
-  }
-  async obtenerTodos(): Promise<UsuarioPublicoDTO[]> {
-    return this.getAll();
   }
 
   // Pide un usuario y lo devuelve sin la contraseña
   async getById(id: number): Promise<UsuarioPublicoDTO | null> {
-    const fn = (this.repo.findById ?? this.repo.buscarPorId).bind(this.repo);
-    const usuario = await fn(id);
+    const usuario = await this.repo.findById(id);
     return usuario ? this.toPublicUser(usuario) : null;
-  }
-  async obtenerPorId(id: number): Promise<UsuarioPublicoDTO | null> {
-    return this.getById(id);
   }
 
   // Aplica la regla del nickname, manda a crearlo y lo guarda
   async createUser(data: CrearUsuarioDTO): Promise<UsuarioPublicoDTO> {
     await this.checkNicknameAvailable(data.nickname); 
-    const createFn = (this.repo.create ?? this.repo.crear).bind(this.repo);
-    const saveFn = (this.repo.saveChanges ?? this.repo.guardarCambios).bind(this.repo);
-    const usuario = createFn({ ...data, contrasena: await hashPassword(data.contrasena) });
+    const usuario = this.repo.create({ ...data, contrasena: await hashPassword(data.contrasena) });
     try {
-      await saveFn();
+      await this.repo.saveChanges();
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === '23505') {
         throw new NicknameEnUsoError();
@@ -68,24 +58,18 @@ export class UsuarioService {
       throw error;
     }
     return this.toPublicUser(usuario);
-  }
-  async crearUsuario(data: CrearUsuarioDTO): Promise<UsuarioPublicoDTO> {
-    return this.createUser(data);
   }
 
   // Aplica reglas, actualiza los datos y guarda
   async updateUser(id: number, data: ActualizarUsuarioDTO): Promise<UsuarioPublicoDTO | null> {
-    const findFn = (this.repo.findById ?? this.repo.buscarPorId).bind(this.repo);
-    const usuario = await findFn(id);
+    const usuario = await this.repo.findById(id);
     if (!usuario) return null;
     if (data.nickname !== undefined) {
       await this.checkNicknameAvailable(data.nickname, id);
     }
-    const assignFn = (this.repo.assign ?? this.repo.asignar).bind(this.repo);
-    const saveFn = (this.repo.saveChanges ?? this.repo.guardarCambios).bind(this.repo);
-    assignFn(usuario, { ...data, ...(data.contrasena !== undefined ? { contrasena: await hashPassword(data.contrasena) } : {}) });
+    this.repo.assign(usuario, { ...data, ...(data.contrasena !== undefined ? { contrasena: await hashPassword(data.contrasena) } : {}) });
     try {
-      await saveFn();
+      await this.repo.saveChanges();
     } catch (error) {
       if (error instanceof UniqueConstraintViolationException || (error as { code?: string }).code === '23505') {
         throw new NicknameEnUsoError();
@@ -94,41 +78,26 @@ export class UsuarioService {
     }
     return this.toPublicUser(usuario);
   }
-  async actualizarUsuario(id: number, data: ActualizarUsuarioDTO): Promise<UsuarioPublicoDTO | null> {
-    return this.updateUser(id, data);
-  }
 
   // Busca el usuario y, si existe, manda a borrarlo
   async deleteUser(id: number): Promise<boolean> {
-    const findFn = (this.repo.findById ?? this.repo.buscarPorId).bind(this.repo);
-    const usuario = await findFn(id);
+    const usuario = await this.repo.findById(id);
     if (!usuario) return false;
-    const deleteFn = (this.repo.delete ?? this.repo.eliminar).bind(this.repo);
-    await deleteFn(usuario);
+    await this.repo.delete(usuario);
     return true;
-  }
-  async eliminarUsuario(id: number): Promise<boolean> {
-    return this.deleteUser(id);
   }
 
   // Lógica de negocio: asegura que no haya dos usuarios con el mismo nickname
   private async checkNicknameAvailable(nickname: string, idUsuarioActual?: number): Promise<void> {
-    const findNickFn = (this.repo.findByNickname ?? this.repo.buscarPorNickname).bind(this.repo);
-    const existente = await findNickFn(nickname);
+    const existente = await this.repo.findByNickname(nickname);
     if (existente && existente.idUsuario !== idUsuarioActual) {
       throw new NicknameEnUsoError();
     }
-  }
-  private async verificarNicknameDisponible(nickname: string, idUsuarioActual?: number): Promise<void> {
-    return this.checkNicknameAvailable(nickname, idUsuarioActual);
   }
 
   // Filtra los datos sensibles (como la contraseña) antes de mandarlos al controlador
   private toPublicUser(usuario: Usuario): UsuarioPublicoDTO {
     return { idUsuario: usuario.idUsuario, nombreUsuario: usuario.nombreUsuario, imagen: usuario.imagen, nickname: usuario.nickname };
-  }
-  private aUsuarioPublico(usuario: Usuario): UsuarioPublicoDTO {
-    return this.toPublicUser(usuario);
   }
 }
 

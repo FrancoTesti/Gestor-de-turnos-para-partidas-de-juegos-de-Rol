@@ -19,11 +19,11 @@ type IdParams = { id: string };
 
 function respondError(error: unknown, res: Response, mensajeInterno: string): void {
   if (persistenceError(error, res)) return;
-  if (error instanceof MatchValidationError || error instanceof ErrorValidacionPartida) {
+  if (error instanceof MatchValidationError) {
     res.status(400).json({ message: error.message });
     return;
   }
-  if (error instanceof HostNotFoundError || error instanceof AnfitrionNoEncontradoError) {
+  if (error instanceof HostNotFoundError) {
     res.status(404).json({ message: error.message });
     return;
   }
@@ -139,13 +139,6 @@ export class MatchController {
       respondError(error, res, 'Error al eliminar la partida');
     }
   }
-
-  obtenerTodas = this.getAll.bind(this);
-  obtenerActivas = this.getActive.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearPartida = this.createMatch.bind(this);
-  actualizarPartida = this.updateMatch.bind(this);
-  eliminarPartida = this.deleteMatch.bind(this);
 }
 
 export const PartidaController = MatchController;

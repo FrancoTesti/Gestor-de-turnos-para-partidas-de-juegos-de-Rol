@@ -24,43 +24,25 @@ export class UsuarioRepository {
   async findAll(): Promise<Usuario[]> {
     return this.em.find(Usuario, {});
   }
-  async buscarTodos(): Promise<Usuario[]> {
-    return this.findAll();
-  }
   // busca un usuario puntual usando su ID
   async findById(id: number): Promise<Usuario | null> {
     return this.em.findOne(Usuario, { idUsuario: id });
-  }
-  async buscarPorId(id: number): Promise<Usuario | null> {
-    return this.findById(id);
   }
   // busca si un nickname en particular ya existe en la tabla
   async findByNickname(nickname: string): Promise<Usuario | null> {
     return this.em.findOne(Usuario, { nickname });
   }
-  async buscarPorNickname(nickname: string): Promise<Usuario | null> {
-    return this.findByNickname(nickname);
-  }
   // arma el objeto de usuario en memoria (todavía no lo guarda en la BD)
   create(datos: CrearUsuarioDTO): Usuario {
     return this.em.create(Usuario, datos);
-  }
-  crear(datos: CrearUsuarioDTO): Usuario {
-    return this.create(datos);
   }
   // actualiza los datos de un usuario existente en memoria
   assign(usuario: Usuario, datos: Partial<Usuario>): void {
     this.em.assign(usuario, datos);
   }
-  asignar(usuario: Usuario, datos: Partial<Usuario>): void {
-    this.assign(usuario, datos);
-  }
   // impacta todos los cambios pendientes en la base de datos (Hace el INSERT/UPDATE real)
   async saveChanges(): Promise<void> {
     await this.em.flush();
-  }
-  async guardarCambios(): Promise<void> {
-    await this.saveChanges();
   }
   // borra un usuario de la base de datos definitivamente
   async delete(usuario: Usuario): Promise<void> {
@@ -70,9 +52,6 @@ export class UsuarioRepository {
       tx.remove(usuario);
       await tx.flush();
     });
-  }
-  async eliminar(usuario: Usuario): Promise<void> {
-    await this.delete(usuario);
   }
 }
 

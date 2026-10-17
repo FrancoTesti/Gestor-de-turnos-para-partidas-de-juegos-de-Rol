@@ -30,9 +30,6 @@ export class PartidaService {
     const partidas = await this.em.find(Partida, {}, { populate: ['anfitrion', 'anfitrion.usuario'] });
     return partidas.map((p) => this.toPublicMatch(p));
   }
-  async obtenerTodas(): Promise<PartidaPublicaDTO[]> {
-    return this.getAll();
-  }
 
   // trae solo las partidas ACTIVAS (para el listado requerido por el plan)
   async getActive(): Promise<PartidaPublicaDTO[]> {
@@ -44,9 +41,6 @@ export class PartidaService {
     );
     return partidas.map((p) => this.toPublicMatch(p));
   }
-  async obtenerActivas(): Promise<PartidaPublicaDTO[]> {
-    return this.getActive();
-  }
 
   // busca una partida por su id
   async getById(id: number): Promise<PartidaPublicaDTO | null> {
@@ -56,9 +50,6 @@ export class PartidaService {
       { populate: ['anfitrion', 'anfitrion.usuario'] },
     );
     return partida ? this.toPublicMatch(partida) : null;
-  }
-  async obtenerPorId(id: number): Promise<PartidaPublicaDTO | null> {
-    return this.getById(id);
   }
 
   // crea una partida nueva aplicando todas las reglas de negocio
@@ -87,16 +78,10 @@ export class PartidaService {
     await this.em.flush();
     return this.toPublicMatch(partida);
   }
-  async crearPartida(data: CrearPartidaDTO): Promise<PartidaPublicaDTO> {
-    return this.createMatch(data);
-  }
 
   // actualiza los campos que lleguen en el body
   async updateMatch(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
     return this.em.transactional(tx => new PartidaService(tx).updateInTransaction(id, data));
-  }
-  async actualizarPartida(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
-    return this.updateMatch(id, data);
   }
 
   private async updateInTransaction(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
@@ -127,9 +112,6 @@ export class PartidaService {
     await this.em.flush();
     return this.toPublicMatch(partida);
   }
-  private async actualizarEnTransaccion(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
-    return this.updateInTransaction(id, data);
-  }
 
   // elimina una partida
   async deleteMatch(id: number): Promise<boolean> {
@@ -138,9 +120,6 @@ export class PartidaService {
 
     await this.em.removeAndFlush(partida);
     return true;
-  }
-  async eliminarPartida(id: number): Promise<boolean> {
-    return this.deleteMatch(id);
   }
 
   // convierte la entidad al DTO publico (sin exponer la contraseña)
@@ -157,9 +136,6 @@ export class PartidaService {
       idUsuarioAnfitrion: p.anfitrion.usuario.idUsuario,
       nicknameAnfitrion: p.anfitrion.usuario.nickname,
     };
-  }
-  private aPartidaPublica(p: Partida): PartidaPublicaDTO {
-    return this.toPublicMatch(p);
   }
 }
 

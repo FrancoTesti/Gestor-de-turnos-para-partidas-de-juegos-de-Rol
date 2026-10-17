@@ -100,16 +100,10 @@ export class ObjetoService {
     );
     return objetos.map((o) => this.toPublicItem(o));
   }
-  async obtenerTodos(): Promise<ObjetoPublicoDTO[]> {
-    return this.getAll();
-  }
 
   async getById(id: number): Promise<ObjetoPublicoDTO | null> {
     const objeto = await this.em.findOne(Objeto, { idObjeto: id }, { populate: ['tienda', 'inventario.personaje'] });
     return objeto ? this.toPublicItem(objeto) : null;
-  }
-  async obtenerPorId(id: number): Promise<ObjetoPublicoDTO | null> {
-    return this.getById(id);
   }
 
   async createItem(data: CrearObjetoDTO): Promise<ObjetoPublicoDTO> {
@@ -132,9 +126,6 @@ export class ObjetoService {
 
     await this.em.flush();
     return this.toPublicItem(objeto);
-  }
-  async crearObjeto(data: CrearObjetoDTO): Promise<ObjetoPublicoDTO> {
-    return this.createItem(data);
   }
 
   async updateItem(id: number, data: ActualizarObjetoDTO): Promise<ObjetoPublicoDTO | null> {
@@ -163,9 +154,6 @@ export class ObjetoService {
     await this.em.flush();
     return this.toPublicItem(objeto);
   }
-  async actualizarObjeto(id: number, data: ActualizarObjetoDTO): Promise<ObjetoPublicoDTO | null> {
-    return this.updateItem(id, data);
-  }
 
   async deleteItem(id: number): Promise<boolean> {
     const objeto = await this.em.findOne(Objeto, { idObjeto: id });
@@ -174,17 +162,11 @@ export class ObjetoService {
     await this.em.removeAndFlush(objeto);
     return true;
   }
-  async eliminarObjeto(id: number): Promise<boolean> {
-    return this.deleteItem(id);
-  }
 
   async getSuggestedItems(idClase: number): Promise<ObjetoPublicoDTO[]> {
     // La relación Inventario tiene clave compuesta; evitar comparar la tupla con NULL en MySQL.
     const objetos = await this.em.find(Objeto, { tienda: { clase: { idClase } } }, { populate: ['tienda', 'inventario.personaje'] });
     return objetos.filter(o => !o.inventario).map(o => this.toPublicItem(o));
-  }
-  async obtenerSugeridos(idClase: number): Promise<ObjetoPublicoDTO[]> {
-    return this.getSuggestedItems(idClase);
   }
 
   async buyItem(idObjeto: number, data: ComprarObjetoDTO): Promise<ResultadoCompraObjetoDTO> {
@@ -291,9 +273,6 @@ export class ObjetoService {
       };
     });
   }
-  async comprarObjeto(idObjeto: number, data: ComprarObjetoDTO): Promise<ResultadoCompraObjetoDTO> {
-    return this.buyItem(idObjeto, data);
-  }
 
   private toPublicItem(o: Objeto): ObjetoPublicoDTO {
     return {
@@ -309,9 +288,6 @@ export class ObjetoService {
       numInventario: o.inventario ? o.inventario.numInventario : null,
       posicion: o.posicion,
     };
-  }
-  private aObjetoPublico(o: Objeto): ObjetoPublicoDTO {
-    return this.toPublicItem(o);
   }
 }
 

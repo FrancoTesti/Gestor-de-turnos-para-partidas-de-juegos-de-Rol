@@ -65,7 +65,7 @@ export class ClassController {
       const nuevaClase = await this.classService.createClass(data);
       res.status(201).json(nuevaClase);
     } catch (error) {
-      if (error instanceof ClassValidationError || error instanceof ErrorValidacionClase) {
+      if (error instanceof ClassValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -90,7 +90,7 @@ export class ClassController {
       }
       res.json(claseActualizada);
     } catch (error) {
-      if (error instanceof ClassValidationError || error instanceof ErrorValidacionClase) {
+      if (error instanceof ClassValidationError) {
         res.status(400).json({ message: error.message });
         return;
       }
@@ -119,12 +119,6 @@ export class ClassController {
       res.status(500).json({ message: 'Error al eliminar la clase' });
     }
   }
-
-  obtenerTodos = this.getAll.bind(this);
-  obtenerPorId = this.getById.bind(this);
-  crearClase = this.createClass.bind(this);
-  actualizarClase = this.updateClass.bind(this);
-  eliminarClase = this.deleteClass.bind(this);
 }
 
 export const ClaseController = ClassController;

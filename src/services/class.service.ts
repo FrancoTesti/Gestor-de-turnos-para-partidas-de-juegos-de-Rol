@@ -13,25 +13,16 @@ export class ClaseService {
     const clases = await this.em.find(Clase, {});
     return clases.map((c) => this.toPublicClass(c));
   }
-  async obtenerTodos(): Promise<ClasePublicaDTO[]> {
-    return this.getAll();
-  }
 
   async getById(id: number): Promise<ClasePublicaDTO | null> {
     const clase = await this.em.findOne(Clase, { idClase: id });
     return clase ? this.toPublicClass(clase) : null;
-  }
-  async obtenerPorId(id: number): Promise<ClasePublicaDTO | null> {
-    return this.getById(id);
   }
 
   async createClass(data: CrearClaseDTO): Promise<ClasePublicaDTO> {
     const clase = this.em.create(Clase, data);
     await this.em.flush();
     return this.toPublicClass(clase);
-  }
-  async crearClase(data: CrearClaseDTO): Promise<ClasePublicaDTO> {
-    return this.createClass(data);
   }
 
   async updateClass(id: number, data: ActualizarClaseDTO): Promise<ClasePublicaDTO | null> {
@@ -42,9 +33,6 @@ export class ClaseService {
     await this.em.flush();
     return this.toPublicClass(clase);
   }
-  async actualizarClase(id: number, data: ActualizarClaseDTO): Promise<ClasePublicaDTO | null> {
-    return this.updateClass(id, data);
-  }
 
   async deleteClass(id: number): Promise<boolean> {
     const clase = await this.em.findOne(Clase, { idClase: id });
@@ -53,9 +41,6 @@ export class ClaseService {
     await this.em.removeAndFlush(clase);
     return true;
   }
-  async eliminarClase(id: number): Promise<boolean> {
-    return this.deleteClass(id);
-  }
 
   private toPublicClass(c: Clase): ClasePublicaDTO {
     return {
@@ -63,9 +48,6 @@ export class ClaseService {
       nombreClase: c.nombreClase,
       descripcionClase: c.descripcionClase,
     };
-  }
-  private aClasePublica(c: Clase): ClasePublicaDTO {
-    return this.toPublicClass(c);
   }
 }
 
