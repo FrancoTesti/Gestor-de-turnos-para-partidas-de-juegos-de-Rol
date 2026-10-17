@@ -175,14 +175,7 @@ porque rompían el lint y los E2E. **No se perdieron**: están en la rama
 | `EBUSY ... frontend\dist\...` en nodemon | Algo estaba regenerando el frontend | `Ctrl+C` y volver a correr `npm run dev` |
 | Tardan las pantallas | Cada consulta viaja a la región de la base | Normal desde otro continente; ver [docs/despliegue.md](docs/despliegue.md) |
 
-## 9. Pendiente
+## 9. 
 
-- **Copia de seguridad:** [docs/respaldo.md](docs/respaldo.md) usa `pg_dump` y `psql` y **no se verificó**.
-- **Datos de prueba** en la base compartida: hay que limpiarlos antes de grabar la demostración.
-- **GitHub Actions con PostgreSQL:** quedó en verde en el PR #54.
-
-## 10. Seguridad
-
-- **Nunca subir el `.env`** ni ninguna cadena de conexión (ya está en `.gitignore`).
-- Las tablas de Supabase tienen **Row Level Security** activada, porque Supabase expone el esquema
-  `public` por una API REST. Si alguien vuelve a crear las tablas, tiene que correr `npm run db:rls`.
+**Video de demostración:**
+[ver en Drive](https://drive.google.com/file/d/1YZ-nJKHwbZkN9zQgqnM9axlBkd7jfSew/view?usp=sharing)
