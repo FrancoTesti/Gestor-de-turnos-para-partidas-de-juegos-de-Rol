@@ -1,8 +1,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, expect, it, vi } from 'vitest';
-import ClasesPage from '../ClasesPage';
-import TiendasPage from '../TiendasPage';
-import PersonajesPage from '../PersonajesPage';
+import ClasesPage from '../ClassesPage';
+import TiendasPage from '../ShopsPage';
+import PersonajesPage from '../CharactersPage';
 
 const mocks = vi.hoisted(() => ({ api: vi.fn(), jugadores: [{ idUsuario: 1, estado: true }] }));
 vi.mock('../../services/api', () => ({ api: mocks.api }));

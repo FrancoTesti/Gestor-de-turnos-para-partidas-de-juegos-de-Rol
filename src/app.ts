@@ -5,17 +5,17 @@ import 'dotenv/config';
 import express, { type ErrorRequestHandler } from 'express';
 import { MikroORM, RequestContext } from '@mikro-orm/postgresql';
 import config from './mikro-orm.config';
-import { crearUsuarioRouter } from './routes/usuario.routes';
-import { crearClaseRouter } from './routes/clase.routes';
-import { crearObjetoRouter } from './routes/objeto.routes';
-import { crearTiendaRouter } from './routes/tienda.routes';
-import { crearJugadorRouter } from './routes/jugador.routes';
-import { crearAnfitrionRouter } from './routes/anfitrion.routes';
-import { crearPartidaRouter } from './routes/partida.routes';
-import { crearPersonajeRouter } from './routes/personaje.routes';
+import { createUserRouter, crearUsuarioRouter } from './routes/user.routes';
+import { createClassRouter, crearClaseRouter } from './routes/class.routes';
+import { createItemRouter, crearObjetoRouter } from './routes/item.routes';
+import { createShopRouter, crearTiendaRouter } from './routes/shop.routes';
+import { createPlayerRouter, crearJugadorRouter } from './routes/player.routes';
+import { createHostRouter, crearAnfitrionRouter } from './routes/host.routes';
+import { createMatchRouter, crearPartidaRouter } from './routes/match.routes';
+import { createCharacterRouter, crearPersonajeRouter } from './routes/character.routes';
 import { createAuth } from './security/auth';
 import { HttpError } from './security/authorization';
-import { crearJuegoRouter } from './routes/juego.routes';
+import { createGameRouter, crearJuegoRouter } from './routes/game.routes';
 
 import { existsSync } from 'node:fs';
 import path from 'node:path';
@@ -92,15 +92,15 @@ export function createApp(orm: MikroORM) {
   // Rutas de la API
   const auth = createAuth(orm.em);
   app.use('/api/auth', auth.router);
-  app.use('/api', auth.requireAuth, crearJuegoRouter(orm.em));
-  app.use('/api/usuarios', auth.requireAuth, crearUsuarioRouter(orm.em));
-  app.use('/api/clases', auth.requireAuth, crearClaseRouter(orm.em));
-  app.use('/api/objetos', auth.requireAuth, crearObjetoRouter(orm.em));
-  app.use('/api/tiendas', auth.requireAuth, crearTiendaRouter(orm.em));
-  app.use('/api/jugadores', auth.requireAuth, crearJugadorRouter(orm.em));
-  app.use('/api/anfitriones', auth.requireAuth, crearAnfitrionRouter(orm.em));
-  app.use('/api/partidas', auth.requireAuth, crearPartidaRouter(orm.em));
-  app.use('/api/personajes', auth.requireAuth, crearPersonajeRouter(orm.em));
+  app.use('/api', auth.requireAuth, createGameRouter(orm.em));
+  app.use('/api/usuarios', auth.requireAuth, createUserRouter(orm.em));
+  app.use('/api/clases', auth.requireAuth, createClassRouter(orm.em));
+  app.use('/api/objetos', auth.requireAuth, createItemRouter(orm.em));
+  app.use('/api/tiendas', auth.requireAuth, createShopRouter(orm.em));
+  app.use('/api/jugadores', auth.requireAuth, createPlayerRouter(orm.em));
+  app.use('/api/anfitriones', auth.requireAuth, createHostRouter(orm.em));
+  app.use('/api/partidas', auth.requireAuth, createMatchRouter(orm.em));
+  app.use('/api/personajes', auth.requireAuth, createCharacterRouter(orm.em));
 
   // Frontend compilado (frontend/dist): se sirve desde el mismo origen que la API, porque la cookie
   // de sesión es SameSite=Strict. En desarrollo no existe esa carpeta y Vite atiende el frontend.
@@ -125,13 +125,14 @@ export function createApp(orm: MikroORM) {
     res.status(404).json({ message: `No existe la ruta ${req.method} ${req.path}` });
   });
 
-  app.use(manejarErrores);
+  app.use(handleErrors);
   return app;
 }
 
-export const mensajeCuerpoGrande = 'Los datos enviados superan el límite de 64 KB. Acortá el texto e intentá de nuevo.';
+export const largePayloadMessage = 'Los datos enviados superan el límite de 64 KB. Acortá el texto e intentá de nuevo.';
+export const mensajeCuerpoGrande = largePayloadMessage;
 
-export function formatearZodError(err: ZodError): string {
+export function formatZodError(err: ZodError): string {
   const mensajesPorCampo = new Map<string, string>();
   for (const issue of err.issues) {
     const campo = issue.path.join('.');
@@ -168,19 +169,23 @@ export function formatearZodError(err: ZodError): string {
   return Array.from(mensajesPorCampo.values()).join('; ');
 }
 
+export const formatearZodError = formatZodError;
+
 // Traduce los errores conocidos a respuestas HTTP. Se exporta para que las pruebas
 // monten routers sueltos con el mismo tratamiento de errores que la aplicación real.
-export const manejarErrores: ErrorRequestHandler = (err, _req, res, _next) => {
+export const handleErrors: ErrorRequestHandler = (err, _req, res, _next) => {
   if (err instanceof HttpError) { res.status(err.status).json({ message: err.message }); return; }
-  if (err instanceof ZodError) { res.status(400).json({ message: formatearZodError(err) }); return; }
+  if (err instanceof ZodError) { res.status(400).json({ message: formatZodError(err) }); return; }
   if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
   if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
   if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }
   // express.json rechaza los cuerpos de más de 64 KB con este tipo; sin este caso terminaba en 500.
-  if (err?.type === 'entity.too.large') { res.status(413).json({ message: mensajeCuerpoGrande }); return; }
+  if (err?.type === 'entity.too.large') { res.status(413).json({ message: largePayloadMessage }); return; }
   console.error(err);
   res.status(500).json({ message: 'No se pudo completar la operación' });
 };
+
+export const manejarErrores = handleErrors;
 
 async function main() {
   const orm = await MikroORM.init(config);

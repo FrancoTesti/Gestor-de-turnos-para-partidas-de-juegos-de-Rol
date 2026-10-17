@@ -2,10 +2,10 @@ import { randomBytes, createHash } from 'node:crypto';
 import { Router, type Request, type RequestHandler } from 'express';
 import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { z } from 'zod';
-import { Usuario } from '../entities/Usuario.entity';
-import { Jugador } from '../entities/Jugador.entity';
-import { Anfitrion } from '../entities/Anfitrion.entity';
-import { crearUsuarioSchema } from '../schemas/usuario.schema';
+import { Usuario } from '../entities/User.entity';
+import { Jugador } from '../entities/Player.entity';
+import { Anfitrion } from '../entities/Host.entity';
+import { crearUsuarioSchema } from '../schemas/user.schema';
 import { hashPassword, verifyPassword } from './password';
 
 export interface Identity { idUsuario: number; anfitrion: boolean; jugador: boolean }
