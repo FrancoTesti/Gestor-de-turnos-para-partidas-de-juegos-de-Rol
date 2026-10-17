@@ -25,6 +25,9 @@ Esta es la guía rápida para usar el proyecto. El detalle completo del desplieg
 Si la página tarda en cargar la primera vez, esperá unos segundos: el servicio puede estar "despertando"
 después de un rato sin uso.
 
+**Video de demostración:**
+[ver en Drive](https://drive.google.com/file/d/1YZ-nJKHwbZkN9zQgqnM9axlBkd7jfSew/view?usp=sharing)
+
 ### La base es compartida
 
 Todos usan la misma base de Supabase, así que:
