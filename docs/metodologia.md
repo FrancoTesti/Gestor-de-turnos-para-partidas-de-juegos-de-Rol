@@ -22,11 +22,11 @@ El trabajo se estructuró en iteraciones (sprints) semanales orientadas a objeti
 
 | Módulo | Responsable |
 | --- | --- |
-| Cuentas y perfiles | Emanuel Salomón |
-| Clases, personajes y acceso a partidas | Alejandro Mario Ciesco |
-| Objetos, tiendas, inventarios, compra y venta | Octavio Alejandro Gudiño |
-| Partidas, sesiones, misiones y calificación | Franco Testi |
-| Transversal: responsive, accesibilidad, pruebas E2E, CI | Renzo Scollo |
+| Líder de Proyecto, Backend Core y Ciclo de Partidas (arquitectura Express/MikroORM, partidas, sesiones, misiones, calificación y despliegue en Render) | Franco Testi |
+| Motor de Economía, Catálogos y Persistencia Concurrente (objetos, tiendas, inventarios, compra/venta y bloqueos pesimistas) | Octavio Alejandro Gudiño |
+| Seguridad, Cuentas, Criptografía e Infraestructura de Datos (cookies `HttpOnly`, `scrypt`, perfiles, migración a PostgreSQL en Supabase y docs) | Emanuel Salomón |
+| Clases, Personajes, Reglas de Negocio e Inventarios Base (creación atómica personaje+inventario #1, cupos y nivel requerido) | Alejandro Mario Ciesco |
+| Transversal: Frontend SPA, Calidad, Testing y CI/CD (`UserContext`, `api.ts`, responsive, accesibilidad WCAG 2 AA, Vitest, Playwright y Actions) | Renzo Scollo |
 
 ### Prácticas de ingeniería que se usan
 
