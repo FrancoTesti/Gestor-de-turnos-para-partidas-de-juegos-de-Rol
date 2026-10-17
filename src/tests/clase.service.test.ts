@@ -32,9 +32,9 @@ describe('ClaseService', () => {
     return { service: new ClaseService(em), em };
   }
 
-  it('obtenerTodos retorna lista de clases formateadas como DTO público', async () => {
+  it('getAll retorna lista de clases formateadas como DTO público', async () => {
     const { service } = crearServicio();
-    const resultado = await service.obtenerTodos();
+    const resultado = await service.getAll();
     expect(resultado).toHaveLength(1);
     expect(resultado[0]).toEqual({
       idClase: 1,
@@ -43,18 +43,18 @@ describe('ClaseService', () => {
     });
   });
 
-  it('obtenerPorId retorna clase si existe o null si no se encuentra', async () => {
+  it('getById retorna clase si existe o null si no se encuentra', async () => {
     const { service } = crearServicio();
-    const encontrada = await service.obtenerPorId(1);
+    const encontrada = await service.getById(1);
     expect(encontrada?.nombreClase).toBe('Guerrero');
 
     const { service: serviceNoFound } = crearServicio(null);
-    expect(await serviceNoFound.obtenerPorId(999)).toBeNull();
+    expect(await serviceNoFound.getById(999)).toBeNull();
   });
 
-  it('crearClase persiste la entidad y retorna el DTO creado', async () => {
+  it('create persiste la entidad y retorna el DTO creado', async () => {
     const { service, em } = crearServicio();
-    const creada = await service.crearClase({
+    const creada = await service.create({
       nombreClase: 'Mago',
       descripcionClase: 'Lanza hechizos arcanos',
     });
@@ -68,9 +68,9 @@ describe('ClaseService', () => {
     expect(creada.nombreClase).toBe('Mago');
   });
 
-  it('actualizarClase modifica campos si la clase existe o retorna null si no existe', async () => {
+  it('update modifica campos si la clase existe o retorna null si no existe', async () => {
     const { service, em } = crearServicio();
-    const actualizada = await service.actualizarClase(1, {
+    const actualizada = await service.update(1, {
       descripcionClase: 'Nueva descripción',
     });
 
@@ -78,16 +78,16 @@ describe('ClaseService', () => {
     expect(em.flush).toHaveBeenCalledOnce();
 
     const { service: serviceNoFound } = crearServicio(null);
-    expect(await serviceNoFound.actualizarClase(999, { nombreClase: 'X' })).toBeNull();
+    expect(await serviceNoFound.update(999, { nombreClase: 'X' })).toBeNull();
   });
 
-  it('eliminarClase borra la clase si existe o retorna false si no existe', async () => {
+  it('delete borra la clase si existe o retorna false si no existe', async () => {
     const { service, em } = crearServicio();
-    const borrado = await service.eliminarClase(1);
+    const borrado = await service.delete(1);
     expect(borrado).toBe(true);
     expect(em.removeAndFlush).toHaveBeenCalledWith(clase);
 
     const { service: serviceNoFound } = crearServicio(null);
-    expect(await serviceNoFound.eliminarClase(999)).toBe(false);
+    expect(await serviceNoFound.delete(999)).toBe(false);
   });
 });

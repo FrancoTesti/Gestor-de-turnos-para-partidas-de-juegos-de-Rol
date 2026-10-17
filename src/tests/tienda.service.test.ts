@@ -30,9 +30,9 @@ describe('TiendaService', () => {
     return { service: new TiendaService(em), em };
   }
 
-  it('obtenerTodos lista tiendas formateadas', async () => {
+  it('getAll lista tiendas formateadas', async () => {
     const { service } = crearServicio();
-    const resultado = await service.obtenerTodos();
+    const resultado = await service.getAll();
     expect(resultado).toHaveLength(1);
     expect(resultado[0]).toEqual({
       idTienda: 10,
@@ -42,18 +42,18 @@ describe('TiendaService', () => {
     });
   });
 
-  it('obtenerPorId retorna tienda si existe o null si no existe', async () => {
+  it('getById retorna tienda si existe o null si no existe', async () => {
     const { service } = crearServicio();
-    const encontrada = await service.obtenerPorId(10);
+    const encontrada = await service.getById(10);
     expect(encontrada?.nombre).toBe('Armería');
 
     const { service: serviceNoFound } = crearServicio(null);
-    expect(await serviceNoFound.obtenerPorId(999)).toBeNull();
+    expect(await serviceNoFound.getById(999)).toBeNull();
   });
 
-  it('crearTienda crea tienda asignando la clase si existe', async () => {
+  it('create crea tienda asignando la clase si existe', async () => {
     const { service, em } = crearServicio();
-    const creada = await service.crearTienda({ nombre: 'Forja', claseTienda: 'Armas', idClase: 1 });
+    const creada = await service.create({ nombre: 'Forja', claseTienda: 'Armas', idClase: 1 });
     expect(em.create).toHaveBeenCalledWith(Tienda, {
       nombre: 'Forja',
       claseTienda: 'Armas',
@@ -63,22 +63,22 @@ describe('TiendaService', () => {
     expect(creada.idTienda).toBe(99);
   });
 
-  it('crearTienda falla si la clase indicada no existe', async () => {
+  it('create falla si la clase indicada no existe', async () => {
     const { service } = crearServicio(tienda, null);
-    await expect(service.crearTienda({ nombre: 'Forja', claseTienda: 'Armas', idClase: 999 }))
+    await expect(service.create({ nombre: 'Forja', claseTienda: 'Armas', idClase: 999 }))
       .rejects.toThrow(ErrorValidacionTienda);
   });
 
-  it('actualizarTienda modifica campos y clase vinculada', async () => {
+  it('update modifica campos y clase vinculada', async () => {
     const { service, em } = crearServicio();
-    const actualizada = await service.actualizarTienda(10, { nombre: 'Super Forja', idClase: 1 });
+    const actualizada = await service.update(10, { nombre: 'Super Forja', idClase: 1 });
     expect(actualizada?.nombre).toBe('Super Forja');
     expect(em.flush).toHaveBeenCalledOnce();
   });
 
-  it('eliminarTienda elimina la tienda existente', async () => {
+  it('delete elimina la tienda existente', async () => {
     const { service, em } = crearServicio();
-    const borrado = await service.eliminarTienda(10);
+    const borrado = await service.delete(10);
     expect(borrado).toBe(true);
     expect(em.removeAndFlush).toHaveBeenCalledWith(tienda);
   });

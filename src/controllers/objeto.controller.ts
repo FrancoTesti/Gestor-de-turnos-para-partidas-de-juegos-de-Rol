@@ -35,17 +35,12 @@ export class ObjetoController {
 
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const getFn = this.objetoService.getAll ? this.objetoService.getAll.bind(this.objetoService) : this.objetoService.obtenerTodos.bind(this.objetoService);
-      const objetos = await getFn();
+      const objetos = await this.objetoService.getAll();
       res.json(objetos);
     } catch (error) {
       console.error('Error al obtener objetos:', error);
       res.status(500).json({ message: 'Error al obtener los objetos' });
     }
-  }
-
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
   }
 
   async getById(req: Request<IdParams>, res: Response): Promise<void> {
@@ -56,8 +51,7 @@ export class ObjetoController {
     }
 
     try {
-      const getByIdFn = this.objetoService.getById ? this.objetoService.getById.bind(this.objetoService) : this.objetoService.obtenerPorId.bind(this.objetoService);
-      const objeto = await getByIdFn(id);
+      const objeto = await this.objetoService.getById(id);
       if (!objeto) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -69,15 +63,10 @@ export class ObjetoController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionObjeto(req.body);
-      const createFn = this.objetoService.create ? this.objetoService.create.bind(this.objetoService) : this.objetoService.crearObjeto.bind(this.objetoService);
-      const nuevoObjeto = await createFn(data);
+      const nuevoObjeto = await this.objetoService.create(data);
       res.status(201).json(nuevoObjeto);
     } catch (error) {
       if (error instanceof ErrorValidacionObjeto) {
@@ -89,10 +78,6 @@ export class ObjetoController {
     }
   }
 
-  async crearObjeto(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
-  }
-
   async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -102,8 +87,7 @@ export class ObjetoController {
 
     try {
       const data = validarActualizacionObjeto(req.body);
-      const updateFn = this.objetoService.update ? this.objetoService.update.bind(this.objetoService) : this.objetoService.actualizarObjeto.bind(this.objetoService);
-      const objetoActualizado = await updateFn(id, data);
+      const objetoActualizado = await this.objetoService.update(id, data);
       if (!objetoActualizado) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -119,10 +103,6 @@ export class ObjetoController {
     }
   }
 
-  async actualizarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.update(req, res);
-  }
-
   async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -131,8 +111,7 @@ export class ObjetoController {
     }
 
     try {
-      const deleteFn = this.objetoService.delete ? this.objetoService.delete.bind(this.objetoService) : this.objetoService.eliminarObjeto.bind(this.objetoService);
-      const eliminado = await deleteFn(id);
+      const eliminado = await this.objetoService.delete(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Objeto no encontrado' });
         return;
@@ -144,10 +123,6 @@ export class ObjetoController {
     }
   }
 
-  async eliminarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.delete(req, res);
-  }
-
   async buy(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -157,8 +132,7 @@ export class ObjetoController {
 
     try {
       const data = validarCompraObjeto(req.body);
-      const buyFn = this.objetoService.buy ? this.objetoService.buy.bind(this.objetoService) : this.objetoService.comprarObjeto.bind(this.objetoService);
-      const resultado = await buyFn(id, data);
+      const resultado = await this.objetoService.buy(id, data);
       res.json(resultado);
     } catch (error) {
       if (error instanceof ErrorValidacionObjeto) {
@@ -187,10 +161,6 @@ export class ObjetoController {
     }
   }
 
-  async comprarObjeto(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.buy(req, res);
-  }
-
   async getSuggested(req: Request<{ idClase: string }>, res: Response): Promise<void> {
     const idClase = obtenerId(req.params.idClase);
     if (idClase === null) {
@@ -199,17 +169,11 @@ export class ObjetoController {
     }
 
     try {
-      const getSuggestedFn = this.objetoService.getSuggested ? this.objetoService.getSuggested.bind(this.objetoService) : this.objetoService.obtenerSugeridos.bind(this.objetoService);
-      const sugeridos = await getSuggestedFn(idClase);
+      const sugeridos = await this.objetoService.getSuggested(idClase);
       res.json(sugeridos);
     } catch (error) {
       console.error('Error al obtener sugeridos:', error);
       res.status(500).json({ message: 'Error al obtener los objetos sugeridos' });
     }
   }
-
-  async obtenerSugeridos(req: Request<{ idClase: string }>, res: Response): Promise<void> {
-    return this.getSuggested(req, res);
-  }
 }
-

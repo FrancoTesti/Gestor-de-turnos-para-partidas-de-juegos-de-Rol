@@ -39,10 +39,6 @@ export class PersonajeService {
     return personajes.map((p) => this.toPublicDTO(p));
   }
 
-  async obtenerTodos(filtros?: { idClase?: number }): Promise<PersonajePublicoDTO[]> {
-    return this.getAll(filtros);
-  }
-
   async getById(id: number): Promise<PersonajePublicoDTO | null> {
     const personaje = await this.em.findOne(
       Personaje,
@@ -53,16 +49,8 @@ export class PersonajeService {
     return personaje ? this.toPublicDTO(personaje) : null;
   }
 
-  async obtenerPorId(id: number): Promise<PersonajePublicoDTO | null> {
-    return this.getById(id);
-  }
-
   async create(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
     return this.em.transactional(async tx => new PersonajeService(tx).createInTransaction(data));
-  }
-
-  async crearPersonaje(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
-    return this.create(data);
   }
 
   private async createInTransaction(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
@@ -103,10 +91,6 @@ export class PersonajeService {
     await this.em.flush();
     await this.em.populate(nuevoPersonaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);
     return this.toPublicDTO(nuevoPersonaje);
-  }
-
-  private async crearEnTransaccion(data: CrearPersonajeDTO): Promise<PersonajePublicoDTO> {
-    return this.createInTransaction(data);
   }
 
   async update(id: number, data: ActualizarPersonajeDTO): Promise<PersonajePublicoDTO | null> {
@@ -154,16 +138,8 @@ export class PersonajeService {
     return this.toPublicDTO(personaje);
   }
 
-  async actualizarPersonaje(id: number, data: ActualizarPersonajeDTO): Promise<PersonajePublicoDTO | null> {
-    return this.update(id, data);
-  }
-
   async delete(id: number): Promise<boolean> {
     return this.em.transactional(async tx => new PersonajeService(tx).deleteInTransaction(id));
-  }
-
-  async eliminarPersonaje(id: number): Promise<boolean> {
-    return this.delete(id);
   }
 
   private async deleteInTransaction(id: number): Promise<boolean> {
@@ -177,10 +153,6 @@ export class PersonajeService {
 
     await this.em.removeAndFlush(personaje);
     return true;
-  }
-
-  private async eliminarEnTransaccion(id: number): Promise<boolean> {
-    return this.deleteInTransaction(id);
   }
 
   private toPublicDTO(p: Personaje): PersonajePublicoDTO {
@@ -198,9 +170,5 @@ export class PersonajeService {
       idPartida: p.partida ? p.partida.idPartida : 0,
       partidaNombre: p.partida ? p.partida.nombre : undefined,
     };
-  }
-
-  private aPersonajePublico(p: Personaje): PersonajePublicoDTO {
-    return this.toPublicDTO(p);
   }
 }

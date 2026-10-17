@@ -115,9 +115,9 @@ describe('PersonajeService', () => {
     return { service: new PersonajeService(em), em };
   }
 
-  it('obtenerTodos lista los personajes formateados', async () => {
+  it('getAll lista los personajes formateados', async () => {
     const { service } = crearEm();
-    const resultado = await service.obtenerTodos();
+    const resultado = await service.getAll();
     expect(resultado).toHaveLength(1);
     expect(resultado[0]).toEqual({
       idPersonaje: 100,
@@ -135,18 +135,18 @@ describe('PersonajeService', () => {
     });
   });
 
-  it('obtenerPorId retorna el personaje si existe o null', async () => {
+  it('getById retorna el personaje si existe o null', async () => {
     const { service } = crearEm();
-    const p = await service.obtenerPorId(100);
+    const p = await service.getById(100);
     expect(p?.nombreFicticio).toBe('Thorin');
 
     const { service: serviceNull } = crearEm({ mockPersonaje: null });
-    expect(await serviceNull.obtenerPorId(999)).toBeNull();
+    expect(await serviceNull.getById(999)).toBeNull();
   });
 
-  it('crearPersonaje crea exitosamente un personaje con su inventario inicial', async () => {
+  it('create crea exitosamente un personaje con su inventario inicial', async () => {
     const { service, em } = crearEm();
-    const nuevo = await service.crearPersonaje({
+    const nuevo = await service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -171,9 +171,9 @@ describe('PersonajeService', () => {
     }));
   });
 
-  it('crearPersonaje falla si la clase no existe', async () => {
+  it('create falla si la clase no existe', async () => {
     const { service } = crearEm({ mockClase: null });
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 999,
@@ -182,9 +182,9 @@ describe('PersonajeService', () => {
     })).rejects.toThrow(ErrorReferenciaNoEncontrada);
   });
 
-  it('crearPersonaje falla si el jugador no existe', async () => {
+  it('create falla si el jugador no existe', async () => {
     const { service } = crearEm({ mockJugador: null });
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -193,11 +193,11 @@ describe('PersonajeService', () => {
     })).rejects.toThrow(ErrorReferenciaNoEncontrada);
   });
 
-  it('crearPersonaje falla si la partida está finalizada', async () => {
+  it('create falla si la partida está finalizada', async () => {
     const partidaInactiva = Object.assign(new Partida(), { ...partida, estado: false });
     const { service } = crearEm({ mockPartida: partidaInactiva });
 
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -206,11 +206,11 @@ describe('PersonajeService', () => {
     })).rejects.toThrow('La partida está finalizada');
   });
 
-  it('crearPersonaje falla si el jugador está inactivo', async () => {
+  it('create falla si el jugador está inactivo', async () => {
     const jugadorInactivo = Object.assign(new Jugador(), { ...jugador, estado: false });
     const { service } = crearEm({ mockJugador: jugadorInactivo });
 
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -219,13 +219,13 @@ describe('PersonajeService', () => {
     })).rejects.toThrow('El jugador está inactivo');
   });
 
-  it('crearPersonaje valida contraseña de partida privada y rechaza si es errónea', async () => {
+  it('create valida contraseña de partida privada y rechaza si es errónea', async () => {
     const partidaPrivada = Object.assign(new Partida(), { ...partida, contrasena: 'hash_secreto' });
     vi.spyOn(passwordSecurity, 'verifyPassword').mockResolvedValue(false);
 
     const { service } = crearEm({ mockPartida: partidaPrivada });
 
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -235,10 +235,10 @@ describe('PersonajeService', () => {
     })).rejects.toThrow('Contraseña de partida incorrecta');
   });
 
-  it('crearPersonaje rechaza si la partida no tiene cupos disponibles', async () => {
+  it('create rechaza si la partida no tiene cupos disponibles', async () => {
     const { service } = crearEm({ countPartidaPersonajes: 4 });
 
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -247,10 +247,10 @@ describe('PersonajeService', () => {
     })).rejects.toThrow('La partida no tiene cupos disponibles');
   });
 
-  it('crearPersonaje rechaza si el jugador ya tiene un personaje en la partida', async () => {
+  it('create rechaza si el jugador ya tiene un personaje en la partida', async () => {
     const { service } = crearEm({ countJugadorPartidaPersonajes: 1 });
 
-    await expect(service.crearPersonaje({
+    await expect(service.create({
       nombreFicticio: 'Legolas',
       raza: 'Elfo',
       idClase: 1,
@@ -259,9 +259,9 @@ describe('PersonajeService', () => {
     })).rejects.toThrow('Ya tenés un personaje en esta partida');
   });
 
-  it('actualizarPersonaje modifica campos permitidos', async () => {
+  it('update modifica campos permitidos', async () => {
     const { service } = crearEm();
-    const modificado = await service.actualizarPersonaje(100, {
+    const modificado = await service.update(100, {
       nombreFicticio: 'Thorin II',
       raza: 'Enano Noble',
     });
@@ -270,21 +270,21 @@ describe('PersonajeService', () => {
     expect(modificado?.raza).toBe('Enano Noble');
   });
 
-  it('eliminarPersonaje rechaza si tiene historial de sesiones', async () => {
+  it('delete rechaza si tiene historial de sesiones', async () => {
     const { service } = crearEm({ countSesiones: 2 });
-    await expect(service.eliminarPersonaje(100))
+    await expect(service.delete(100))
       .rejects.toThrow('No se puede borrar un personaje con historial de sesiones');
   });
 
-  it('eliminarPersonaje rechaza si tiene objetos en su inventario', async () => {
+  it('delete rechaza si tiene objetos en su inventario', async () => {
     const { service } = crearEm({ countObjetos: 3 });
-    await expect(service.eliminarPersonaje(100))
+    await expect(service.delete(100))
       .rejects.toThrow('Vendé los objetos antes de borrar el personaje');
   });
 
-  it('eliminarPersonaje elimina el personaje y sus inventarios exitosamente', async () => {
+  it('delete elimina el personaje y sus inventarios exitosamente', async () => {
     const { service, em } = crearEm();
-    const eliminado = await service.eliminarPersonaje(100);
+    const eliminado = await service.delete(100);
     expect(eliminado).toBe(true);
     expect(em.removeAndFlush).toHaveBeenCalledWith(personaje);
   });

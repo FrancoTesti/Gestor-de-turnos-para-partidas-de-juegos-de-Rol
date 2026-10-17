@@ -17,6 +17,13 @@ function responderError(error: unknown, res: Response, mensajeInterno: string): 
   res.status(500).json({ message: mensajeInterno });
 }
 
+function obtenerId(idParam: string | string[] | undefined): number | null {
+  const str = Array.isArray(idParam) ? idParam[0] : idParam;
+  if (!str || !/^\d+$/.test(str)) return null;
+  const id = Number(str);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
 export class UsuarioController {
   private usuarioService: UsuarioService;
 
@@ -26,15 +33,11 @@ export class UsuarioController {
 
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const usuarios = await (this.usuarioService.getAll ? this.usuarioService.getAll() : this.usuarioService.obtenerTodos());
+      const usuarios = await this.usuarioService.getAll();
       res.json(usuarios);
     } catch (error) {
       responderError(error, res, 'Error al obtener usuarios');
     }
-  }
-
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
   }
 
   async getById(req: Request, res: Response): Promise<void> {
@@ -45,7 +48,7 @@ export class UsuarioController {
     }
 
     try {
-      const usuario = await (this.usuarioService.getById ? this.usuarioService.getById(id) : this.usuarioService.obtenerPorId(id));
+      const usuario = await this.usuarioService.getById(id);
       if (!usuario) {
         res.status(404).json({ message: 'Usuario no encontrado' });
         return;
@@ -57,24 +60,13 @@ export class UsuarioController {
     }
   }
 
-  async obtenerPorId(req: Request, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   async create(req: Request, res: Response): Promise<void> {
     try {
-      /* Con el middleware de Zod, req.body ya viene validado, tipado y limpio.
-      Ya no necesitamos llamar a la funcion manual de validación aca */
-      const createFn = this.usuarioService.create ? this.usuarioService.create.bind(this.usuarioService) : this.usuarioService.crearUsuario.bind(this.usuarioService);
-      const nuevoUsuario = await createFn(req.body);
+      const nuevoUsuario = await this.usuarioService.create(req.body);
       res.status(201).json(nuevoUsuario);
     } catch (error) {
       responderError(error, res, 'Error al crear el usuario');
     }
-  }
-
-  async crearUsuario(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
   }
 
   async update(req: Request, res: Response): Promise<void> {
@@ -85,10 +77,7 @@ export class UsuarioController {
     }
 
     try {
-      // Gracias al middleware de Zod, req.body ya viene validado, tipado y limpio.
-      // Le pasamos el req.body directamente al servicio
-      const updateFn = this.usuarioService.update ? this.usuarioService.update.bind(this.usuarioService) : this.usuarioService.actualizarUsuario.bind(this.usuarioService);
-      const usuarioActualizado = await updateFn(id, req.body);
+      const usuarioActualizado = await this.usuarioService.update(id, req.body);
       if (!usuarioActualizado) {
         res.status(404).json({ message: 'Usuario no encontrado para actualizar' });
         return;
@@ -100,10 +89,6 @@ export class UsuarioController {
     }
   }
 
-  async actualizarUsuario(req: Request, res: Response): Promise<void> {
-    return this.update(req, res);
-  }
-
   async delete(req: Request, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -112,8 +97,7 @@ export class UsuarioController {
     }
 
     try {
-      const deleteFn = this.usuarioService.delete ? this.usuarioService.delete.bind(this.usuarioService) : this.usuarioService.eliminarUsuario.bind(this.usuarioService);
-      const eliminado = await deleteFn(id);
+      const eliminado = await this.usuarioService.delete(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Usuario no encontrado' });
         return;
@@ -124,18 +108,4 @@ export class UsuarioController {
       responderError(error, res, 'Error al eliminar el usuario');
     }
   }
-
-  async eliminarUsuario(req: Request, res: Response): Promise<void> {
-    return this.delete(req, res);
-  }
-  // (aca termina la clase UsuarioController)
 }
-
-function obtenerId(idParam: string | string[] | undefined): number | null {
-  const str = Array.isArray(idParam) ? idParam[0] : idParam;
-  if (!str || !/^\d+$/.test(str)) return null;
-  const id = Number(str);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
-}
-
-

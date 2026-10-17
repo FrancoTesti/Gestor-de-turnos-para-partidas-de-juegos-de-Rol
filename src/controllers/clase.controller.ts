@@ -26,17 +26,12 @@ export class ClaseController {
 
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const getFn = this.claseService.getAll ? this.claseService.getAll.bind(this.claseService) : this.claseService.obtenerTodos.bind(this.claseService);
-      const clases = await getFn();
+      const clases = await this.claseService.getAll();
       res.json(clases);
     } catch (error) {
       console.error('Error al obtener clases:', error);
       res.status(500).json({ message: 'Error al obtener las clases' });
     }
-  }
-
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
   }
 
   async getById(req: Request<IdParams>, res: Response): Promise<void> {
@@ -47,8 +42,7 @@ export class ClaseController {
     }
 
     try {
-      const getByIdFn = this.claseService.getById ? this.claseService.getById.bind(this.claseService) : this.claseService.obtenerPorId.bind(this.claseService);
-      const clase = await getByIdFn(id);
+      const clase = await this.claseService.getById(id);
       if (!clase) {
         res.status(404).json({ message: 'Clase no encontrada' });
         return;
@@ -60,15 +54,10 @@ export class ClaseController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionClase(req.body);
-      const createFn = this.claseService.create ? this.claseService.create.bind(this.claseService) : this.claseService.crearClase.bind(this.claseService);
-      const nuevaClase = await createFn(data);
+      const nuevaClase = await this.claseService.create(data);
       res.status(201).json(nuevaClase);
     } catch (error) {
       if (error instanceof ErrorValidacionClase) {
@@ -80,10 +69,6 @@ export class ClaseController {
     }
   }
 
-  async crearClase(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
-  }
-
   async update(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -93,8 +78,7 @@ export class ClaseController {
 
     try {
       const data = validarActualizacionClase(req.body);
-      const updateFn = this.claseService.update ? this.claseService.update.bind(this.claseService) : this.claseService.actualizarClase.bind(this.claseService);
-      const claseActualizada = await updateFn(id, data);
+      const claseActualizada = await this.claseService.update(id, data);
       if (!claseActualizada) {
         res.status(404).json({ message: 'Clase no encontrada' });
         return;
@@ -110,10 +94,6 @@ export class ClaseController {
     }
   }
 
-  async actualizarClase(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.update(req, res);
-  }
-
   async delete(req: Request<IdParams>, res: Response): Promise<void> {
     const id = obtenerId(req.params.id);
     if (id === null) {
@@ -122,8 +102,7 @@ export class ClaseController {
     }
 
     try {
-      const deleteFn = this.claseService.delete ? this.claseService.delete.bind(this.claseService) : this.claseService.eliminarClase.bind(this.claseService);
-      const eliminado = await deleteFn(id);
+      const eliminado = await this.claseService.delete(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Clase no encontrada' });
         return;
@@ -134,9 +113,5 @@ export class ClaseController {
       console.error('Error al eliminar la clase:', error);
       res.status(500).json({ message: 'Error al eliminar la clase' });
     }
-  }
-
-  async eliminarClase(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.delete(req, res);
   }
 }

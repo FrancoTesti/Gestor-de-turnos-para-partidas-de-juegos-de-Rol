@@ -49,16 +49,11 @@ export class AnfitrionController {
   // GET /api/anfitriones
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const getFn = this.anfitrionService.getAll ? this.anfitrionService.getAll.bind(this.anfitrionService) : this.anfitrionService.obtenerTodos.bind(this.anfitrionService);
-      const anfitriones = await getFn();
+      const anfitriones = await this.anfitrionService.getAll();
       res.json(anfitriones);
     } catch (error) {
       responderError(error, res, 'Error al obtener anfitriones');
     }
-  }
-
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
   }
 
   // GET /api/anfitriones/:id
@@ -70,8 +65,7 @@ export class AnfitrionController {
     }
 
     try {
-      const getByIdFn = this.anfitrionService.getById ? this.anfitrionService.getById.bind(this.anfitrionService) : this.anfitrionService.obtenerPorId.bind(this.anfitrionService);
-      const anfitrion = await getByIdFn(id);
+      const anfitrion = await this.anfitrionService.getById(id);
       if (!anfitrion) {
         res.status(404).json({ message: 'Anfitrión no encontrado' });
         return;
@@ -82,24 +76,15 @@ export class AnfitrionController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   // POST /api/anfitriones
   async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionAnfitrion(req.body);
-      const createFn = this.anfitrionService.create ? this.anfitrionService.create.bind(this.anfitrionService) : this.anfitrionService.crearAnfitrion.bind(this.anfitrionService);
-      const nuevoAnfitrion = await createFn(data);
+      const nuevoAnfitrion = await this.anfitrionService.create(data);
       res.status(201).json(nuevoAnfitrion);
     } catch (error) {
       responderError(error, res, 'Error al crear el anfitrión');
     }
-  }
-
-  async crearAnfitrion(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
   }
 
   // PUT /api/anfitriones/:id
@@ -112,8 +97,7 @@ export class AnfitrionController {
 
     try {
       const data = validarActualizacionAnfitrion(req.body);
-      const updateFn = this.anfitrionService.update ? this.anfitrionService.update.bind(this.anfitrionService) : this.anfitrionService.actualizarAnfitrion.bind(this.anfitrionService);
-      const actualizado = await updateFn(id, data);
+      const actualizado = await this.anfitrionService.update(id, data);
       if (!actualizado) {
         res.status(404).json({ message: 'Anfitrión no encontrado' });
         return;
@@ -122,10 +106,6 @@ export class AnfitrionController {
     } catch (error) {
       responderError(error, res, 'Error al actualizar el anfitrión');
     }
-  }
-
-  async actualizarAnfitrion(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.update(req, res);
   }
 
   // DELETE /api/anfitriones/:id
@@ -137,8 +117,7 @@ export class AnfitrionController {
     }
 
     try {
-      const deleteFn = this.anfitrionService.delete ? this.anfitrionService.delete.bind(this.anfitrionService) : this.anfitrionService.eliminarAnfitrion.bind(this.anfitrionService);
-      const eliminado = await deleteFn(id);
+      const eliminado = await this.anfitrionService.delete(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Anfitrión no encontrado' });
         return;
@@ -147,9 +126,5 @@ export class AnfitrionController {
     } catch (error) {
       responderError(error, res, 'Error al eliminar el anfitrión');
     }
-  }
-
-  async eliminarAnfitrion(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.delete(req, res);
   }
 }

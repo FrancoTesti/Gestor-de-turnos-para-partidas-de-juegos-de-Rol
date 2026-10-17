@@ -6,7 +6,7 @@ import { Anfitrion } from '../entities/Anfitrion.entity';
 import { Personaje } from '../entities/Personaje.entity';
 import { ErrorValidacionPartida } from '../validators/partida.validator';
 import { hashPassword } from '../security/password';
-import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/partida.dto';
+import type { ActualizarPartidaDTO, CrearPartidaDTO, PartidaPublicaDTO } from '../types/partida.dto';
 
 // error personalizado: el Anfitrion que se quiere asignar no existe
 export class AnfitrionNoEncontradoError extends Error {
@@ -30,10 +30,6 @@ export class PartidaService {
     return partidas.map((p) => this.toPublicDTO(p));
   }
 
-  async obtenerTodas(): Promise<PartidaPublicaDTO[]> {
-    return this.getAll();
-  }
-
   // trae solo las partidas ACTIVAS (para el listado requerido por el plan)
   async getActive(): Promise<PartidaPublicaDTO[]> {
     // estado: true en la BD significa 'activa' en el DTO
@@ -45,10 +41,6 @@ export class PartidaService {
     return partidas.map((p) => this.toPublicDTO(p));
   }
 
-  async obtenerActivas(): Promise<PartidaPublicaDTO[]> {
-    return this.getActive();
-  }
-
   // busca una partida por su id
   async getById(id: number): Promise<PartidaPublicaDTO | null> {
     const partida = await this.em.findOne(
@@ -57,10 +49,6 @@ export class PartidaService {
       { populate: ['anfitrion', 'anfitrion.usuario'] },
     );
     return partida ? this.toPublicDTO(partida) : null;
-  }
-
-  async obtenerPorId(id: number): Promise<PartidaPublicaDTO | null> {
-    return this.getById(id);
   }
 
   // crea una partida nueva aplicando todas las reglas de negocio
@@ -90,17 +78,9 @@ export class PartidaService {
     return this.toPublicDTO(partida);
   }
 
-  async crearPartida(data: CrearPartidaDTO): Promise<PartidaPublicaDTO> {
-    return this.create(data);
-  }
-
   // actualiza los campos que lleguen en el body
   async update(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
     return this.em.transactional(tx => new PartidaService(tx).updateInTransaction(id, data));
-  }
-
-  async actualizarPartida(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
-    return this.update(id, data);
   }
 
   private async updateInTransaction(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
@@ -132,10 +112,6 @@ export class PartidaService {
     return this.toPublicDTO(partida);
   }
 
-  private async actualizarEnTransaccion(id: number, data: ActualizarPartidaDTO): Promise<PartidaPublicaDTO | null> {
-    return this.updateInTransaction(id, data);
-  }
-
   // elimina una partida
   async delete(id: number): Promise<boolean> {
     const partida = await this.em.findOne(Partida, { idPartida: id });
@@ -143,10 +119,6 @@ export class PartidaService {
 
     await this.em.removeAndFlush(partida);
     return true;
-  }
-
-  async eliminarPartida(id: number): Promise<boolean> {
-    return this.delete(id);
   }
 
   // convierte la entidad al DTO publico (sin exponer la contraseña)
@@ -163,9 +135,5 @@ export class PartidaService {
       idUsuarioAnfitrion: p.anfitrion.usuario.idUsuario,
       nicknameAnfitrion: p.anfitrion.usuario.nickname,
     };
-  }
-
-  private aPartidaPublica(p: Partida): PartidaPublicaDTO {
-    return this.toPublicDTO(p);
   }
 }

@@ -1,7 +1,7 @@
 /* 
  Controlador para las operaciones relacionadas con los jugadores.
  Recibe las peticiones HTTP, llama al service y responde con el CODIGO
-  y datos correctos. No tiene logica de negocio.
+ y datos correctos. No tiene logica de negocio.
  */
 import { type Request, type Response } from 'express';
 import { persistenceError } from './persistence-error';
@@ -56,16 +56,11 @@ export class JugadorController {
   // GET /api/jugadores
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const getFn = this.jugadorService.getAll ? this.jugadorService.getAll.bind(this.jugadorService) : this.jugadorService.obtenerTodos.bind(this.jugadorService);
-      const jugadores = await getFn();
+      const jugadores = await this.jugadorService.getAll();
       res.json(jugadores);
     } catch (error) {
       responderError(error, res, 'Error al obtener jugadores');
     }
-  }
-
-  async obtenerTodos(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
   }
 
   // GET /api/jugadores/:id
@@ -77,8 +72,7 @@ export class JugadorController {
     }
 
     try {
-      const getByIdFn = this.jugadorService.getById ? this.jugadorService.getById.bind(this.jugadorService) : this.jugadorService.obtenerPorId.bind(this.jugadorService);
-      const jugador = await getByIdFn(id);
+      const jugador = await this.jugadorService.getById(id);
       if (!jugador) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
@@ -89,24 +83,15 @@ export class JugadorController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   // POST /api/jugadores
   async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionJugador(req.body);
-      const createFn = this.jugadorService.create ? this.jugadorService.create.bind(this.jugadorService) : this.jugadorService.crearJugador.bind(this.jugadorService);
-      const nuevoJugador = await createFn(data);
-      res.status(201).json(nuevoJugador); // 201 Created
+      const nuevoJugador = await this.jugadorService.create(data);
+      res.status(201).json(nuevoJugador);
     } catch (error) {
       responderError(error, res, 'Error al crear el jugador');
     }
-  }
-
-  async crearJugador(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
   }
 
   // PUT /api/jugadores/:id
@@ -119,8 +104,7 @@ export class JugadorController {
 
     try {
       const data = validarActualizacionJugador(req.body);
-      const updateFn = this.jugadorService.update ? this.jugadorService.update.bind(this.jugadorService) : this.jugadorService.actualizarJugador.bind(this.jugadorService);
-      const actualizado = await updateFn(id, data);
+      const actualizado = await this.jugadorService.update(id, data);
       if (!actualizado) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
@@ -129,10 +113,6 @@ export class JugadorController {
     } catch (error) {
       responderError(error, res, 'Error al actualizar el jugador');
     }
-  }
-
-  async actualizarJugador(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.update(req, res);
   }
 
   // DELETE /api/jugadores/:id
@@ -144,19 +124,14 @@ export class JugadorController {
     }
 
     try {
-      const deleteFn = this.jugadorService.delete ? this.jugadorService.delete.bind(this.jugadorService) : this.jugadorService.eliminarJugador.bind(this.jugadorService);
-      const eliminado = await deleteFn(id);
+      const eliminado = await this.jugadorService.delete(id);
       if (!eliminado) {
         res.status(404).json({ message: 'Jugador no encontrado' });
         return;
       }
-      res.status(204).send(); // 204 No Content: eliminado exitosamente, sin cuerpo
+      res.status(204).send();
     } catch (error) {
       responderError(error, res, 'Error al eliminar el jugador');
     }
-  }
-
-  async eliminarJugador(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.delete(req, res);
   }
 }

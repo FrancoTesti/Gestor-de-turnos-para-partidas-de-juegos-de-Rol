@@ -45,31 +45,21 @@ export class PartidaController {
   // GET /api/partidas
   async getAll(_req: Request, res: Response): Promise<void> {
     try {
-      const getFn = this.partidaService.getAll ? this.partidaService.getAll.bind(this.partidaService) : this.partidaService.obtenerTodas.bind(this.partidaService);
-      const partidas = await getFn();
+      const partidas = await this.partidaService.getAll();
       res.json(partidas);
     } catch (error) {
       responderError(error, res, 'Error al obtener partidas');
     }
   }
 
-  async obtenerTodas(req: Request, res: Response): Promise<void> {
-    return this.getAll(req, res);
-  }
-
   // GET /api/partidas/activas  ← listado requerido por el plan de desarrollo
   async getActive(_req: Request, res: Response): Promise<void> {
     try {
-      const getActiveFn = this.partidaService.getActive ? this.partidaService.getActive.bind(this.partidaService) : this.partidaService.obtenerActivas.bind(this.partidaService);
-      const partidas = await getActiveFn();
-      res.json(partidas);
+      const partidasActivas = await this.partidaService.getActive();
+      res.json(partidasActivas);
     } catch (error) {
-      responderError(error, res, 'Error al obtener partidas activas');
+      responderError(error, res, 'Error al obtener las partidas activas');
     }
-  }
-
-  async obtenerActivas(req: Request, res: Response): Promise<void> {
-    return this.getActive(req, res);
   }
 
   // GET /api/partidas/:id
@@ -81,8 +71,7 @@ export class PartidaController {
     }
 
     try {
-      const getByIdFn = this.partidaService.getById ? this.partidaService.getById.bind(this.partidaService) : this.partidaService.obtenerPorId.bind(this.partidaService);
-      const partida = await getByIdFn(id);
+      const partida = await this.partidaService.getById(id);
       if (!partida) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
@@ -93,24 +82,15 @@ export class PartidaController {
     }
   }
 
-  async obtenerPorId(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.getById(req, res);
-  }
-
   // POST /api/partidas
   async create(req: Request, res: Response): Promise<void> {
     try {
       const data = validarCreacionPartida(req.body);
-      const createFn = this.partidaService.create ? this.partidaService.create.bind(this.partidaService) : this.partidaService.crearPartida.bind(this.partidaService);
-      const nuevaPartida = await createFn(data);
+      const nuevaPartida = await this.partidaService.create(data);
       res.status(201).json(nuevaPartida);
     } catch (error) {
       responderError(error, res, 'Error al crear la partida');
     }
-  }
-
-  async crearPartida(req: Request, res: Response): Promise<void> {
-    return this.create(req, res);
   }
 
   // PUT /api/partidas/:id
@@ -123,8 +103,7 @@ export class PartidaController {
 
     try {
       const data = validarActualizacionPartida(req.body);
-      const updateFn = this.partidaService.update ? this.partidaService.update.bind(this.partidaService) : this.partidaService.actualizarPartida.bind(this.partidaService);
-      const actualizada = await updateFn(id, data);
+      const actualizada = await this.partidaService.update(id, data);
       if (!actualizada) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
@@ -133,10 +112,6 @@ export class PartidaController {
     } catch (error) {
       responderError(error, res, 'Error al actualizar la partida');
     }
-  }
-
-  async actualizarPartida(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.update(req, res);
   }
 
   // DELETE /api/partidas/:id
@@ -148,9 +123,8 @@ export class PartidaController {
     }
 
     try {
-      const deleteFn = this.partidaService.delete ? this.partidaService.delete.bind(this.partidaService) : this.partidaService.eliminarPartida.bind(this.partidaService);
-      const eliminado = await deleteFn(id);
-      if (!eliminado) {
+      const eliminada = await this.partidaService.delete(id);
+      if (!eliminada) {
         res.status(404).json({ message: 'Partida no encontrada' });
         return;
       }
@@ -158,9 +132,5 @@ export class PartidaController {
     } catch (error) {
       responderError(error, res, 'Error al eliminar la partida');
     }
-  }
-
-  async eliminarPartida(req: Request<IdParams>, res: Response): Promise<void> {
-    return this.delete(req, res);
   }
 }

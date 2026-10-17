@@ -42,7 +42,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     } as unknown as EntityManager;
 
     const service = new ObjetoService(em);
-    const creado = await service.crearObjeto({
+    const creado = await service.create({
       nombre: 'Anillo Único',
       descripcion: 'Poderoso',
       tipoObjeto: 'Reliquia',
@@ -78,7 +78,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
     const service = new ObjetoService(em);
 
     await expect(
-      service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 }),
+      service.buy(99, { idPersonaje: 10, numInventario: 1, posicion: 0 }),
     ).rejects.toThrow(ErrorValidacionObjeto);
 
     expect(tx.flush).not.toHaveBeenCalled();
@@ -102,7 +102,7 @@ describe('ObjetoService - Objeto Único (esUnico)', () => {
 
     const service = new ObjetoService(em);
 
-    const resultado = await service.comprarObjeto(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
+    const resultado = await service.buy(99, { idPersonaje: 10, numInventario: 1, posicion: 0 });
 
     expect(resultado.objeto.esUnico).toBe(true);
     expect(resultado.dineroRestante).toBe(200);

@@ -11,7 +11,7 @@ import {
   PosicionOcupadaError,
 } from '../services/objeto.service';
 
-describe('ObjetoService.comprarObjeto', () => {
+describe('ObjetoService.buy', () => {
   let objeto: Objeto;
   let personaje: Personaje;
   let inventario: Inventario;
@@ -55,7 +55,7 @@ describe('ObjetoService.comprarObjeto', () => {
   it('compra el objeto, descuenta el dinero y lo mueve al inventario', async () => {
     const { service, em, tx } = crearServicio();
 
-    const resultado = await service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 });
+    const resultado = await service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 1 });
 
     expect(em.transactional).toHaveBeenCalledOnce();
     expect(personaje.dinero).toBe(60);
@@ -70,7 +70,7 @@ describe('ObjetoService.comprarObjeto', () => {
     personaje.dinero = 20;
     const { service, tx } = crearServicio();
 
-    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
+    await expect(service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
       .rejects.toThrow(DineroInsuficienteError);
 
     expect(personaje.dinero).toBe(20);
@@ -81,7 +81,7 @@ describe('ObjetoService.comprarObjeto', () => {
   it('rechaza la compra si el inventario está lleno', async () => {
     const { service, tx } = crearServicio({ cantidad: 2 });
 
-    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
+    await expect(service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
       .rejects.toThrow(InventarioLlenoError);
 
     expect(personaje.dinero).toBe(100);
@@ -93,7 +93,7 @@ describe('ObjetoService.comprarObjeto', () => {
     const ocupado = Object.assign(new Objeto(), { idObjeto: 8 });
     const { service, tx } = crearServicio({ posicionOcupada: ocupado });
 
-    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
+    await expect(service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
       .rejects.toThrow(PosicionOcupadaError);
 
     expect(personaje.dinero).toBe(100);
@@ -102,13 +102,13 @@ describe('ObjetoService.comprarObjeto', () => {
 
   it('propaga un error de escritura (el rollback real se prueba contra MySQL)', async () => {
     const { service } = crearServicio({ errorFlush: new Error('Fallo de base de datos') });
-    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
+    await expect(service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 1 }))
       .rejects.toThrow('Fallo de base de datos');
   });
 
   it('rechaza posiciones fuera de capacidad sin escribir', async () => {
     const { service, tx } = crearServicio();
-    await expect(service.comprarObjeto(5, { idPersonaje: 10, numInventario: 1, posicion: 2 })).rejects.toThrow('capacidad');
+    await expect(service.buy(5, { idPersonaje: 10, numInventario: 1, posicion: 2 })).rejects.toThrow('capacidad');
     expect(tx.flush).not.toHaveBeenCalled();
   });
 });

@@ -18,6 +18,13 @@ describe('UsuarioService', () => {
 
   beforeEach(() => {
     mockRepo = {
+      findAll: vi.fn(),
+      findById: vi.fn(),
+      findByNickname: vi.fn(),
+      create: vi.fn(),
+      assign: vi.fn(),
+      saveChanges: vi.fn(),
+      delete: vi.fn(),
       buscarTodos: vi.fn(),
       buscarPorId: vi.fn(),
       buscarPorNickname: vi.fn(),
@@ -25,15 +32,15 @@ describe('UsuarioService', () => {
       asignar: vi.fn(),
       guardarCambios: vi.fn(),
       eliminar: vi.fn(),
-    };
+    } as any;
     service = new UsuarioService(mockRepo as UsuarioRepository);
   });
 
-  describe('obtenerTodos', () => {
+  describe('getAll', () => {
     it('debe retornar los usuarios en formato público (sin contraseña)', async () => {
-      vi.mocked(mockRepo.buscarTodos!).mockResolvedValue([mockUsuario]);
+      vi.mocked(mockRepo.findAll!).mockResolvedValue([mockUsuario]);
 
-      const resultado = await service.obtenerTodos();
+      const resultado = await service.getAll();
 
       expect(resultado).toEqual([
         {
@@ -44,15 +51,15 @@ describe('UsuarioService', () => {
         },
       ]);
       expect(resultado[0]).not.toHaveProperty('contrasena');
-      expect(mockRepo.buscarTodos).toHaveBeenCalledOnce();
+      expect(mockRepo.findAll).toHaveBeenCalledOnce();
     });
   });
 
-  describe('obtenerPorId', () => {
+  describe('getById', () => {
     it('debe retornar el DTO público del usuario cuando existe', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue(mockUsuario);
+      vi.mocked(mockRepo.findById!).mockResolvedValue(mockUsuario);
 
-      const resultado = await service.obtenerPorId(1);
+      const resultado = await service.getById(1);
 
       expect(resultado).toEqual({
         idUsuario: 1,
@@ -63,15 +70,15 @@ describe('UsuarioService', () => {
     });
 
     it('debe retornar null cuando el usuario no existe', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue(null);
+      vi.mocked(mockRepo.findById!).mockResolvedValue(null);
 
-      const resultado = await service.obtenerPorId(999);
+      const resultado = await service.getById(999);
 
       expect(resultado).toBeNull();
     });
   });
 
-  describe('crearUsuario', () => {
+  describe('create', () => {
     const dtoCrear = {
       nombreUsuario: 'Carlos',
       contrasena: 'pass123',
@@ -80,11 +87,11 @@ describe('UsuarioService', () => {
     };
 
     it('debe crear un usuario exitosamente cuando el nickname está libre', async () => {
-      vi.mocked(mockRepo.buscarPorNickname!).mockResolvedValue(null);
-      vi.mocked(mockRepo.crear!).mockReturnValue({ ...dtoCrear, idUsuario: 2 } as Usuario);
-      vi.mocked(mockRepo.guardarCambios!).mockResolvedValue();
+      vi.mocked(mockRepo.findByNickname!).mockResolvedValue(null);
+      vi.mocked(mockRepo.create!).mockReturnValue({ ...dtoCrear, idUsuario: 2 } as Usuario);
+      vi.mocked(mockRepo.saveChanges!).mockResolvedValue();
 
-      const resultado = await service.crearUsuario(dtoCrear);
+      const resultado = await service.create(dtoCrear);
 
       expect(resultado).toEqual({
         idUsuario: 2,
@@ -92,65 +99,65 @@ describe('UsuarioService', () => {
         imagen: '',
         nickname: 'carlitos',
       });
-      expect(mockRepo.guardarCambios).toHaveBeenCalledOnce();
+      expect(mockRepo.saveChanges).toHaveBeenCalledOnce();
     });
 
     it('debe lanzar NicknameEnUsoError si el nickname ya existe en la BD previa', async () => {
-      vi.mocked(mockRepo.buscarPorNickname!).mockResolvedValue(mockUsuario);
+      vi.mocked(mockRepo.findByNickname!).mockResolvedValue(mockUsuario);
 
       await expect(
-        service.crearUsuario({ ...dtoCrear, nickname: 'jperez' }),
+        service.create({ ...dtoCrear, nickname: 'jperez' }),
       ).rejects.toThrow(NicknameEnUsoError);
     });
 
     it('debe capturar UniqueConstraintViolationException al guardar y lanzar NicknameEnUsoError', async () => {
-      vi.mocked(mockRepo.buscarPorNickname!).mockResolvedValue(null);
-      vi.mocked(mockRepo.crear!).mockReturnValue({ ...dtoCrear, idUsuario: 3 } as Usuario);
-      vi.mocked(mockRepo.guardarCambios!).mockRejectedValue(
+      vi.mocked(mockRepo.findByNickname!).mockResolvedValue(null);
+      vi.mocked(mockRepo.create!).mockReturnValue({ ...dtoCrear, idUsuario: 3 } as Usuario);
+      vi.mocked(mockRepo.saveChanges!).mockRejectedValue(
         new UniqueConstraintViolationException(new Error('Duplicate entry')),
       );
 
-      await expect(service.crearUsuario(dtoCrear)).rejects.toThrow(NicknameEnUsoError);
+      await expect(service.create(dtoCrear)).rejects.toThrow(NicknameEnUsoError);
     });
   });
 
-  describe('actualizarUsuario', () => {
+  describe('update', () => {
     it('debe actualizar los datos exitosamente cuando el usuario existe', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue({ ...mockUsuario });
-      vi.mocked(mockRepo.buscarPorNickname!).mockResolvedValue(null);
-      vi.mocked(mockRepo.guardarCambios!).mockResolvedValue();
+      vi.mocked(mockRepo.findById!).mockResolvedValue({ ...mockUsuario });
+      vi.mocked(mockRepo.findByNickname!).mockResolvedValue(null);
+      vi.mocked(mockRepo.saveChanges!).mockResolvedValue();
 
-      const resultado = await service.actualizarUsuario(1, { nickname: 'nuevoNick' });
+      const resultado = await service.update(1, { nickname: 'nuevoNick' });
 
       expect(resultado).not.toBeNull();
-      expect(mockRepo.asignar).toHaveBeenCalled();
-      expect(mockRepo.guardarCambios).toHaveBeenCalledOnce();
+      expect(mockRepo.assign).toHaveBeenCalled();
+      expect(mockRepo.saveChanges).toHaveBeenCalledOnce();
     });
 
     it('debe retornar null si el usuario a actualizar no existe', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue(null);
+      vi.mocked(mockRepo.findById!).mockResolvedValue(null);
 
-      const resultado = await service.actualizarUsuario(999, { nombreUsuario: 'Nuevo' });
+      const resultado = await service.update(999, { nombreUsuario: 'Nuevo' });
 
       expect(resultado).toBeNull();
     });
   });
 
-  describe('eliminarUsuario', () => {
+  describe('delete', () => {
     it('debe retornar true cuando elimina un usuario existente', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue(mockUsuario);
-      vi.mocked(mockRepo.eliminar!).mockResolvedValue();
+      vi.mocked(mockRepo.findById!).mockResolvedValue(mockUsuario);
+      vi.mocked(mockRepo.delete!).mockResolvedValue();
 
-      const resultado = await service.eliminarUsuario(1);
+      const resultado = await service.delete(1);
 
       expect(resultado).toBe(true);
-      expect(mockRepo.eliminar).toHaveBeenCalledWith(mockUsuario);
+      expect(mockRepo.delete).toHaveBeenCalledWith(mockUsuario);
     });
 
     it('debe retornar false cuando se intenta eliminar un usuario inexistente', async () => {
-      vi.mocked(mockRepo.buscarPorId!).mockResolvedValue(null);
+      vi.mocked(mockRepo.findById!).mockResolvedValue(null);
 
-      const resultado = await service.eliminarUsuario(999);
+      const resultado = await service.delete(999);
 
       expect(resultado).toBe(false);
     });
