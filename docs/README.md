@@ -45,8 +45,8 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 
 | Integrante | Módulo |
 | --- | --- |
-| Renzo Scollo | Cliente HTTP del frontend, manejo de errores, pruebas E2E e integración continua |
-| Franco Testi | Partidas, sesiones, misiones y calificación del anfitrión |
-| Alejandro Mario Ciesco | Clases, personajes y acceso a partidas |
-| Octavio Alejandro Gudiño | Objetos, tiendas, inventarios, compra y venta |
-| Emanuel Salomón | Usuarios, perfiles, documentación y preparación de la entrega |
+| Franco Testi | Líder de Proyecto, Backend Core (`Express`/`MikroORM`), partidas, sesiones, misiones, calificación y despliegue en Render |
+| Octavio Alejandro Gudiño | Motor de Economía, tiendas, objetos únicos y comunes clonados, inventarios, compra/venta y bloqueos pesimistas |
+| Emanuel Salomón | Seguridad y criptografía (`scrypt`, cookies `HttpOnly`), usuarios, perfiles, migración a PostgreSQL (Supabase) y documentación de entrega |
+| Alejandro Mario Ciesco | Clases, creación atómica de personajes e inventario base #1, reglas de nivel/cupos y acceso a partidas |
+| Renzo Scollo | Frontend SPA (`UserContext`, cliente HTTP `api.ts`), responsive, accesibilidad WCAG 2 AA, pruebas unitarias/integración/E2E y CI/CD |
