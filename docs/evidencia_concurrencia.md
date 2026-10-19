@@ -1,6 +1,6 @@
 # Evidencia de Prueba de Concurrencia (Compra y Venta de Objeto Único)
 
-**Responsable:** Octavio Alejandro Gudiño  
+**Responsable:** Franco Testi  
 **Fecha de verificación inicial:** 24 de septiembre de 2026  
 **Última re-verificación:** 26 de septiembre de 2026  
 **Commit evaluado:** `5ccac3a` de `main`  

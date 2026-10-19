@@ -43,10 +43,11 @@ Si algo no está acá, no está documentado: conviene agregarlo antes de la entr
 
 ## Reparto del trabajo
 
-| Integrante | Módulo |
-| --- | --- |
-| Franco Testi | Líder de Proyecto, Backend Core (`Express`/`MikroORM`), partidas, sesiones, misiones, calificación y despliegue en Render |
-| Octavio Alejandro Gudiño | Motor de Economía, tiendas, objetos únicos y comunes clonados, inventarios, compra/venta y bloqueos pesimistas |
-| Emanuel Salomón | Seguridad y criptografía (`scrypt`, cookies `HttpOnly`), usuarios, perfiles, migración a PostgreSQL (Supabase) y documentación de entrega |
-| Alejandro Mario Ciesco | Clases, creación atómica de personajes e inventario base #1, reglas de nivel/cupos y acceso a partidas |
-| Renzo Scollo | Frontend SPA (`UserContext`, cliente HTTP `api.ts`), responsive, accesibilidad WCAG 2 AA, pruebas unitarias/integración/E2E y CI/CD |
+| Integrante | Área | Módulo y alcance asignado |
+| --- | --- | --- |
+| Alejandro Mario Ciesco | **Backend** | Modelado de datos relacional (`src/entities/`, `SQL/rpg.sql`, `mikro-orm.config.ts`) y módulos completos de **Clases**, **Tiendas** y **Personajes** (DTOs, validadores, servicios, controladores, rutas y tests unitarios) |
+| Emanuel Salomón | **Backend** | Núcleo Express (`src/app.ts`), seguridad y criptografía (`scrypt`, `timingSafeEqual`, cookies `HttpOnly`, CSRF, `authorization.ts`), módulos de **Usuarios**, **Jugadores** y **Anfitriones**, migración a Supabase y scripts |
+| Franco Testi | **Backend** | Líder de Proyecto y motor transaccional: módulos de **Partidas**, **Sesiones**, **Misiones**, **Karma**, **Inventarios** y **Objetos/Comercio** (`match.service.ts`, `game.service.ts`, `item.service.ts`), bloqueos pesimistas, integración en PostgreSQL y despliegue en Render |
+| Renzo Scollo | **Frontend** | Arquitectura React SPA (`App.tsx`, `UserContext`, `ThemeContext`, `MainLayout`), cliente HTTP (`api.ts`), biblioteca UI (`components/ui/`), pantallas de **Login/Registro/Perfiles/Usuarios**, flujo de **Partidas, Sesiones y Misiones**, accesibilidad WCAG 2 AA, tests E2E y CI/CD |
+| Octavio Alejandro Gudiño | **Frontend** | Contratos TypeScript (`interfaces.ts`), servicios cliente de dominio y pantallas/componentes de **Personajes**, **Clases**, **Tiendas**, **Objetos (Compra y Venta)**, **Gestor de Inventarios** (`ModulePage.tsx`) y pruebas unitarias de interfaz |
+

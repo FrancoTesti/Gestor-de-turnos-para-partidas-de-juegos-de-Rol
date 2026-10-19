@@ -1,9 +1,9 @@
-# Verificación del módulo de Usuarios y Autenticación
+# Verificación del módulo de Usuarios, Perfiles y Autenticación
 
-**Responsable:** Renzo Scollo  
+**Responsables:** Emanuel Salomón (Backend: `app.ts`, `security/`, `user.*`, `player.*`, `host.*`) y Renzo Scollo (Frontend: `UserContext`, `api.ts`, `LoginPage`, `RegisterPage`, `ProfilesPage`, `UsersPage`)  
 **Fecha de verificación:** 7 de septiembre de 2026  
-**Rama:** `renzo-objeto-frontend`  
-**Alcance:** Usuarios, autenticación, sesión persistente y perfiles de usuario.
+**Rama:** `ramaEmaIteracion2y3`  
+**Alcance:** Usuarios, autenticación (`scrypt` y cookies `HttpOnly`), sesión persistente y perfiles de Jugador y Anfitrión.
 
 ## Requisitos comprobados
 
