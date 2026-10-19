@@ -108,15 +108,16 @@ Pendiente, a cargo de una persona:
 
 | PR | Autor | Contenido |
 | --- | --- | --- |
-| [#34](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/34) | Renzo Scollo | Reparación del build del frontend y de la calificación de sesiones |
-| [#33](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/33) | Renzo Scollo | Calidad del frontend, recorridos E2E y CI |
-| [#32](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/32) | Franco Testi | Flujo completo de partidas, sesiones y misiones |
-| [#31](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/31) | Grupo | Integración de los cambios del 9 de septiembre |
-| [#30](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/30) | Renzo Scollo | Corrección de la compilación del frontend |
-| [#29](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/29) | Octavio Gudiño | Objetos, tiendas, compra, venta e inventarios |
-| [#28](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/28) | Alejandro Ciesco | Clases, personajes y acceso a partidas |
-| [#27](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/27) | Franco Testi | Sesiones, participantes y calificación del anfitrión |
-| [#26](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/26) y [#25](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/25) | Renzo Scollo | Autenticación, permisos y pantallas conectadas |
+| [#34](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/34) | Renzo Scollo | Reparación del build del frontend y de la calificación de sesiones en `SessionsPage.tsx` |
+| [#33](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/33) | Renzo Scollo | Calidad del frontend, `NotFoundPage`, recorridos E2E y CI |
+| [#32](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/32) | Franco Testi (Backend) y Renzo Scollo (Frontend) | Flujo completo de partidas, sesiones y misiones (`game.service.ts`, `SessionsPage`, `MissionsPage`) |
+| [#31](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/31) | Franco Testi (Backend) y Octavio Gudiño (Frontend) | Integración de objetos, compra, venta y movimiento de inventarios |
+| [#30](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/30) | Renzo Scollo | Corrección de la compilación del frontend y pantallas de turnos |
+| [#29](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/29) | Octavio Gudiño | Interfaces y pantallas frontend de objetos, tiendas, compra, venta e inventarios (`ShopsPage`, `ItemsPage`, `ModulePage`) |
+| [#28](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/28) | Alejandro Ciesco (Backend) y Octavio Gudiño (Frontend) | Modelo ORM y módulos de clases, tiendas y personajes (`class.*`, `shop.*`, `character.*`) |
+| [#27](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/27) | Franco Testi | Motor backend de partidas, sesiones, participantes y calificación del anfitrión |
+| [#26](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/26) y [#25](https://github.com/FrancoTesti/Gestor-de-turnos-para-partidas-de-juegos-de-Rol/pull/25) | Emanuel Salomón (Backend) y Renzo Scollo (Frontend) | Autenticación (`scrypt`, cookies `HttpOnly`), permisos (`authorization.ts`), contexto y pantallas conectadas |
+
 
 Al abrir un PR nuevo hay que sumarlo a esta tabla.
 

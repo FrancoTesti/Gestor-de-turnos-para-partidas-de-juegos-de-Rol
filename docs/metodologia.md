@@ -20,13 +20,14 @@ El trabajo se estructuró en iteraciones (sprints) semanales orientadas a objeti
 
 ### Responsables por módulo
 
-| Módulo | Responsable |
-| --- | --- |
-| Líder de Proyecto, Backend Core y Ciclo de Partidas (arquitectura Express/MikroORM, partidas, sesiones, misiones, calificación y despliegue en Render) | Franco Testi |
-| Motor de Economía, Catálogos y Persistencia Concurrente (objetos, tiendas, inventarios, compra/venta y bloqueos pesimistas) | Octavio Alejandro Gudiño |
-| Seguridad, Cuentas, Criptografía e Infraestructura de Datos (cookies `HttpOnly`, `scrypt`, perfiles, migración a PostgreSQL en Supabase y docs) | Emanuel Salomón |
-| Clases, Personajes, Reglas de Negocio e Inventarios Base (creación atómica personaje+inventario #1, cupos y nivel requerido) | Alejandro Mario Ciesco |
-| Transversal: Frontend SPA, Calidad, Testing y CI/CD (`UserContext`, `api.ts`, responsive, accesibilidad WCAG 2 AA, Vitest, Playwright y Actions) | Renzo Scollo |
+| Área | Módulo | Responsable |
+| --- | --- | --- |
+| **Backend** | Modelado de Datos Relacional (`src/entities/`, `SQL/rpg.sql`, `mikro-orm.config.ts`) y Módulos de **Clases**, **Tiendas** y **Personajes** (DTOs, validadores, servicios, controladores, rutas y tests unitarios) | Alejandro Mario Ciesco |
+| **Backend** | Servidor Express (`app.ts`), Seguridad, Autenticación (`scrypt`, cookies `HttpOnly`), Autorización (`authorization.ts`), Módulos de **Usuarios**, **Jugadores** y **Anfitriones**, migración a Supabase y scripts | Emanuel Salomón |
+| **Backend** | Líder de Proyecto y Motor de Juego Transaccional: **Partidas**, **Sesiones**, **Misiones**, **Karma**, **Inventarios** y **Objetos/Comercio** (`match.service.ts`, `game.service.ts`, `item.service.ts`), bloqueos pesimistas (`PESSIMISTIC_WRITE`), integración en PostgreSQL y despliegue en Render | Franco Testi |
+| **Frontend** | Arquitectura React SPA (`App.tsx`, `UserContext`, `ThemeContext`, `MainLayout`), cliente HTTP (`api.ts`), componentes `ui/`, pantallas de **Autenticación, Usuarios y Perfiles**, interfaz de **Partidas, Sesiones y Misiones**, accesibilidad WCAG 2 AA, E2E con Playwright y CI/CD | Renzo Scollo |
+| **Frontend** | Interfaces de Dominio RPG (`interfaces.ts`), servicios cliente y pantallas/componentes de **Personajes**, **Clases**, **Tiendas**, **Catálogo de Objetos**, formularios de **Compra y Venta**, **Gestor de Inventarios** (`ModulePage.tsx`) y pruebas unitarias de componentes y páginas | Octavio Alejandro Gudiño |
+
 
 ### Prácticas de ingeniería que se usan
 

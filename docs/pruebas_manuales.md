@@ -41,22 +41,21 @@ Se encontró un bug en base a eso, ver C5.1.
 Este lo testeé de antes, y sí, funciona.
 - [X] En «Mis perfiles», cambiar la contraseña: se cierra la sesión y la nueva contraseña funciona. — *a cargo de Emanuel Salomón, [prueba C8](#c8)*
 - [X] Eliminar un perfil con personajes o partidas asociadas: se rechaza con un mensaje que explica por qué. — *a cargo de Emanuel Salomón, [prueba C9](#c9)*
-- [x] Octavio Gudiño (25/09) Crear clase, tienda para esa clase y objeto (incluido el checkbox de Objeto Único ⭐). Ver listado, detalle y edición.
-- [x] Alejandro Ciesco (28/09) Crear partida pública y luego privada; comprobar contraseña requerida y vuelta a pública.
-- [x] Alejandro Ciesco (28/09) Crear personaje propio en la partida; comprobar inventario 1, dinero 100 y bloqueo de cupo lleno.
-- [x] Alejandro Ciesco (28/09) Filtrar personajes por clase y partidas activas. Ver nombre del anfitrión en partidas.
-- [x] Octavio Gudiño (25/09) Ver sugeridos por clase y aplicar filtros avanzados por tipo, nivel y valor máximo.
-- [x] Octavio Gudiño (25/09) Comprobar visibilidad del indicador ⭐ Único en el catálogo del anfitrión, en el detalle del objeto y en los sugeridos por clase.
-- [x] Octavio Gudiño (25/09) Comprar objeto y confirmar saldo/ubicación al recargar; verificar rechazo de compra del mismo objeto único si ya pertenece a otro personaje en la partida.
-- [x] Octavio Gudiño (25/09) Comprar con saldo insuficiente o en posición ocupada: rechazo con mensaje claro y sin débito.
-- [x] Octavio Gudiño (25/09) Crear otro inventario y mover objeto; probar mover a posición ocupada, reducir capacidad con objeto al límite o borrar ocupado: rechazo.
-- [x] Octavio Gudiño (25/09) Vender a 70 % y a 100 % comprobando saldo inicial y final antes de confirmar; intentar vender a tienda de otra clase, fuera de rango o repetir venta: rechazo.
-- [x] Franco Testi (18/09) Crear sesión y misión; iniciar con personajes de la partida.
-- [x] Franco Testi (18/09) Completar misión con suma incorrecta: rechazo; con suma correcta: crédito persistente.
-- [x] Franco Testi (18/09) Repetir finalización de misión: rechazo sin recompensa duplicada.
-- [x] Franco Testi (18/09) Finalizar sesión y calificar desde jugador; segunda calificación y autocalificación: rechazo.
-- [ ] Probar acceso ajeno desde solicitudes HTTP, no solo ocultando botones.
-- [ ] Revisar escritorio y móvil, tema claro/oscuro, navegación por teclado y errores de conexión.
+- [x] Alejandro Ciesco (28/09) Crear clase y tienda asociada a una clase/partida; verificar persistencia en base de datos, listado, detalle y edición (`/api/clases` y `/api/tiendas`).
+- [x] Alejandro Ciesco (28/09) Crear personaje propio en la partida (`/api/personajes`); comprobar creación automática de `Inventario` #1 (10 espacios), `dinero: 100`, `xp: 0`, `nivel: 1`, bloqueo por cupo lleno y protección de baja con historial u objetos.
+- [x] Alejandro Ciesco (28/09) Filtrar personajes por clase (`GET /api/personajes?idClase=`) y limpiar filtro.
+- [x] Octavio Gudiño (25/09) En Frontend (`ShopsPage`, `ItemsPage`, `ClassesPage`, `CharactersPage`): ver objetos sugeridos por clase y aplicar filtros interactivos por tipo, nivel y valor máximo.
+- [x] Octavio Gudiño (25/09) En Frontend (`ItemList`, `ItemDetail`, `ItemForm`): comprobar visibilidad del indicador ⭐ Único en el catálogo del anfitrión, en el detalle del objeto y en los sugeridos por clase.
+- [x] Octavio Gudiño (25/09) En Frontend (`PurchaseItemForm`): comprar objeto eligiendo personaje, inventario y ranura; confirmar actualización de saldo/ubicación y visualización de error ante objeto único ya adquirido o nivel insuficiente.
+- [x] Octavio Gudiño (25/09) En Frontend (`PurchaseItemForm`): intentar comprar con saldo insuficiente o en posición ocupada y comprobar alerta clara sin débito.
+- [x] Octavio Gudiño (25/09) En Frontend (`ModulePage`): crear segundo inventario y mover objeto entre casilleros; probar rechazo al mover a posición ocupada, reducir capacidad ocupada o borrar inventario con objetos.
+- [x] Octavio Gudiño (25/09) En Frontend (`SaleItemForm`): vender a 70 % y a 100 % comprobando cálculo interactivo de rango y saldo final; verificar rechazo fuera de rango o en tienda de otra clase.
+- [x] Franco Testi (18/09) Crear partida pública y luego privada con contraseña; iniciar sesión de juego (`/jugar`) y misión (`/misiones`) con personajes de la partida.
+- [x] Franco Testi (18/09) Completar misión (`/completar`) con suma incorrecta: rechazo; con suma exacta: acreditación transaccional persistente.
+- [x] Franco Testi (18/09) Repetir finalización de misión y compras/ventas concurrentes: bloqueo pesimista (`FOR UPDATE`) sin duplicación.
+- [x] Franco Testi (18/09) Finalizar sesión (`/finalizar`) y calificar karma del anfitrión (`/calificar`); segunda calificación y autocalificación: rechazo.
+- [x] Renzo Scollo (24/09) Probar navegación protegida (`MainLayout`, `UserContext`, `api.ts` ante `401`) y vistas de `LoginPage`, `RegisterPage`, `ProfilesPage`, `UsersPage`, `SessionsPage`, `MissionsPage` y `NotFoundPage`.
+- [x] Renzo Scollo (08/10) Revisar escritorio y móvil (375, 768 y 1280 px), tema claro/oscuro (`ThemeContext`), accesibilidad WCAG 2 AA (`axe-core`) y errores de conexión.
 
 Al terminar cada casilla, marcarla con el mismo formato que las ya ejecutadas:
 `- [x] Nombre Apellido (DD/MM) texto de la casilla`. Si algo no da lo esperado, dejar la casilla
@@ -196,41 +195,39 @@ registro tiene datos relacionados. Resolvé esas relaciones antes de eliminarlo.
 3. Escribir el resultado en [entrega.md](entrega.md) (cuántas aprobadas y qué hallazgos quedaron).
 4. Restaurar la copia de la base si se va a grabar el video después.
 
-## Guía paso a paso: clases, personajes y partidas (Alejandro Ciesco)
+## Guía paso a paso: clases, tiendas y personajes (Alejandro Ciesco)
 
 <a id="p1"></a>
 
-### P1. Crear partida pública y luego privada; contraseña requerida y vuelta a pública
+### P1. Crear clase y tienda asociada a una clase/partida
 
-1. Entrar con cuenta de anfitrión (`dm_demo`). Ir a **🎮 Partidas** → **+ Nueva Partida**.
-2. Crear partida pública «Campaña Abierta» con límite de 4 jugadores. Guardar.
-3. Crear partida privada «Campaña Secreta» marcando «Es privada» e ingresando contraseña `ClavePartida123`. Guardar.
-4. Intentar crear una partida privada dejando la contraseña vacía: el formulario y la API impiden la creación exigiendo la clave.
-5. Editar la partida «Campaña Secreta», desmarcar «Es privada» y guardar: pasa a pública y no requiere clave.
+1. Entrar con cuenta de anfitrión (`dm_demo`). Ir a **🛡️ Clases** → **+ Nueva Clase** y crear una clase con nombre y descripción válidos.
+2. Ir a **🏪 Tiendas** → **+ Nueva Tienda** y crear una tienda vinculada a la clase creada y a una partida activa.
+3. Editar el nombre o la clase asociada de la tienda y comprobar que los cambios persisten al recargar.
 
-**Esperado:** ambas partidas se crean correctamente con estado activa y su indicador de privacidad. La partida privada exige contraseña al crearse; al editarse a pública se actualiza sin requerir clave.
+**Esperado:** tanto la clase como la tienda se registran en PostgreSQL a través de `ClaseService` y `TiendaService`, validando la existencia de las referencias (`ErrorValidacionTienda`) y devolviendo sus respectivos DTOs públicos.
 
 <a id="p2"></a>
 
-### P2. Crear personaje propio en la partida; inicialización y control de cupo
+### P2. Crear personaje propio en la partida; inicialización de Inventario #1 y control de cupo
 
 1. Entrar con cuenta de jugador (`jugador_demo`). Ir a **⚔️ Personajes** → **+ Nuevo Personaje**.
-2. Seleccionar una clase (ej. Guerrero), la partida pública creada y completar nombre «Thorin» y raza «Enano». Guardar.
-3. Verificar en el listado y detalle que el personaje inicia con `dinero: 100`, `xp: 0`, `nivel: 1` e inventario número 1 con capacidad de 10 casillas.
+2. Seleccionar una clase (ej. Guerrero), una partida activa y completar nombre «Thorin» y raza «Enano». Guardar.
+3. Verificar en el listado y detalle que el personaje inicia con `dinero: 100`, `xp: 0`, `nivel: 1` e `Inventario` número 1 con capacidad de 10 casillas.
 4. Intentar crear un segundo personaje con el mismo jugador en la misma partida: se rechaza con error («Ya tenés un personaje en esta partida»).
-5. Intentar unirse a una partida con cupo lleno: se rechaza con error indicando que no hay cupos disponibles.
+5. Intentar borrar un personaje que posea objetos en su inventario o historial en `PersonajeSesion`: se rechaza con conflicto (`409`).
 
-**Esperado:** el personaje se crea y se asocia al jugador autenticado con sus valores iniciales correctos e inventario base. Se aplican las restricciones de un personaje por jugador por partida y límite de cupos.
+**Esperado:** `PersonajeService` crea el personaje y su `Inventario` #1 de forma atómica, inicializando sus atributos base y aplicando las restricciones de cupo, clave de partida privada y baja segura.
 
 <a id="p3"></a>
 
-### P3. Filtrar personajes por clase y partidas activas
+### P3. Filtrar personajes por clase y tiendas por partida
 
-1. En **⚔️ Personajes**, seleccionar el filtro por clase en el desplegable (ej. Guerrero, Mago).
-2. Comprobar que la lista se actualiza mostrando únicamente los personajes de esa clase y que el botón «Quitar filtro» restablece el listado completo.
-3. Ir al listado de **Partidas Activas** (o vista de unión a partidas): comprobar que muestra únicamente partidas en estado activo (`estado: true`), con el nombre del anfitrión (`nicknameAnfitrion` / `nombreUsuario`), tipo (pública/privada) y cupos disponibles.
+1. En **⚔️ Personajes**, seleccionar el filtro por clase en el desplegable (`GET /api/personajes?idClase=`).
+2. Comprobar que la lista se actualiza mostrando únicamente los personajes de esa clase y que el botón para limpiar filtro restablece el listado completo.
+3. En **🏪 Tiendas**, comprobar el listado general y el filtrado por partida (`GET /api/tiendas?idPartida=`), verificando la carga de relaciones mediante `populate: ['clase', 'partida']`.
 
-**Esperado:** el filtrado por clase es reactivo y puede limpiarse; el listado de partidas activas muestra datos consistentes y el anfitrión responsable.
+**Esperado:** el filtrado por clase en `PersonajeService` y por partida en `TiendaService` devuelve únicamente los registros coincidentes con sus relaciones pobladas en el DTO.
 
 ## Alcance de la verificación local
 
