@@ -79,9 +79,9 @@ export class PersonajeService {
     const nuevoPersonaje = this.em.create(Personaje, {
       nombreFicticio: data.nombreFicticio,
       raza: data.raza,
-      nivel: data.nivel ?? 1,
-      xp: data.xp ?? 0,
-      dinero: data.dinero ?? 100,
+      nivel: 1,
+      xp: 0,
+      dinero: 100,
       clase: clase,
       jugador: jugador,
       partida: partida,
@@ -112,27 +112,8 @@ export class PersonajeService {
       personaje.clase = clase;
     }
 
-    if (data.idUsuarioJugador !== undefined) {
-      const jugador = await this.em.findOne(Jugador, { usuario: { idUsuario: data.idUsuarioJugador } });
-      if (!jugador) {
-        throw new ErrorReferenciaNoEncontrada(`No existe el Jugador con ID de Usuario ${data.idUsuarioJugador}`);
-      }
-      personaje.jugador = jugador;
-    }
-
-    if (data.idPartida !== undefined) {
-      const partida = await this.em.findOne(Partida, { idPartida: data.idPartida });
-      if (!partida) {
-        throw new ErrorReferenciaNoEncontrada(`No existe la Partida con ID ${data.idPartida}`);
-      }
-      personaje.partida = partida;
-    }
-
     if (data.nombreFicticio !== undefined) personaje.nombreFicticio = data.nombreFicticio;
     if (data.raza !== undefined) personaje.raza = data.raza;
-    if (data.nivel !== undefined) personaje.nivel = data.nivel;
-    if (data.xp !== undefined) personaje.xp = data.xp;
-    if (data.dinero !== undefined) personaje.dinero = data.dinero;
 
     await this.em.flush();
     await this.em.populate(personaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);

@@ -2,19 +2,12 @@ import { type Request, type Response } from 'express';
 import { persistenceError } from './persistence-error';
 import {
   HostService,
-  AnfitrionService,
   HostAlreadyExistsError,
-  AnfitrionYaExisteError,
   UserNotFoundError,
-  UsuarioNoEncontradoError,
 } from '../services/host.service';
 import {
   HostValidationError,
-  ErrorValidacionAnfitrion,
-  validateUpdateHost,
-  validarActualizacionAnfitrion,
   validateCreateHost,
-  validarCreacionAnfitrion,
 } from '../validators/host.validator';
 
 type IdParams = { id: string };
@@ -92,27 +85,6 @@ export class HostController {
       res.status(201).json(nuevoAnfitrion);
     } catch (error) {
       respondError(error, res, 'Error al crear el anfitrión');
-    }
-  }
-
-  // PUT /api/anfitriones/:id
-  async updateHost(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = getId(req.params.id);
-    if (id === null) {
-      res.status(400).json({ message: 'ID inválido' });
-      return;
-    }
-
-    try {
-      const data = validateUpdateHost(req.body);
-      const actualizado = await this.hostService.updateHost(id, data);
-      if (!actualizado) {
-        res.status(404).json({ message: 'Anfitrión no encontrado' });
-        return;
-      }
-      res.json(actualizado);
-    } catch (error) {
-      respondError(error, res, 'Error al actualizar el anfitrión');
     }
   }
 

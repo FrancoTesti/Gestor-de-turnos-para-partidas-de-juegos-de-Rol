@@ -20,13 +20,9 @@ vi.mock('../../context/UserContext', () => ({
 
 vi.mock('../../services/class.service', () => ({
   getClasses: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
-  obtenerClases: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
   createClass: vi.fn().mockImplementation((data) => Promise.resolve({ idClase: 3, ...data })),
-  crearClase: vi.fn().mockImplementation((data) => Promise.resolve({ idClase: 3, ...data })),
   updateClass: vi.fn().mockImplementation((id, data) => Promise.resolve({ idClase: id, ...data })),
-  actualizarClase: vi.fn().mockImplementation((id, data) => Promise.resolve({ idClase: id, ...data })),
   deleteClass: vi.fn().mockResolvedValue(undefined),
-  eliminarClase: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('ClasesPage', () => {

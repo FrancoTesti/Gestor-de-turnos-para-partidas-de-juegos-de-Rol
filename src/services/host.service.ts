@@ -3,7 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { Anfitrion } from '../entities/Host.entity';
 import { Usuario } from '../entities/User.entity';
 import { Partida } from '../entities/Match.entity';
-import type { ActualizarAnfitrionDTO, AnfitrionPublicoDTO, CrearAnfitrionDTO } from '../types/host.dto';
+import type { AnfitrionPublicoDTO, CrearAnfitrionDTO } from '../types/host.dto';
 
 // error  personalizado: el Usuario no existe en la BD
 export class UsuarioNoEncontradoError extends Error {
@@ -64,16 +64,6 @@ export class AnfitrionService {
       karma: data.karma,
     });
 
-    await this.em.flush();
-    return this.toPublicHost(anfitrion);
-  }
-
-  // actualiza karma o cantPartidasActuales
-  async updateHost(idUsuario: number, data: ActualizarAnfitrionDTO): Promise<AnfitrionPublicoDTO | null> {
-    const anfitrion = await this.em.findOne(Anfitrion, idUsuario as any, { populate: ['usuario'] });
-    if (!anfitrion) return null;
-
-    this.em.assign(anfitrion, data);
     await this.em.flush();
     return this.toPublicHost(anfitrion);
   }

@@ -55,18 +55,13 @@ vi.mock('../../services/api', () => ({
 
 vi.mock('../../services/shop.service', () => ({
   getShops: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockTiendas)),
-  obtenerTiendas: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockTiendas)),
   createShop: vi.fn().mockImplementation((data) => Promise.resolve({ idTienda: 3, ...data })),
-  crearTienda: vi.fn().mockImplementation((data) => Promise.resolve({ idTienda: 3, ...data })),
   updateShop: vi.fn().mockImplementation((id, data) => Promise.resolve({ idTienda: id, ...data })),
-  actualizarTienda: vi.fn().mockImplementation((id, data) => Promise.resolve({ idTienda: id, ...data })),
   deleteShop: vi.fn().mockResolvedValue(undefined),
-  eliminarTienda: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock('../../services/class.service', () => ({
   getClasses: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
-  obtenerClases: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
 }));
 
 vi.mock('../../services/item.service', () => {
@@ -114,9 +109,7 @@ vi.mock('../../services/item.service', () => {
 
   return {
     getItems: vi.fn().mockResolvedValue(mockItemsData),
-    obtenerObjetos: vi.fn().mockResolvedValue(mockItemsData),
     purchaseItem: vi.fn().mockResolvedValue({}),
-    comprarObjeto: vi.fn().mockResolvedValue({}),
   };
 });
 
@@ -213,5 +206,3 @@ describe('TiendasPage', () => {
     expect(within(aside).queryByText(/Los anfitriones administran las tiendas/i)).not.toBeInTheDocument();
   });
 });
-
-

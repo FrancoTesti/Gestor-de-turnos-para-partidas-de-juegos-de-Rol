@@ -1,4 +1,4 @@
-import type { ActualizarAnfitrionDTO, CrearAnfitrionDTO } from '../types/host.dto';
+import type { CrearAnfitrionDTO } from '../types/host.dto';
 
 export class HostValidationError extends Error {
   constructor(mensaje: string) {
@@ -48,43 +48,4 @@ export function validateCreateHost(body: unknown): CrearAnfitrionDTO {
   };
 }
 
-// valida los datos para ACTUALIZAR un Anfitrion
-export function validateUpdateHost(body: unknown): ActualizarAnfitrionDTO {
-  if (typeof body !== 'object' || body === null) {
-    throw new ErrorValidacionAnfitrion('El cuerpo de la solicitud debe ser un objeto');
-  }
-
-  const payload = body as Record<string, unknown>;
-  const resultado: ActualizarAnfitrionDTO = {};
-
-  if (payload.cantPartidasActuales !== undefined) {
-    if (
-      typeof payload.cantPartidasActuales !== 'number' ||
-      !Number.isInteger(payload.cantPartidasActuales) ||
-      payload.cantPartidasActuales < 0
-    ) {
-      throw new ErrorValidacionAnfitrion('El campo cantPartidasActuales debe ser un número entero mayor o igual a 0');
-    }
-    resultado.cantPartidasActuales = payload.cantPartidasActuales;
-  }
-
-  if (payload.karma !== undefined) {
-    if (
-      typeof payload.karma !== 'number' ||
-      !Number.isInteger(payload.karma) ||
-      payload.karma < 0
-    ) {
-      throw new ErrorValidacionAnfitrion('El campo karma debe ser un número entero mayor o igual a 0');
-    }
-    resultado.karma = payload.karma;
-  }
-
-  if (Object.keys(resultado).length === 0) {
-    throw new ErrorValidacionAnfitrion('Debe enviar al menos un campo para actualizar');
-  }
-
-  return resultado;
-}
-
 export const validarCreacionAnfitrion = validateCreateHost;
-export const validarActualizacionAnfitrion = validateUpdateHost;
