@@ -8,16 +8,12 @@ import './ModulePage.css';
 import './UsersPage.css';
 
 type Row = Record<string, unknown>;
-type Resource = 'clases' | 'tiendas' | 'partidas' | 'personajes' | 'inventarios';
+type Resource = 'partidas' | 'inventarios';
 type Field = { key: string; label: string; type?: 'number' | 'boolean' | 'password'; ref?: string; optional?: boolean; initial?: string | number | boolean; min?: number; max?: number; createOnly?: boolean };
 type Config = { title: string; keys: string[]; fields: Field[] };
 const field = (key: string, label: string, options: Omit<Field, 'key' | 'label'> = {}): Field => ({ key, label, ...options });
-const game = field('idPartida', 'Partida', { ref: 'partidas', createOnly: true });
 const configs: Record<Resource, Config> = {
-  clases: { title: 'Clases', keys: ['idClase'], fields: [field('nombreClase', 'Nombre'), field('descripcionClase', 'Descripción')] },
-  tiendas: { title: 'Tiendas', keys: ['idTienda'], fields: [field('nombre', 'Nombre'), field('claseTienda', 'Tipo de tienda'), field('idClase', 'Clase sugerida', { ref: 'clases', optional: true })] },
   partidas: { title: 'Partidas', keys: ['idPartida'], fields: [field('nombre', 'Nombre'), field('estado', 'Estado', { initial: 'activa' }), field('limiteJugadores', 'Límite de jugadores', { type: 'number', min: 1, initial: 4 }), field('esPrivada', 'Privada', { type: 'boolean', initial: false }), field('contrasena', 'Contraseña (vacía: conservar al editar)', { type: 'password', optional: true })] },
-  personajes: { title: 'Personajes', keys: ['idPersonaje'], fields: [field('nombreFicticio', 'Nombre'), field('raza', 'Raza'), field('idClase', 'Clase', { ref: 'clases' }), game, field('contrasenaPartida', 'Contraseña de partida privada', { type: 'password', optional: true, createOnly: true })] },
   inventarios: { title: 'Inventarios', keys: ['idPersonaje', 'numInventario'], fields: [field('idPersonaje', 'Personaje', { ref: 'personajes', createOnly: true }), field('numInventario', 'Número de inventario', { type: 'number', min: 1, createOnly: true }), field('cantidadEspacio', 'Capacidad', { type: 'number', min: 1, max: 1000, initial: 10 })] },
 };
 const idKeys: Record<string, string> = { clases: 'idClase', partidas: 'idPartida', personajes: 'idPersonaje', tiendas: 'idTienda' };
@@ -59,7 +55,6 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     window.addEventListener('popstate', syncFromUrl);
     return () => window.removeEventListener('popstate', syncFromUrl);
   }, [resource]);
-  const [classFilter, setClassFilter] = useState('');
   const [activeOnly, setActiveOnly] = useState(false);
   const [sortField, setSortField] = useState<string>('idPartida');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -82,10 +77,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     return () => { active = false; };
   }, [resource, revision]);
   const allowed = (r?: Row) => {
-    if (resource === 'personajes') return r ? r.idUsuarioJugador === userId : true;
     if (resource === 'inventarios') return true;
-    if (resource === 'partidas') return host && (!r || r.idUsuarioAnfitrion === userId);
-    return host;
+    return host && (!r || r.idUsuarioAnfitrion === userId);
   };
   const startEdit = (r?: Row) => {
     setSelected(r ?? null); setValues(Object.fromEntries(config.fields.map(f => [f.key, r?.[f.key] ?? f.initial ?? (f.type === 'boolean' ? false : '')]))); setEditing(true); setError('');
@@ -124,7 +117,6 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     }
     if (resource === 'partidas' && !selected) data.idUsuarioAnfitrion = userId;
     if (resource === 'partidas' && !data.esPrivada) delete data.contrasena;
-    if (resource === 'personajes' && !selected) data.idUsuarioJugador = userId;
     await api(selected ? url(selected) : `/${resource}`, selected ? 'PUT' : 'POST', data);
   });
   const detail = async (r: Row) => {
@@ -150,7 +142,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             const anfitrion = String(r.nicknameAnfitrion ?? '').toLowerCase();
             matchesSearch = nombre.includes(term) || anfitrion.includes(term) || String(r.idPartida).includes(term);
           }
-        } else if (resource === 'inventarios') {
+        } else {
           const cleanIdTerm = term.replace(/^#/, '').trim();
           const p = refs.personajes?.find(x => x.idPersonaje === r.idPersonaje);
           const pName = p ? label(p).toLowerCase() : '';
@@ -158,14 +150,11 @@ export default function ModulePage({ resource }: { resource: Resource }) {
           const matchesName = pName.includes(term);
           const matchesOther = Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
           matchesSearch = matchesId || matchesName || matchesOther;
-        } else {
-          matchesSearch = Object.values(r).some(v => v !== null && v !== undefined && String(v).toLocaleLowerCase().includes(term));
         }
       }
-      const matchesClass = !classFilter || String(r.idClase) === classFilter;
       const matchesActive = !activeOnly || r.estado === 'activa';
       const matchesMisPartidas = !soloMisPartidas || resource !== 'partidas' || estaInscripto(r);
-      return matchesSearch && matchesClass && matchesActive && matchesMisPartidas;
+      return matchesSearch && matchesActive && matchesMisPartidas;
     });
 
     if (resource === 'partidas' && sortField === 'inscripto') {
@@ -190,22 +179,16 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     }
 
     return res;
-  }, [rows, refs.personajes, search, classFilter, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
+  }, [rows, refs.personajes, search, activeOnly, soloMisPartidas, resource, sortField, sortDir, estaInscripto]);
   const columns = resource === 'inventarios'
     ? ['idPersonaje', 'personajeNombre', 'numInventario', 'cantidadEspacio']
-    : [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), ...(resource === 'partidas' ? ['nicknameAnfitrion'] : []), ...(resource === 'personajes' ? ['jugadorNombre', 'xp', 'nivel', 'dinero'] : [])])];
+    : [...new Set([...config.keys, ...config.fields.filter(f => f.type !== 'password').map(f => f.key), 'nicknameAnfitrion'])];
   const columnLabel = (key: string): string => {
     if (key === 'nicknameAnfitrion') return 'Nickname Anfitrión';
-    if (key === 'jugadorNombre') return 'Nombre del Jugador';
     if (key === 'idPartida') return 'Id de Partida';
-    if (key === 'idPersonaje') return resource === 'inventarios' ? 'Id Personaje' : 'Id de Personaje';
+    if (key === 'idPersonaje') return 'Id Personaje';
     if (key === 'personajeNombre') return 'Personaje';
-    if (key === 'idClase') return 'Id de Clase';
-    if (key === 'idTienda') return 'Id de Tienda';
     if (key === 'numInventario') return 'Núm. Inventario';
-    if (key === 'xp') return 'XP';
-    if (key === 'nivel') return 'Nivel';
-    if (key === 'dinero') return 'Dinero';
     return config.fields.find(f => f.key === key)?.label ?? key;
   };
   const display = (r: Row, key: string) => {
@@ -219,7 +202,6 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     const f = config.fields.find(f => f.key === key);
     const referenced = f?.ref && refs[f.ref]?.find(x => x[idKeys[f.ref!]] === r[key]);
     if (referenced) return `${r[key]} — ${label(referenced)}`;
-    if (key === 'estadoSesion') return ['Planificada', 'En curso', 'Finalizada'][Number(r[key])] ?? String(r[key]);
     if (key === 'estado') {
       const val = String(r[key] ?? '').toLowerCase();
       if (val === 'activa') return 'Activa';
@@ -242,7 +224,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
       {config.fields.filter(f => !selected || !f.createOnly).map(f => <label key={f.key}>{f.label}
         {f.ref ? <select required={!f.optional} value={String(values[f.key] ?? '')} onChange={e => setValues({ ...values, [f.key]: e.target.value })}>
           <option value="">Seleccionar</option>
-          {(refs[f.ref] ?? []).filter(r => f.ref !== 'personajes' || r.idUsuarioJugador === userId).filter(r => f.ref !== 'partidas' || resource === 'personajes' || r.idUsuarioAnfitrion === userId).map(r => <option key={String(r[idKeys[f.ref!]])} value={String(r[idKeys[f.ref!]])}>{label(r)} (#{String(r[idKeys[f.ref!]])})</option>)}
+          {(refs[f.ref] ?? []).filter(r => f.ref !== 'personajes' || r.idUsuarioJugador === userId).filter(r => f.ref !== 'partidas' || r.idUsuarioAnfitrion === userId).map(r => <option key={String(r[idKeys[f.ref!]])} value={String(r[idKeys[f.ref!]])}>{label(r)} (#{String(r[idKeys[f.ref!]])})</option>)}
         </select> : f.key === 'estado' ? <select value={String(values.estado)} onChange={e => setValues({ ...values, estado: e.target.value })}><option value="activa">Activa</option><option value="finalizada">Finalizada</option></select> :
         <input type={f.type === 'boolean' ? 'checkbox' : f.type ?? 'text'} required={!f.optional && f.type !== 'boolean'} min={f.min} max={f.max ?? (f.type === 'number' ? 2147483647 : undefined)} step={f.type === 'number' ? 1 : undefined} maxLength={f.type === 'password' ? 100 : undefined} checked={f.type === 'boolean' ? Boolean(values[f.key]) : undefined} value={f.type === 'boolean' ? undefined : String(values[f.key] ?? '')} onChange={e => setValues({ ...values, [f.key]: f.type === 'boolean' ? e.target.checked : e.target.value })} />}
       </label>)}
@@ -259,15 +241,6 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             style={{ padding: '0.6rem 0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none', width: '100%', maxWidth: '24rem', boxSizing: 'border-box' }}
           />
         </label>
-        {resource === 'personajes' && (
-          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
-            Filtrar por clase:
-            <select value={classFilter} onChange={e => setClassFilter(e.target.value)} style={{ padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', fontSize: '0.95rem', outline: 'none' }}>
-              <option value="">Todas</option>
-              {refs.clases?.map(c => <option key={String(c.idClase)} value={String(c.idClase)}>{label(c)}</option>)}
-            </select>
-          </label>
-        )}
         {resource === 'partidas' && (
           <>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: 0, fontWeight: 500, fontSize: '0.95rem', color: 'var(--text-h)' }}>
@@ -320,8 +293,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             </label>
           </>
         )}
-        {(search || classFilter || activeOnly || soloMisPartidas) && (
-          <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setClassFilter(''); setActiveOnly(false); setSoloMisPartidas(false); }}>
+        {(search || activeOnly || soloMisPartidas) && (
+          <button type="button" className="btn-secondary" style={{ fontSize: '0.85rem', padding: '0.35rem 0.7rem' }} onClick={() => { setSearch(''); setActiveOnly(false); setSoloMisPartidas(false); }}>
             Limpiar filtros
           </button>
         )}

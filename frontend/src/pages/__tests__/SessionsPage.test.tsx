@@ -30,7 +30,6 @@ describe('SesionesPage - Flujo de estados', () => {
     const mockSesiones = [
       { idPartida: 1, numSesion: 1, estadoSesion: 0, duracionSesion: 60, cantJugadores: 2 }
     ];
-    if (sesionService.obtenerSesiones) (sesionService.obtenerSesiones as any).mockResolvedValue(mockSesiones);
     if (sesionService.getSessions) (sesionService.getSessions as any).mockResolvedValue(mockSesiones);
     (apiModule.api as any).mockResolvedValue([]);
   });
@@ -69,8 +68,6 @@ describe('SesionesPage - Flujo de estados', () => {
       expect(screen.getAllByText(/2.147.483.647/i)[0]).toBeInTheDocument();
     });
 
-    // Asegura que no se llamó al servicio
-    if (sesionService.crearSesion) expect(sesionService.crearSesion).not.toHaveBeenCalled();
     if (sesionService.createSession) expect(sesionService.createSession).not.toHaveBeenCalled();
   });
 
@@ -82,7 +79,6 @@ describe('SesionesPage - Flujo de estados', () => {
       return Promise.resolve([]);
     });
     const errRejection = new Error('numSesion: Too big: expected int to be <=9007199254740991; numSesion: Too big: expected number to be <=2147483647');
-    if (sesionService.crearSesion) (sesionService.crearSesion as any).mockRejectedValue(errRejection);
     if (sesionService.createSession) (sesionService.createSession as any).mockRejectedValue(errRejection);
 
     const { fireEvent } = await import('@testing-library/react');
@@ -101,8 +97,6 @@ describe('SesionesPage - Flujo de estados', () => {
 
     await waitFor(() => {
       expect(screen.getAllByText(/El número de sesión es demasiado grande/i)[0]).toBeInTheDocument();
-      expect(screen.getAllByText(/2.147.483.647/i)[0]).toBeInTheDocument();
     });
   });
 });
-

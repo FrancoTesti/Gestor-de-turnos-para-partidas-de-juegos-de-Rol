@@ -5,9 +5,9 @@ import { UsuarioFormulario, type UsuarioFormData } from '../components/usuarios/
 import { AvatarUsuario } from '../components/usuarios/UserList';
 import Loading from '../components/ui/Loading';
 import { CheckIcon, AvisoModal } from '../components/ui';
-import { actualizarUsuario } from '../services/user.service';
-import { actualizarJugador, crearJugador, eliminarJugador } from '../services/player.service';
-import { crearAnfitrion, eliminarAnfitrion } from '../services/host.service';
+import { updateUser } from '../services/user.service';
+import { updatePlayer, createPlayer, deletePlayer } from '../services/player.service';
+import { createHost, deleteHost } from '../services/host.service';
 import '../components/usuarios/users.css';
 import './ProfilesPage.css';
 
@@ -52,7 +52,7 @@ export default function ProfilesPage() {
 
   const guardarCuenta = async (data: UsuarioFormData) => {
     const { idUsuario: _ignorado, ...payload } = data;
-    await actualizarUsuario(id, payload);
+    await updateUser(id, payload);
     setEditando(false);
     if (payload.contrasena) {
       // El token de sesión guarda el hash anterior: cambiar la contraseña la invalida.
@@ -222,7 +222,7 @@ export default function ProfilesPage() {
                 className="btn-secondary"
                 disabled={busy}
                 onClick={() => void ejecutar(
-                  () => actualizarJugador(id, { estado: !jugador.estado }),
+                  () => updatePlayer(id, { estado: !jugador.estado }),
                   jugador.estado ? 'Perfil de jugador marcado como inactivo.' : 'Perfil de jugador marcado como activo.',
                 )}
               >
@@ -234,7 +234,7 @@ export default function ProfilesPage() {
                 disabled={busy}
                 onClick={() => {
                   if (confirmarBaja('¿Eliminar el perfil de jugador? No se puede si tenés personajes creados.')) {
-                    void ejecutar(() => eliminarJugador(id), 'Perfil de jugador eliminado.');
+                    void ejecutar(() => deletePlayer(id), 'Perfil de jugador eliminado.');
                   }
                 }}
               >
@@ -249,7 +249,7 @@ export default function ProfilesPage() {
               type="button"
               className="btn-primary"
               disabled={busy}
-              onClick={() => void ejecutar(() => crearJugador({ idUsuario: id, estado: true }), 'Perfil de jugador creado.')}
+              onClick={() => void ejecutar(() => createPlayer({ idUsuario: id, estado: true }), 'Perfil de jugador creado.')}
             >
               Crear perfil de jugador
             </button>
@@ -272,7 +272,7 @@ export default function ProfilesPage() {
               disabled={busy}
               onClick={() => {
                 if (confirmarBaja('¿Eliminar el perfil de anfitrión? No se puede si tenés partidas creadas.')) {
-                  void ejecutar(() => eliminarAnfitrion(id), 'Perfil de anfitrión eliminado.');
+                  void ejecutar(() => deleteHost(id), 'Perfil de anfitrión eliminado.');
                 }
               }}
             >
@@ -286,7 +286,7 @@ export default function ProfilesPage() {
               type="button"
               className="btn-primary"
               disabled={busy}
-              onClick={() => void ejecutar(() => crearAnfitrion({ idUsuario: id }), 'Perfil de anfitrión creado.')}
+              onClick={() => void ejecutar(() => createHost({ idUsuario: id }), 'Perfil de anfitrión creado.')}
             >
               Crear perfil de anfitrión
             </button>

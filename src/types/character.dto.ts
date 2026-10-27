@@ -4,9 +4,6 @@ export interface CrearPersonajeDTO {
   idClase: number;
   idUsuarioJugador: number;
   idPartida: number;
-  xp?: number;
-  nivel?: number;
-  dinero?: number;
   contrasenaPartida?: string;
 }
 
@@ -14,11 +11,6 @@ export interface ActualizarPersonajeDTO {
   nombreFicticio?: string;
   raza?: string;
   idClase?: number;
-  idUsuarioJugador?: number;
-  idPartida?: number;
-  xp?: number;
-  nivel?: number;
-  dinero?: number;
 }
 
 export interface PersonajePublicoDTO {

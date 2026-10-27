@@ -31,7 +31,6 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
     const mockMisionesData = [
       { idPartida: 1, numSesion: 1, numMision: 1, dineroTotal: 100, xpTotal: 50, estado: false }
     ];
-    if (misionService.obtenerMisiones) (misionService.obtenerMisiones as any).mockResolvedValue(mockMisionesData);
     if (misionService.getMissions) (misionService.getMissions as any).mockResolvedValue(mockMisionesData);
     (apiModule.api as any).mockResolvedValue([]);
   });
@@ -62,7 +61,6 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
       expect(screen.getAllByText(/Debes seleccionar una sesión en curso para crear la misión/i)[0]).toBeInTheDocument();
     });
 
-    if (misionService.crearMision) expect(misionService.crearMision).not.toHaveBeenCalled();
     if (misionService.createMission) expect(misionService.createMission).not.toHaveBeenCalled();
   });
 
@@ -77,7 +75,6 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
       return Promise.resolve([]);
     });
     const errRejection = new Error('idPartida: Too small: expected number to be >0; numSesion: Too small: expected number to be >0');
-    if (misionService.crearMision) (misionService.crearMision as any).mockRejectedValue(errRejection);
     if (misionService.createMission) (misionService.createMission as any).mockRejectedValue(errRejection);
 
     const { fireEvent } = await import('@testing-library/react');
@@ -102,4 +99,3 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
     });
   });
 });
-

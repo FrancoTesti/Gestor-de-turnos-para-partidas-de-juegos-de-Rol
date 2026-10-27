@@ -65,26 +65,17 @@ vi.mock('../../services/api', () => ({
 
 vi.mock('../../services/class.service', () => ({
   getClasses: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
-  obtenerClases: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockClases)),
 }));
 
 vi.mock('../../services/character.service', () => ({
   getCharacters: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockPersonajes)),
-  obtenerPersonajes: vi.fn().mockImplementation(() => Promise.resolve(mocks.mockPersonajes)),
   createCharacter: vi.fn().mockImplementation((data) =>
-    Promise.resolve({ idPersonaje: 3, ...data, nivel: 1, xp: 0, dinero: 100 }),
-  ),
-  crearPersonaje: vi.fn().mockImplementation((data) =>
     Promise.resolve({ idPersonaje: 3, ...data, nivel: 1, xp: 0, dinero: 100 }),
   ),
   updateCharacter: vi.fn().mockImplementation((id, data) =>
     Promise.resolve({ idPersonaje: id, ...data }),
   ),
-  actualizarPersonaje: vi.fn().mockImplementation((id, data) =>
-    Promise.resolve({ idPersonaje: id, ...data }),
-  ),
   deleteCharacter: vi.fn().mockResolvedValue(undefined),
-  eliminarPersonaje: vi.fn().mockResolvedValue(undefined),
 }));
 
 describe('PersonajesPage', () => {

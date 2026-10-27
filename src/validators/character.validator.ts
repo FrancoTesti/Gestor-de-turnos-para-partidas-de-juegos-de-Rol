@@ -68,15 +68,6 @@ export function validateCreateCharacter(body: unknown): CrearPersonajeDTO {
     if (typeof data.contrasenaPartida !== 'string' || data.contrasenaPartida.length > 100) throw new ErrorValidacionPersonaje('Contraseña de partida inválida');
     dto.contrasenaPartida = data.contrasenaPartida;
   }
-  if (data.xp !== undefined && data.xp !== null) {
-    dto.xp = validatePositiveNumber(data.xp, 'xp', 0);
-  }
-  if (data.nivel !== undefined && data.nivel !== null) {
-    dto.nivel = validatePositiveNumber(data.nivel, 'nivel', 1);
-  }
-  if (data.dinero !== undefined && data.dinero !== null) {
-    dto.dinero = validatePositiveNumber(data.dinero, 'dinero', 0);
-  }
 
   return dto;
 }
@@ -97,21 +88,6 @@ export function validateUpdateCharacter(body: unknown): ActualizarPersonajeDTO {
   }
   if (data.idClase !== undefined) {
     dto.idClase = validatePositiveNumber(data.idClase, 'idClase', 1);
-  }
-  if (data.idUsuarioJugador !== undefined) {
-    dto.idUsuarioJugador = validatePositiveNumber(data.idUsuarioJugador, 'idUsuarioJugador', 1);
-  }
-  if (data.idPartida !== undefined) {
-    dto.idPartida = validatePositiveNumber(data.idPartida, 'idPartida', 1);
-  }
-  if (data.xp !== undefined) {
-    dto.xp = validatePositiveNumber(data.xp, 'xp', 0);
-  }
-  if (data.nivel !== undefined) {
-    dto.nivel = validatePositiveNumber(data.nivel, 'nivel', 1);
-  }
-  if (data.dinero !== undefined) {
-    dto.dinero = validatePositiveNumber(data.dinero, 'dinero', 0);
   }
 
   return dto;

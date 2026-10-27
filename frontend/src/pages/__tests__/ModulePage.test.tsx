@@ -14,7 +14,7 @@ beforeEach(() => {
     return [];
   });
 });
-it.each([['clases', 'Clases'], ['tiendas', 'Tiendas'], ['partidas', 'Partidas'], ['personajes', 'Personajes'], ['inventarios', 'Inventarios']] as const)('carga módulo %s desde API', async (resource, title) => {
+it.each([['partidas', 'Partidas'], ['inventarios', 'Inventarios']] as const)('carga módulo %s desde API', async (resource, title) => {
   render(<ModulePage resource={resource} />);
   expect(screen.getByRole('heading', { name: title })).toBeInTheDocument();
   await waitFor(() => expect(screen.queryByRole('status')).not.toBeInTheDocument());
@@ -216,6 +216,3 @@ it('inicializa el filtro de búsqueda desde query param personaje y filtra inven
   // Restaurar URL
   window.history.pushState({}, '', '/');
 });
-
-
-

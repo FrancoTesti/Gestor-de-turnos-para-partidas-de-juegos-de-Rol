@@ -9,10 +9,8 @@ import {
   updateItem,
   deleteItem,
   purchaseItem,
-  sellItem,
   type CreateItemData,
   type PurchaseItemData,
-  type SellItemData,
   type ItemPublic,
 } from '../../services/item.service';
 import { getCharacters } from '../../services/character.service';
@@ -21,7 +19,6 @@ import PurchaseItemForm from './PurchaseItemForm';
 import ItemDetail from './ItemDetail';
 import ItemForm from './ItemForm';
 import ItemList from './ItemList';
-import SaleItemForm from './SaleItemForm';
 import './items.css';
 
 type ViewMode = 'listado' | 'formulario';
@@ -52,7 +49,6 @@ export function ItemsPage() {
   const [errorDetalle, setErrorDetalle] = useState<string | null>(null);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [compraAbierta, setCompraAbierta] = useState(false);
-  const [venderAbierto, setVenderAbierto] = useState(false);
   const [revision, setRevision] = useState(0);
 
   useEffect(() => {
@@ -98,7 +94,6 @@ export function ItemsPage() {
 
   async function handleSelect(objeto: ItemPublic): Promise<void> {
     setCompraAbierta(false);
-    setVenderAbierto(false);
     setCargandoDetalle(true);
     setErrorDetalle(null);
     try {
@@ -175,41 +170,6 @@ export function ItemsPage() {
     }
   }
 
-  async function handleSell(data: SellItemData): Promise<void> {
-    if (!seleccionado) return;
-    setError(null);
-    setMensaje(null);
-    try {
-      const resultado = await sellItem(seleccionado.idObjeto, data);
-      setObjetos((actuales) => {
-        if (seleccionado.esUnico) {
-          return actuales.map((o) =>
-            o.idObjeto === resultado.idObjeto
-              ? { ...o, idTienda: data.idTienda, idPersonaje: null, numInventario: null, posicion: 0 }
-              : o,
-          );
-        }
-        return actuales.filter((o) => o.idObjeto !== resultado.idObjeto);
-      });
-      setPersonajes((actuales) =>
-        actuales.map((p) =>
-          p.idPersonaje === resultado.idPersonaje
-            ? { ...p, dinero: resultado.dineroRestante }
-            : p,
-        ),
-      );
-      setVenderAbierto(false);
-      setSeleccionado(null);
-      setMensaje(`Venta realizada con éxito por $${resultado.precio}. Saldo actual: $${resultado.dineroRestante}.`);
-    } catch (e) {
-      setError(getErrorMessage(e));
-    }
-  }
-
-  const personajeDueno = seleccionado && seleccionado.idPersonaje !== null
-    ? personajes.find(p => p.idPersonaje === seleccionado.idPersonaje)
-    : undefined;
-
   return (
     <section>
       <header className="seccion-header">
@@ -263,21 +223,11 @@ export function ItemsPage() {
                 cargando={cargandoDetalle}
                 error={errorDetalle}
                 nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
-                onComprar={!host && seleccionado !== null && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
+                onComprar={!host && seleccionado !== null && seleccionado.idTienda !== null ? () => setCompraAbierta(true) : undefined}
                 deshabilitarCompra={host}
                 motivoDeshabilitado="Los anfitriones no pueden comprar objetos de la tienda"
-                onCerrar={seleccionado ? () => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); } : undefined}
+                onCerrar={seleccionado ? () => { setSeleccionado(null); setCompraAbierta(false); } : undefined}
               />
-              {personajeDueno && !venderAbierto && (
-                <button
-                  type="button"
-                  className="btn-secondary"
-                  style={{ marginTop: '0.75rem', width: '100%' }}
-                  onClick={() => { setCompraAbierta(false); setVenderAbierto(true); }}
-                >
-                  Vender este objeto
-                </button>
-              )}
               {seleccionado && compraAbierta && (
                 <PurchaseItemForm
                   objeto={seleccionado}
@@ -285,15 +235,6 @@ export function ItemsPage() {
                   inventarios={inventarios}
                   onComprar={handlePurchase}
                   onCancelar={() => setCompraAbierta(false)}
-                />
-              )}
-              {seleccionado && personajeDueno && venderAbierto && (
-                <SaleItemForm
-                  objeto={seleccionado}
-                  personaje={personajeDueno}
-                  tiendas={tiendas}
-                  onVender={handleSell}
-                  onCancelar={() => setVenderAbierto(false)}
                 />
               )}
             </aside>
@@ -305,7 +246,7 @@ export function ItemsPage() {
               className="objeto-modal-mobile"
               role="dialog"
               aria-modal="true"
-              onClick={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
+              onClick={() => { setSeleccionado(null); setCompraAbierta(false); }}
             >
               <div
                 className="objeto-modal-mobile-content"
@@ -316,21 +257,11 @@ export function ItemsPage() {
                   cargando={cargandoDetalle}
                   error={errorDetalle}
                   nombreTienda={tiendas.find((tienda) => tienda.idTienda === seleccionado?.idTienda)?.nombre}
-                  onComprar={!host && seleccionado.idTienda !== null ? () => { setVenderAbierto(false); setCompraAbierta(true); } : undefined}
+                  onComprar={!host && seleccionado.idTienda !== null ? () => setCompraAbierta(true) : undefined}
                   deshabilitarCompra={host}
                   motivoDeshabilitado="Los anfitriones no pueden comprar objetos de la tienda"
-                  onCerrar={() => { setSeleccionado(null); setCompraAbierta(false); setVenderAbierto(false); }}
+                  onCerrar={() => { setSeleccionado(null); setCompraAbierta(false); }}
                 />
-                {personajeDueno && !venderAbierto && (
-                  <button
-                    type="button"
-                    className="btn-secondary"
-                    style={{ marginTop: '0.75rem', width: '100%' }}
-                    onClick={() => { setCompraAbierta(false); setVenderAbierto(true); }}
-                  >
-                    Vender este objeto
-                  </button>
-                )}
                 {compraAbierta && (
                   <PurchaseItemForm
                     objeto={seleccionado}
@@ -341,18 +272,6 @@ export function ItemsPage() {
                       setSeleccionado(null);
                     }}
                     onCancelar={() => setCompraAbierta(false)}
-                  />
-                )}
-                {personajeDueno && venderAbierto && (
-                  <SaleItemForm
-                    objeto={seleccionado}
-                    personaje={personajeDueno}
-                    tiendas={tiendas}
-                    onVender={async (d) => {
-                      await handleSell(d);
-                      setSeleccionado(null);
-                    }}
-                    onCancelar={() => setVenderAbierto(false)}
                   />
                 )}
               </div>

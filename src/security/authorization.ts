@@ -59,11 +59,6 @@ export const anfitrionPutProtection: RequestHandler = (req, _res, next) => {
   next();
 };
 
-export const anfitrionDeleteProtection: RequestHandler = (req, _res, next) => {
-  // on DELETE we do nothing extra here, profile protection handles it.
-  next();
-};
-
 export const requireOwnJugadorForPersonaje: RequestHandler = (req, _res, next) => {
   if (!req.identity?.jugador || req.body.idUsuarioJugador !== req.identity.idUsuario) {
     return next(new HttpError(403, 'Creá un personaje para tu propio jugador'));
@@ -118,4 +113,3 @@ export const requireOwnedCharacterForCompra = (em: EntityManager): RequestHandle
     next();
   } catch (err) { next(err); }
 };
-
