@@ -220,6 +220,13 @@ export function ShopsPage() {
     return partidas.find((p) => p.idPartida === idPartidaVal)?.nombre ?? `Partida #${idPartidaVal}`;
   }
 
+  const esAnfitrionDePartida = (idPartidaVal?: number | null) => {
+    if (!esAnfitrion) return false;
+    if (!idPartidaVal) return true;
+    const p = partidas.find((pt) => Number(pt.idPartida) === Number(idPartidaVal));
+    return p ? Number(p.idUsuarioAnfitrion) === Number(userId) : true;
+  };
+
   // Objetos para la tienda seleccionada
   const objetosDeTienda = useMemo(() => {
     if (!seleccionada) return [];
@@ -300,7 +307,7 @@ export function ShopsPage() {
                 style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
               >
                 <option value="">Sin partida específica</option>
-                {partidas.map((p) => (
+                {partidas.filter((p) => Number(p.idUsuarioAnfitrion) === Number(userId)).map((p) => (
                   <option key={p.idPartida} value={p.idPartida}>
                     {p.nombre} (#{p.idPartida})
                   </option>
@@ -449,7 +456,7 @@ export function ShopsPage() {
                     >
                       Ver catálogo
                     </button>
-                    {esAnfitrion && (
+                    {esAnfitrionDePartida(t.idPartida) && (
                       <>
                         <button
                           type="button"

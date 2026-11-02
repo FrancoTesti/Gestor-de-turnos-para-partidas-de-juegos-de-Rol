@@ -3,6 +3,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { Personaje } from '../entities/Character.entity';
 import { Partida } from '../entities/Match.entity';
 import { Objeto } from '../entities/Item.entity';
+import { Tienda } from '../entities/Shop.entity';
 import { z } from 'zod';
 
 export class HttpError extends Error {
@@ -93,6 +94,28 @@ export const requireAnfitrionForPartida: RequestHandler = (req, _res, next) => {
     return next(new HttpError(403, 'Creá partidas como tu propio anfitrión'));
   }
   next();
+};
+
+export const requireHostedShopMiddleware = (em: EntityManager): RequestHandler => async (req, _res, next) => {
+  try {
+    if (!req.identity?.anfitrion) {
+      throw new HttpError(403, 'El catálogo lo administran los anfitriones');
+    }
+    if (req.params.id && typeof em.findOne === 'function') {
+      const id = routeId(req.params.id as string);
+      const t = await em.findOne(Tienda, { idTienda: id }, { populate: ['partida.anfitrion.usuario'] });
+      if (t?.partida && t.partida.anfitrion.usuario.idUsuario !== req.identity.idUsuario) {
+        throw new HttpError(403, 'Solo el anfitrión de esta partida puede modificar sus tiendas');
+      }
+    }
+    if (req.body?.idPartida !== undefined && req.body?.idPartida !== null && typeof em.findOne === 'function') {
+      const idPartidaNum = Number(req.body.idPartida);
+      if (Number.isInteger(idPartidaNum) && idPartidaNum > 0) {
+        await hostedGame(em, idPartidaNum, req.identity.idUsuario);
+      }
+    }
+    next();
+  } catch (err) { next(err); }
 };
 
 export const protectObjetoModifications = (em: EntityManager, paramName: string = 'id'): RequestHandler => async (req, _res, next) => {

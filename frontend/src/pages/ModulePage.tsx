@@ -78,7 +78,7 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   }, [resource, revision]);
   const allowed = (r?: Row) => {
     if (resource === 'inventarios') return true;
-    return host && (!r || r.idUsuarioAnfitrion === userId);
+    return host && (!r || Number(r.idUsuarioAnfitrion) === Number(userId));
   };
   const startEdit = (r?: Row) => {
     setSelected(r ?? null); setValues(Object.fromEntries(config.fields.map(f => [f.key, r?.[f.key] ?? f.initial ?? (f.type === 'boolean' ? false : '')]))); setEditing(true); setError('');

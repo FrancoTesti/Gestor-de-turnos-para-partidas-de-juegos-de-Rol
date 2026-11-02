@@ -176,6 +176,13 @@ export function SessionsPage() {
 
   if (loading) return <Loading />;
 
+  const esAnfitrionDePartida = (idPartida: number) => {
+    if (!host) return false;
+    const p = partidas.find(pt => Number(pt.idPartida) === Number(idPartida));
+    return p ? Number(p.idUsuarioAnfitrion) === Number(usuarioLogueado?.idUsuario) : true;
+  };
+  const esHostDeSeleccionada = selected ? esAnfitrionDePartida(selected.idPartida) : false;
+
   return (
     <div className="module-page">
       <div style={{ marginBottom: '1.25rem' }}>
@@ -320,7 +327,7 @@ export function SessionsPage() {
             })()}
 
             {/* ESTADO 0: planificada */}
-            {selected.estadoSesion === 0 && host && (
+            {selected.estadoSesion === 0 && esHostDeSeleccionada && (
               <div style={{ marginTop: '1.25rem' }}>
                 <h3 style={{ fontSize: '1.1rem' }}>Iniciar Sesión</h3>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Seleccioná los personajes que van a jugar:</p>
@@ -348,7 +355,7 @@ export function SessionsPage() {
                 <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
                   {selected.participantes?.map(p => <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre}</li>)}
                 </ul>
-                {host && (
+                {esHostDeSeleccionada && (
                   <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
                     <p style={{ color: 'var(--warning-text)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
                       No podrás finalizar la sesión si hay misiones pendientes.
@@ -386,7 +393,7 @@ export function SessionsPage() {
                 </ul>
                 
                 {/* Lógica para que un jugador participante pueda calificar 1 sola vez */}
-                {!host && selected.participantes?.some(p => {
+                {!esHostDeSeleccionada && selected.participantes?.some(p => {
                     const miPj = personajes.find(pj => pj.idPersonaje === p.idPersonaje);
                     return miPj?.idUsuarioJugador === usuarioLogueado?.idUsuario && !p.dioKarma;
                 }) && (
