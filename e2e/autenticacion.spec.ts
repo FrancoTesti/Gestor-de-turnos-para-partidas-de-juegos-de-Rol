@@ -103,7 +103,6 @@ test('dos usuarios completan juego, recompensas, karma y comercio con inventario
 
     await host.goto('/missions');
     await host.getByLabel(/^Sesión en Curso:/).selectOption(`${gameId}-1`);
-    await host.getByLabel(/^Número Misión:/).fill('1');
     await host.getByLabel(/^Descripción:/).fill('Rescatar al mercader');
     await host.getByLabel(/^Dinero Total:/).fill('100');
     await host.getByLabel(/^XP Total:/).fill('50');

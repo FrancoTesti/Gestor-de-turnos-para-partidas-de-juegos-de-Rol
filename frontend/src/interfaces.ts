@@ -44,6 +44,7 @@ export interface Mision {
   dineroOtorgadoAJugadores: number;
   asistenciaGrupoGrande: number;
   estado: boolean;          // true = completada
+  recompensas?: { idPersonaje: number; dinero: number; xp: number }[];
 }
 
 export interface Clase {

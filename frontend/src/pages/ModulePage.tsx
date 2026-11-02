@@ -4,7 +4,7 @@ import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
 import { useToast } from '../context/ToastContext';
 import Loading from '../components/ui/Loading';
-import { AvisoModal, TrendingUpIcon, CoinIcon, ShieldIcon, CloseIcon } from '../components/ui';
+import { AvisoModal, TrendingUpIcon, CoinIcon, ShieldIcon, CloseIcon, SwordsIcon, PackageIcon } from '../components/ui';
 import './ModulePage.css';
 import './UsersPage.css';
 
@@ -56,6 +56,16 @@ export default function ModulePage({ resource }: { resource: Resource }) {
     window.addEventListener('popstate', syncFromUrl);
     return () => window.removeEventListener('popstate', syncFromUrl);
   }, [resource]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selected && !editing && resource === 'partidas') {
+        setSelected(null);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selected, editing, resource]);
   const [activeOnly, setActiveOnly] = useState(false);
   const [sortField, setSortField] = useState<string>('idPartida');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
@@ -540,11 +550,19 @@ export default function ModulePage({ resource }: { resource: Resource }) {
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-              <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none', flex: 1, textAlign: 'center', padding: '0.55rem 0.85rem' }}>
-                Ver misiones de esta partida
+              <Link
+                to={`/missions?partida=${String(selected.idPartida)}`}
+                className="btn btn-primary"
+                style={{ textDecoration: 'none', flex: 1, justifyContent: 'center' }}
+              >
+                <SwordsIcon size={16} /> Ver misiones de esta partida
               </Link>
-              <Link to={`/stores?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none', flex: 1, textAlign: 'center', padding: '0.55rem 0.85rem' }}>
-                Ver tiendas de esta partida
+              <Link
+                to={`/stores?partida=${String(selected.idPartida)}`}
+                className="btn btn-emerald"
+                style={{ textDecoration: 'none', flex: 1, justifyContent: 'center' }}
+              >
+                <PackageIcon size={16} /> Ver tiendas de esta partida
               </Link>
             </div>
 
