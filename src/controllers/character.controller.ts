@@ -1,18 +1,12 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import {
   CharacterService,
   PersonajeService,
-  ReferenceNotFoundError,
-  ErrorReferenciaNoEncontrada,
 } from '../services/character.service';
 import {
-  CharacterValidationError,
-  ErrorValidacionPersonaje,
   validateUpdateCharacter,
-  validarActualizacionPersonaje,
   validateCreateCharacter,
-  validarCreacionPersonaje,
 } from '../validators/character.validator';
 
 type IdParams = {
@@ -42,8 +36,7 @@ export class CharacterController {
       const personajes = await this.characterService.getAll(filtros);
       res.json(personajes);
     } catch (error) {
-      console.error('Error al obtener personajes:', error);
-      res.status(500).json({ message: 'Error al obtener los personajes' });
+      handleControllerError(error, res, 'Error al obtener los personajes');
     }
   }
 
@@ -62,8 +55,7 @@ export class CharacterController {
       }
       res.json(personaje);
     } catch (error) {
-      console.error('Error al obtener el personaje:', error);
-      res.status(500).json({ message: 'Error al obtener el personaje' });
+      handleControllerError(error, res, 'Error al obtener el personaje');
     }
   }
 
@@ -73,16 +65,7 @@ export class CharacterController {
       const nuevoPersonaje = await this.characterService.createCharacter(data);
       res.status(201).json(nuevoPersonaje);
     } catch (error) {
-      if (error instanceof CharacterValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      if (error instanceof ReferenceNotFoundError) {
-        res.status(404).json({ message: error.message });
-        return;
-      }
-      console.error('Error al crear el personaje:', error);
-      res.status(500).json({ message: 'Error interno al crear el personaje' });
+      handleControllerError(error, res, 'Error interno al crear el personaje');
     }
   }
 
@@ -102,16 +85,7 @@ export class CharacterController {
       }
       res.json(personajeActualizado);
     } catch (error) {
-      if (error instanceof CharacterValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      if (error instanceof ReferenceNotFoundError) {
-        res.status(404).json({ message: error.message });
-        return;
-      }
-      console.error('Error al actualizar el personaje:', error);
-      res.status(500).json({ message: 'Error interno al actualizar el personaje' });
+      handleControllerError(error, res, 'Error interno al actualizar el personaje');
     }
   }
 
@@ -130,13 +104,7 @@ export class CharacterController {
       }
       res.status(204).send();
     } catch (error) {
-      if (error instanceof CharacterValidationError) {
-        res.status(409).json({ message: error.message });
-        return;
-      }
-      if (persistenceError(error, res)) return;
-      console.error('Error al eliminar el personaje:', error);
-      res.status(500).json({ message: 'Error al eliminar el personaje' });
+      handleControllerError(error, res, 'Error al eliminar el personaje');
     }
   }
 }

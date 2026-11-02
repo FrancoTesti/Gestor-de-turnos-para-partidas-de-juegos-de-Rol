@@ -1,33 +1,13 @@
 import { type Request, type Response } from 'express';
+import { handleControllerError } from '../shared/error-handler';
 import {
-  InsufficientMoneyError,
-  DineroInsuficienteError,
-  InventoryFullError,
-  InventarioLlenoError,
-  InventoryNotFoundError,
-  InventarioNoEncontradoError,
-  ItemNotAvailableError,
-  ObjetoNoDisponibleError,
-  ItemNotFoundError,
-  ObjetoNoEncontradoError,
   ItemService,
   ObjetoService,
-  CharacterNotFoundError,
-  PersonajeNoEncontradoError,
-  PositionOccupiedError,
-  PosicionOcupadaError,
-  InsufficientLevelError,
-  NivelInsuficienteError,
 } from '../services/item.service';
 import {
-  ItemValidationError,
-  ErrorValidacionObjeto,
   validateUpdateItem,
-  validarActualizacionObjeto,
   validateBuyItem,
-  validarCompraObjeto,
   validateCreateItem,
-  validarCreacionObjeto,
 } from '../validators/item.validator';
 
 type IdParams = {
@@ -54,8 +34,7 @@ export class ItemController {
       const objetos = await this.itemService.getAll();
       res.json(objetos);
     } catch (error) {
-      console.error('Error al obtener objetos:', error);
-      res.status(500).json({ message: 'Error al obtener los objetos' });
+      handleControllerError(error, res, 'Error al obtener los objetos');
     }
   }
 
@@ -74,8 +53,7 @@ export class ItemController {
       }
       res.json(objeto);
     } catch (error) {
-      console.error('Error al obtener el objeto:', error);
-      res.status(500).json({ message: 'Error al obtener el objeto' });
+      handleControllerError(error, res, 'Error al obtener el objeto');
     }
   }
 
@@ -85,12 +63,7 @@ export class ItemController {
       const nuevoObjeto = await this.itemService.createItem(data);
       res.status(201).json(nuevoObjeto);
     } catch (error) {
-      if (error instanceof ItemValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al crear el objeto:', error);
-      res.status(500).json({ message: 'Error al crear el objeto' });
+      handleControllerError(error, res, 'Error al crear el objeto');
     }
   }
 
@@ -110,12 +83,7 @@ export class ItemController {
       }
       res.json(objetoActualizado);
     } catch (error) {
-      if (error instanceof ItemValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al actualizar el objeto:', error);
-      res.status(500).json({ message: 'Error al actualizar el objeto' });
+      handleControllerError(error, res, 'Error al actualizar el objeto');
     }
   }
 
@@ -134,8 +102,7 @@ export class ItemController {
       }
       res.status(204).send();
     } catch (error) {
-      console.error('Error al eliminar el objeto:', error);
-      res.status(500).json({ message: 'Error al eliminar el objeto' });
+      handleControllerError(error, res, 'Error al eliminar el objeto');
     }
   }
 
@@ -151,30 +118,7 @@ export class ItemController {
       const resultado = await this.itemService.buyItem(id, data);
       res.json(resultado);
     } catch (error) {
-      if (error instanceof ItemValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      if (
-        error instanceof ItemNotFoundError ||
-        error instanceof CharacterNotFoundError ||
-        error instanceof InventoryNotFoundError
-      ) {
-        res.status(404).json({ message: error.message });
-        return;
-      }
-      if (
-        error instanceof ItemNotAvailableError ||
-        error instanceof InsufficientMoneyError ||
-        error instanceof InventoryFullError ||
-        error instanceof PositionOccupiedError ||
-        error instanceof InsufficientLevelError
-      ) {
-        res.status(409).json({ message: error.message });
-        return;
-      }
-      console.error('Error al comprar el objeto:', error);
-      res.status(500).json({ message: 'Error al comprar el objeto' });
+      handleControllerError(error, res, 'Error al comprar el objeto');
     }
   }
 
@@ -189,8 +133,7 @@ export class ItemController {
       const sugeridos = await this.itemService.getSuggestedItems(idClase);
       res.json(sugeridos);
     } catch (error) {
-      console.error('Error al obtener sugeridos:', error);
-      res.status(500).json({ message: 'Error al obtener los objetos sugeridos' });
+      handleControllerError(error, res, 'Error al obtener los objetos sugeridos');
     }
   }
 }

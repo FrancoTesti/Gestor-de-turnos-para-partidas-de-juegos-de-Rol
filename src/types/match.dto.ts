@@ -22,10 +22,8 @@ export interface PartidaPublicaDTO {
   estado: EstadoPartida;
   limiteJugadores: number;
   esPrivada: boolean;
-  /* La contraseña NUNCA se devuelve al frontend (igual que la contraseña de usuario),
-  por una cuestion de privacidad y seguridad. Si el frontend necesita la contraseña 
-  para mostrarla, debe pedirla al backend con un endpoint seguro.
-  */
+  /* Cuando un jugador quiere unirse, el frontend le muestra un formulario para que la escriba, y es 
+  el Backend quien verifica si esa clave coincide con el hash guardado mediante verifyPassword() */
   idUsuarioAnfitrion: number;
   nicknameAnfitrion: string; // para mostrar en el listado sin hacer otra petición
 }

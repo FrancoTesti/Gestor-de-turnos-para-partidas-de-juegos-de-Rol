@@ -2,8 +2,9 @@ import { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react
 import { Link } from 'react-router-dom';
 import { api } from '../services/api';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 import Loading from '../components/ui/Loading';
-import { AvisoModal, TrendingUpIcon, CoinIcon, ShieldIcon } from '../components/ui';
+import { AvisoModal, TrendingUpIcon, CoinIcon, ShieldIcon, CloseIcon } from '../components/ui';
 import './ModulePage.css';
 import './UsersPage.css';
 
@@ -83,7 +84,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
   const startEdit = (r?: Row) => {
     setSelected(r ?? null); setValues(Object.fromEntries(config.fields.map(f => [f.key, r?.[f.key] ?? f.initial ?? (f.type === 'boolean' ? false : '')]))); setEditing(true); setError('');
   };
-  const perform = async (work: () => Promise<unknown>) => {
+  const { showToast } = useToast();
+  const perform = async (work: () => Promise<unknown>, successMsg?: string) => {
     setBusy(true); setError('');
     try {
       await work();
@@ -99,26 +101,36 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         setSelected(null);
       }
       setRevision(n => n + 1);
+      if (successMsg) {
+        showToast(successMsg, 'success');
+      }
     }
     catch (e) {
       const msg = e instanceof Error ? e.message : 'No se pudo completar la operación';
       setError(msg);
       setErrorAvisoModal(msg);
+      showToast(msg, 'error');
     }
     finally { setBusy(false); }
   };
-  const save = () => perform(async () => {
-    const data: Row = {};
-    for (const f of config.fields) {
-      if (selected && f.createOnly) continue;
-      const value = values[f.key];
-      if (f.optional && (value === '' || value === undefined)) { if (f.ref) data[f.key] = null; continue; }
-      data[f.key] = f.type === 'number' || f.ref ? Number(value) : value;
-    }
-    if (resource === 'partidas' && !selected) data.idUsuarioAnfitrion = userId;
-    if (resource === 'partidas' && !data.esPrivada) delete data.contrasena;
-    await api(selected ? url(selected) : `/${resource}`, selected ? 'PUT' : 'POST', data);
-  });
+  const save = () => {
+    const isEdit = Boolean(selected);
+    const msg = resource === 'partidas'
+      ? (isEdit ? 'Partida actualizada correctamente' : 'Partida creada correctamente')
+      : (isEdit ? 'Inventario actualizado correctamente' : 'Inventario creado correctamente');
+    return perform(async () => {
+      const data: Row = {};
+      for (const f of config.fields) {
+        if (selected && f.createOnly) continue;
+        const value = values[f.key];
+        if (f.optional && (value === '' || value === undefined)) { if (f.ref) data[f.key] = null; continue; }
+        data[f.key] = f.type === 'number' || f.ref ? Number(value) : value;
+      }
+      if (resource === 'partidas' && !selected) data.idUsuarioAnfitrion = userId;
+      if (resource === 'partidas' && !data.esPrivada) delete data.contrasena;
+      await api(selected ? url(selected) : `/${resource}`, selected ? 'PUT' : 'POST', data);
+    }, msg);
+  };
   const detail = async (r: Row) => {
     setError('');
     try { setSelected(await api<Row>(url(r))); }
@@ -433,7 +445,8 @@ export default function ModulePage({ resource }: { resource: Resource }) {
                           style={{ fontSize: '0.85rem', padding: '0.4rem 0.75rem' }}
                           disabled={busy}
                           onClick={() => {
-                            if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE'));
+                            const deleteMsg = resource === 'partidas' ? 'Partida eliminada correctamente' : 'Inventario eliminado correctamente';
+                            if (window.confirm('¿Eliminar este registro?')) void perform(() => api(url(r), 'DELETE'), deleteMsg);
                           }}
                           aria-label={`Eliminar ${label(r) || 'registro'}`}
                         >
@@ -449,55 +462,138 @@ export default function ModulePage({ resource }: { resource: Resource }) {
         </table>
       </div>
       {!loading && !filtered.length && <p>No hay registros para mostrar.</p>}
-      {selected && (
-        <article className={resource === 'inventarios' ? 'inventario-detalle-article' : undefined}>
-          <h2>Detalle</h2>
-          {resource === 'inventarios' ? (
-            <dl className="inventario-info-grid">
-              {columns.map(k => (
-                <div key={k} className="inventario-info-card">
-                  <dt className="inventario-info-label">{columnLabel(k)}</dt>
-                  <dd className="inventario-info-value">{display(selected, k)}</dd>
+      {selected && resource === 'partidas' && (
+        <div
+          className="usuario-modal-overlay"
+          onClick={() => setSelected(null)}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="usuario-modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '580px',
+              width: '100%',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Ficha de Partida
+                </p>
+                <h2 style={{ margin: '0.2rem 0 0', fontSize: '1.4rem' }}>{String(selected.nombre ?? 'Partida')} (#{String(selected.idPartida)})</h2>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setSelected(null)}
+                aria-label="Cerrar"
+                style={{ padding: '0.4rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+
+            <div style={{ background: 'var(--bg-card-secondary)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Estado</span>
+                  <strong style={{ color: String(selected.estado).toLowerCase().includes('activa') ? 'var(--success-text)' : 'inherit' }}>
+                    {String(selected.estado).toUpperCase()}
+                  </strong>
                 </div>
-              ))}
-              {(() => {
-                const personaje = refs.personajes?.find(p => Number(p.idPersonaje) === Number(selected.idPersonaje));
-                const clase = refs.clases?.find(c => Number(c.idClase) === Number(personaje?.idClase));
-                const nombreClase = String(clase?.nombreClase || personaje?.clase || 'Sin clase');
-                return (
-                  <>
-                    <div className="inventario-info-card">
-                      <dt className="inventario-info-label">Dinero del personaje</dt>
-                      <dd className="inventario-info-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'var(--success-text, #10b981)', fontWeight: 700 }}>
-                        <CoinIcon size={14} /> ${String(personaje?.dinero ?? 0)}
-                      </dd>
-                    </div>
-                    <div className="inventario-info-card">
-                      <dt className="inventario-info-label">Clase del personaje</dt>
-                      <dd className="inventario-info-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
-                        <ShieldIcon size={14} /> {nombreClase}
-                      </dd>
-                    </div>
-                  </>
-                );
-              })()}
-            </dl>
-          ) : (
-            <dl>{columns.map(k => <div key={k}><dt>{columnLabel(k)}</dt><dd>{display(selected, k)}</dd></div>)}</dl>
-          )}
-        {resource === 'partidas' && (
-          <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
-            <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
-              Ver misiones de esta partida
-            </Link>
-            <Link to={`/stores?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none' }}>
-              Ver tiendas de esta partida
-            </Link>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Límite de Jugadores</span>
+                  <strong>{String(selected.limiteJugadores ?? '—')}</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Tipo</span>
+                  <strong>{selected.esPrivada ? '🔒 Privada' : '🔓 Pública'}</strong>
+                </div>
+                <div>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Anfitrión</span>
+                  <strong>{String(selected.nicknameAnfitrion ?? refs.anfitriones?.find(a => a.idUsuario === selected.idUsuarioAnfitrion)?.nickname ?? `#${selected.idUsuarioAnfitrion}`)}</strong>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', margin: '1rem 0', flexWrap: 'wrap' }}>
+              <Link to={`/missions?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none', flex: 1, textAlign: 'center', padding: '0.55rem 0.85rem' }}>
+                Ver misiones de esta partida
+              </Link>
+              <Link to={`/stores?partida=${String(selected.idPartida)}`} className="btn-secondary" style={{ textDecoration: 'none', flex: 1, textAlign: 'center', padding: '0.55rem 0.85rem' }}>
+                Ver tiendas de esta partida
+              </Link>
+            </div>
+
+            <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} onNotifyError={(msg) => setErrorAvisoModal(msg)} />
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '1.25rem' }}>
+              <button className="btn-secondary" style={{ minWidth: '100px' }} onClick={() => setSelected(null)}>
+                Cerrar detalle
+              </button>
+            </div>
           </div>
-        )}
-        <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} onNotifyError={(msg) => setErrorAvisoModal(msg)} />
-        <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
-      </article>
+        </div>
+      )}
+
+      {selected && resource === 'inventarios' && (
+        <article className="inventario-detalle-article">
+          <h2>Detalle</h2>
+          <dl className="inventario-info-grid">
+            {columns.map(k => (
+              <div key={k} className="inventario-info-card">
+                <dt className="inventario-info-label">{columnLabel(k)}</dt>
+                <dd className="inventario-info-value">{display(selected, k)}</dd>
+              </div>
+            ))}
+            {(() => {
+              const personaje = refs.personajes?.find(p => Number(p.idPersonaje) === Number(selected.idPersonaje));
+              const clase = refs.clases?.find(c => Number(c.idClase) === Number(personaje?.idClase));
+              const nombreClase = String(clase?.nombreClase || personaje?.clase || 'Sin clase');
+              return (
+                <>
+                  <div className="inventario-info-card">
+                    <dt className="inventario-info-label">Dinero del personaje</dt>
+                    <dd className="inventario-info-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', color: 'var(--success-text, #10b981)', fontWeight: 700 }}>
+                      <CoinIcon size={14} /> ${String(personaje?.dinero ?? 0)}
+                    </dd>
+                  </div>
+                  <div className="inventario-info-card">
+                    <dt className="inventario-info-label">Clase del personaje</dt>
+                    <dd className="inventario-info-value" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.25rem', fontWeight: 600 }}>
+                      <ShieldIcon size={14} /> {nombreClase}
+                    </dd>
+                  </div>
+                </>
+              );
+            })()}
+          </dl>
+          <Workflow key={url(selected)} resource={resource} row={selected} refs={refs} busy={busy} perform={perform} onNotifyError={(msg) => setErrorAvisoModal(msg)} />
+          <button className="btn-secondary" onClick={() => setSelected(null)}>Cerrar detalle</button>
+        </article>
       )}
     </>}
     </>

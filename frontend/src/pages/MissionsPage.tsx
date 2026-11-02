@@ -319,9 +319,8 @@ export function MissionsPage() {
         )}
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-        <div style={{ minWidth: 0 }}>
-          <div className="tabla-scroll">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+        <div className="tabla-scroll">
             <table className="app-table">
               <thead>
                 <tr>
@@ -464,56 +463,124 @@ export function MissionsPage() {
               </form>
             </div>
           )}
-        </div>
+      </div>
 
-        {selectedMision && !selectedMision.estado && (
-          <aside style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', boxShadow: 'var(--shadow)' }}>
-            <h2 style={{ marginTop: 0 }}>Completar Misión {selectedMision.numMision}</h2>
-            <p style={{ color: 'var(--text)' }}>
-              <strong>A Repartir:</strong>{' '}
-              <span style={{ color: 'var(--success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                <CoinIcon size={14} /> {selectedMision.dineroTotal} Monedas
-              </span>{' '}
-              |{' '}
-              <span style={{ color: 'var(--accent-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
-                <ZapIcon size={14} /> {selectedMision.xpTotal} Experiencia
-              </span>
-            </p>
-            <hr />
-            
-            {participantes?.map(p => {
-              const rec = recompensas.find(r => r.idPersonaje === p.idPersonaje);
-              return (
-                <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <strong style={{ minWidth: '110px', color: 'var(--text-h)' }}>{p.nombre}</strong>
-                  <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <CoinIcon size={13} /> $$:
-                    <input aria-label="$$:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
-                  </label>
-                  <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}>
-                    <ZapIcon size={13} /> XP:
-                    <input aria-label="XP:" type="number" min="0" max="2147483647" style={{ width: '80px', padding: '0.35rem' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
-                  </label>
-                </div>
-              );
-            })}
-            
-            <div style={{ marginTop: '1rem', padding: '1rem', background: esCorrecto ? 'var(--success-bg)' : 'var(--error-bg)', border: '1px solid', borderColor: esCorrecto ? 'var(--success-border)' : 'var(--error-border)', borderRadius: 'var(--radius-sm)' }}>
-              <p style={{ margin: 0, fontWeight: 600, color: esCorrecto ? 'var(--success-text)' : 'var(--error-text)' }}>
-                Sumas actuales: Dinero ({sumaDinero}) | XP ({sumaXp})
-              </p>
-              {!esCorrecto && <p style={{ color: 'var(--error-text)', margin: '0.35rem 0 0', fontSize: '0.85rem' }}>El reparto debe coincidir exactamente con los totales de la misión.</p>}
+      {selectedMision && !selectedMision.estado && (
+        <div
+          className="usuario-modal-overlay"
+          onClick={() => setSelectedMision(null)}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="usuario-modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '580px',
+              width: '100%',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Completar y Repartir
+                </p>
+                <h2 style={{ margin: '0.2rem 0 0', fontSize: '1.4rem' }}>Misión #{selectedMision.numMision}</h2>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setSelectedMision(null)}
+                aria-label="Cerrar"
+                style={{ padding: '0.4rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+              >
+                <CloseIcon size={16} />
+              </button>
             </div>
 
-            <button className="btn-primary" onClick={() => void handleCompletar()} disabled={!esCorrecto} style={{ marginTop: '1rem', width: '100%' }}>
-              Confirmar y Completar Misión
-            </button>
-            <button type="button" className="btn-secondary" style={{ marginTop: '0.5rem', width: '100%' }} onClick={() => setSelectedMision(null)}>
-              Cancelar Reparto
-            </button>
-          </aside>
-        )}
-      </div>
+            <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', marginBottom: '1.25rem' }}>
+              <p style={{ margin: 0, color: 'var(--text)', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                <strong>Recompensa Total a Repartir:</strong>
+                <span style={{ color: 'var(--success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <CoinIcon size={14} /> {selectedMision.dineroTotal} Monedas
+                </span>
+                <span>|</span>
+                <span style={{ color: 'var(--accent-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <ZapIcon size={14} /> {selectedMision.xpTotal} XP
+                </span>
+              </p>
+            </div>
+
+            <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.95rem' }}>Asignación a participantes:</h4>
+            <div style={{ maxHeight: '220px', overflowY: 'auto', marginBottom: '1rem' }}>
+              {participantes?.map(p => {
+                const rec = recompensas.find(r => r.idPersonaje === p.idPersonaje);
+                return (
+                  <div key={p.idPersonaje} style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', display: 'flex', gap: '0.75rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+                    <strong style={{ minWidth: '120px', color: 'var(--text-h)' }}>{p.nombre}</strong>
+                    <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                      <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
+                        <CoinIcon size={13} /> Oro:
+                        <input aria-label="$$:" type="number" min="0" max="2147483647" style={{ width: '85px', padding: '0.35rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }} value={rec?.dinero ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'dinero', Number(e.target.value))} />
+                      </label>
+                      <label style={{ margin: 0, display: 'inline-flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.85rem' }}>
+                        <ZapIcon size={13} /> XP:
+                        <input aria-label="XP:" type="number" min="0" max="2147483647" style={{ width: '85px', padding: '0.35rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }} value={rec?.xp ?? 0} onChange={e => handleChangeRecompensa(p.idPersonaje, 'xp', Number(e.target.value))} />
+                      </label>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ padding: '0.85rem 1rem', background: esCorrecto ? 'var(--success-bg)' : 'var(--error-bg)', border: '1px solid', borderColor: esCorrecto ? 'var(--success-border)' : 'var(--error-border)', borderRadius: 'var(--radius-sm)', marginBottom: '1.25rem' }}>
+              <p style={{ margin: 0, fontWeight: 600, color: esCorrecto ? 'var(--success-text)' : 'var(--error-text)', fontSize: '0.9rem' }}>
+                Suma asignada: Dinero ({sumaDinero} / {selectedMision.dineroTotal}) | XP ({sumaXp} / {selectedMision.xpTotal})
+              </p>
+              {!esCorrecto && <p style={{ color: 'var(--error-text)', margin: '0.25rem 0 0', fontSize: '0.825rem' }}>El reparto debe coincidir exactamente con los totales de la misión.</p>}
+            </div>
+
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setSelectedMision(null)}
+              >
+                Cancelar Reparto
+              </button>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => void handleCompletar()}
+                disabled={!esCorrecto}
+              >
+                Confirmar y Completar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <Modal
         isOpen={misionAEliminar !== null}

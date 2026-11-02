@@ -177,6 +177,7 @@ export class ObjetoService {
         { idObjeto },
         // select-in: PostgreSQL no admite FOR UPDATE sobre el lado opcional de un LEFT JOIN (tienda / inventario).
         { populate: ['tienda', 'inventario.personaje'], strategy: 'select-in', lockMode: LockMode.PESSIMISTIC_WRITE },
+        // para eivtar compras duplicadas
       );
       if (!objeto) throw new ObjetoNoEncontradoError();
       if (!objeto.tienda || objeto.inventario) throw new ObjetoNoDisponibleError();

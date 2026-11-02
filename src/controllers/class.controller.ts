@@ -1,13 +1,9 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import { ClassService, ClaseService } from '../services/class.service';
 import {
-  ClassValidationError,
-  ErrorValidacionClase,
   validateUpdateClass,
-  validarActualizacionClase,
   validateCreateClass,
-  validarCreacionClase,
 } from '../validators/class.validator';
 
 type IdParams = {
@@ -34,8 +30,7 @@ export class ClassController {
       const clases = await this.classService.getAll();
       res.json(clases);
     } catch (error) {
-      console.error('Error al obtener clases:', error);
-      res.status(500).json({ message: 'Error al obtener las clases' });
+      handleControllerError(error, res, 'Error al obtener las clases');
     }
   }
 
@@ -54,8 +49,7 @@ export class ClassController {
       }
       res.json(clase);
     } catch (error) {
-      console.error('Error al obtener la clase:', error);
-      res.status(500).json({ message: 'Error al obtener la clase' });
+      handleControllerError(error, res, 'Error al obtener la clase');
     }
   }
 
@@ -65,12 +59,7 @@ export class ClassController {
       const nuevaClase = await this.classService.createClass(data);
       res.status(201).json(nuevaClase);
     } catch (error) {
-      if (error instanceof ClassValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al crear la clase:', error);
-      res.status(500).json({ message: 'Error al crear la clase' });
+      handleControllerError(error, res, 'Error al crear la clase');
     }
   }
 
@@ -90,12 +79,7 @@ export class ClassController {
       }
       res.json(claseActualizada);
     } catch (error) {
-      if (error instanceof ClassValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al actualizar la clase:', error);
-      res.status(500).json({ message: 'Error al actualizar la clase' });
+      handleControllerError(error, res, 'Error al actualizar la clase');
     }
   }
 
@@ -114,9 +98,7 @@ export class ClassController {
       }
       res.status(204).send();
     } catch (error) {
-      if (persistenceError(error, res)) return;
-      console.error('Error al eliminar la clase:', error);
-      res.status(500).json({ message: 'Error al eliminar la clase' });
+      handleControllerError(error, res, 'Error al eliminar la clase');
     }
   }
 }

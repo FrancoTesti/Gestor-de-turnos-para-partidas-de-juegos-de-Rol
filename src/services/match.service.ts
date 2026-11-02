@@ -3,6 +3,11 @@ import { Sesion } from '../entities/Session.entity';
 import { Partida } from '../entities/Match.entity';
 import { Anfitrion } from '../entities/Host.entity';
 import { Personaje } from '../entities/Character.entity';
+import { Tienda } from '../entities/Shop.entity';
+import { Mision } from '../entities/Mission.entity';
+import { PersonajeSesion } from '../entities/CharacterSession.entity';
+import { Inventario } from '../entities/Inventory.entity';
+import { Objeto } from '../entities/Item.entity';
 import { ErrorValidacionPartida } from '../validators/match.validator';
 import { hashPassword } from '../security/password';
 import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/match.dto';
@@ -71,7 +76,8 @@ export class PartidaService {
       nombre: data.nombre,
       estado: data.estado === 'activa',             // conversión string -> boolean
       limiteJugadores: data.limiteJugadores,
-      contrasena: data.esPrivada ? await hashPassword(data.contrasena!) : '', // '' = pública
+      contrasena: data.esPrivada ? await hashPassword(data.contrasena!) : '', // '' = pública 
+      // // await antes de una Promesa para esperar que la tarea termine y obtener su resultado real.
       anfitrion,
     } as any); // 'as any' porque TypeScript no infiere que idPartida es autoincrement
 
@@ -113,13 +119,58 @@ export class PartidaService {
     return this.toPublicMatch(partida);
   }
 
-  // elimina una partida
+  // elimina una partida y todas sus relaciones en cascada (transaccional)
   async deleteMatch(id: number): Promise<boolean> {
-    const partida = await this.em.findOne(Partida, { idPartida: id });
-    if (!partida) return false;
+    return this.em.transactional(async (tx) => {
+      const partida = await tx.findOne(Partida, { idPartida: id });
+      if (!partida) return false;
 
-    await this.em.removeAndFlush(partida);
-    return true;
+      // 1. Desvincular tiendas asociadas a la partida
+      const tiendas = await tx.find(Tienda, { partida });
+      for (const t of tiendas) {
+        t.partida = null;
+      }
+
+      // 2. Sesiones de la partida y sus hijas (misiones y asistencias)
+      const sesiones = await tx.find(Sesion, { partida });
+      for (const sesion of sesiones) {
+        const misiones = await tx.find(Mision, { sesion });
+        for (const m of misiones) {
+          tx.remove(m);
+        }
+        const asistencias = await tx.find(PersonajeSesion, { sesion });
+        for (const a of asistencias) {
+          tx.remove(a);
+        }
+        tx.remove(sesion);
+      }
+
+      // 3. Personajes de la partida y sus inventarios / objetos
+      const personajes = await tx.find(Personaje, { partida });
+      for (const pj of personajes) {
+        // Asistencias restantes que pertenezcan a este personaje
+        const asistenciasPj = await tx.find(PersonajeSesion, { personaje: pj });
+        for (const a of asistenciasPj) {
+          tx.remove(a);
+        }
+
+        const inventarios = await tx.find(Inventario, { personaje: pj });
+        for (const inv of inventarios) {
+          // Desasociar objetos que estén en ese inventario
+          const objetosEnInv = await tx.find(Objeto, { inventario: inv });
+          for (const obj of objetosEnInv) {
+            obj.inventario = null;
+          }
+          tx.remove(inv);
+        }
+        tx.remove(pj);
+      }
+
+      // 4. Eliminar la partida
+      tx.remove(partida);
+      await tx.flush();
+      return true;
+    });
   }
 
   // convierte la entidad al DTO publico (sin exponer la contraseña)

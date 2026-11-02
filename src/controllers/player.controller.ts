@@ -1,43 +1,15 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import {
   PlayerService,
   JugadorService,
-  PlayerAlreadyExistsError,
-  JugadorYaExisteError,
-  UserNotFoundError,
-  UsuarioNoEncontradoError,
 } from '../services/player.service';
 import {
-  PlayerValidationError,
-  ErrorValidacionJugador,
   validateUpdatePlayer,
-  validarActualizacionJugador,
   validateCreatePlayer,
-  validarCreacionJugador,
 } from '../validators/player.validator';
 
 type IdParams = { id: string };
-
-function respondError(error: unknown, res: Response, mensajeInterno: string): void {
-  if (persistenceError(error, res)) return;
-  if (error instanceof PlayerValidationError) {
-    res.status(400).json({ message: error.message });
-    return;
-  }
-  if (error instanceof UserNotFoundError) {
-    res.status(404).json({ message: error.message });
-    return;
-  }
-  if (error instanceof PlayerAlreadyExistsError) {
-    res.status(409).json({ message: error.message });
-    return;
-  }
-  console.error(mensajeInterno, error);
-  res.status(500).json({ message: mensajeInterno });
-}
-
-export const responderError = respondError;
 
 function getId(idParam: string): number | null {
   if (!/^\d+$/.test(idParam)) return null;
@@ -60,7 +32,7 @@ export class PlayerController {
       const jugadores = await this.playerService.getAll();
       res.json(jugadores);
     } catch (error) {
-      respondError(error, res, 'Error al obtener jugadores');
+      handleControllerError(error, res, 'Error al obtener jugadores');
     }
   }
 
@@ -80,7 +52,7 @@ export class PlayerController {
       }
       res.json(jugador);
     } catch (error) {
-      respondError(error, res, 'Error al obtener el jugador');
+      handleControllerError(error, res, 'Error al obtener el jugador');
     }
   }
 
@@ -91,7 +63,7 @@ export class PlayerController {
       const nuevoJugador = await this.playerService.createPlayer(data);
       res.status(201).json(nuevoJugador);
     } catch (error) {
-      respondError(error, res, 'Error al crear el jugador');
+      handleControllerError(error, res, 'Error al crear el jugador');
     }
   }
 
@@ -112,7 +84,7 @@ export class PlayerController {
       }
       res.json(actualizado);
     } catch (error) {
-      respondError(error, res, 'Error al actualizar el jugador');
+      handleControllerError(error, res, 'Error al actualizar el jugador');
     }
   }
 
@@ -132,9 +104,10 @@ export class PlayerController {
       }
       res.status(204).send();
     } catch (error) {
-      respondError(error, res, 'Error al eliminar el jugador');
+      handleControllerError(error, res, 'Error al eliminar el jugador');
     }
   }
 }
 
 export const JugadorController = PlayerController;
+export const responderError = (error: unknown, res: Response, msg: string) => handleControllerError(error, res, msg);

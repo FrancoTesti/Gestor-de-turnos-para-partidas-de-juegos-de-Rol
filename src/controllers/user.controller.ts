@@ -1,26 +1,6 @@
 import { type Request, type Response } from 'express';
-import { NicknameInUseError, NicknameEnUsoError, UserService, UsuarioService } from '../services/user.service';
-import { ForeignKeyConstraintViolationException } from '@mikro-orm/core';
-
-type IdParams = {
-  id: string;
-};
-
-function respondError(error: unknown, res: Response, mensajeInterno: string): void {
-  if (error instanceof ForeignKeyConstraintViolationException) {
-    res.status(409).json({ message: 'La cuenta tiene personajes o partidas relacionados. Resolvé esas relaciones antes de eliminarla.' });
-    return;
-  }
-  if (error instanceof NicknameInUseError) {
-    res.status(409).json({ message: error.message });
-    return;
-  }
-
-  console.error(mensajeInterno, error);
-  res.status(500).json({ message: mensajeInterno });
-}
-
-export const responderError = respondError;
+import { handleControllerError } from '../shared/error-handler';
+import { UserService, UsuarioService } from '../services/user.service';
 
 function getId(idParam: string | string[] | undefined): number | null {
   const str = Array.isArray(idParam) ? idParam[0] : idParam;
@@ -43,7 +23,7 @@ export class UserController {
       const usuarios = await this.userService.getAll();
       res.json(usuarios);
     } catch (error) {
-      respondError(error, res, 'Error al obtener usuarios');
+      handleControllerError(error, res, 'Error al obtener usuarios');
     }
   }
 
@@ -63,7 +43,7 @@ export class UserController {
 
       res.json(usuario);
     } catch (error) {
-      respondError(error, res, 'Error al obtener el usuario');
+      handleControllerError(error, res, 'Error al obtener el usuario');
     }
   }
 
@@ -72,7 +52,7 @@ export class UserController {
       const nuevoUsuario = await this.userService.createUser(req.body);
       res.status(201).json(nuevoUsuario);
     } catch (error) {
-      respondError(error, res, 'Error al crear el usuario');
+      handleControllerError(error, res, 'Error al crear el usuario');
     }
   }
 
@@ -92,7 +72,7 @@ export class UserController {
 
       res.json(usuarioActualizado);
     } catch (error) {
-      respondError(error, res, 'Error al actualizar el usuario');
+      handleControllerError(error, res, 'Error al actualizar el usuario');
     }
   }
 
@@ -112,9 +92,10 @@ export class UserController {
 
       res.status(204).send();
     } catch (error) {
-      respondError(error, res, 'Error al eliminar el usuario');
+      handleControllerError(error, res, 'Error al eliminar el usuario');
     }
   }
 }
 
 export const UsuarioController = UserController;
+export const responderError = (error: unknown, res: Response, msg: string) => handleControllerError(error, res, msg);

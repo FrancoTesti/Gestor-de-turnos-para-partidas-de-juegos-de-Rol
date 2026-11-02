@@ -1,45 +1,15 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import {
-  HostNotFoundError,
-  AnfitrionNoEncontradoError,
   MatchService,
   PartidaService,
 } from '../services/match.service';
 import {
-  MatchValidationError,
-  ErrorValidacionPartida,
   validateUpdateMatch,
-  validarActualizacionPartida,
   validateCreateMatch,
-  validarCreacionPartida,
 } from '../validators/match.validator';
 
 type IdParams = { id: string };
-
-function respondError(error: unknown, res: Response, mensajeInterno: string): void {
-  if (persistenceError(error, res)) return;
-  if (error instanceof MatchValidationError) {
-    res.status(400).json({ message: error.message });
-    return;
-  }
-  if (error instanceof HostNotFoundError) {
-    res.status(404).json({ message: error.message });
-    return;
-  }
-  console.error(mensajeInterno, error);
-  res.status(500).json({ message: mensajeInterno });
-}
-
-export const responderError = respondError;
-
-function getId(idParam: string): number | null {
-  if (!/^\d+$/.test(idParam)) return null;
-  const id = Number(idParam);
-  return Number.isSafeInteger(id) && id > 0 ? id : null;
-}
-
-export const obtenerId = getId;
 
 export class MatchController {
   private matchService: MatchService;
@@ -54,7 +24,7 @@ export class MatchController {
       const partidas = await this.matchService.getAll();
       res.json(partidas);
     } catch (error) {
-      respondError(error, res, 'Error al obtener partidas');
+      handleControllerError(error, res, 'Error al obtener partidas');
     }
   }
 
@@ -64,14 +34,14 @@ export class MatchController {
       const partidas = await this.matchService.getActive();
       res.json(partidas);
     } catch (error) {
-      respondError(error, res, 'Error al obtener partidas activas');
+      handleControllerError(error, res, 'Error al obtener partidas activas');
     }
   }
 
   // GET /api/partidas/:id
   async getById(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = getId(req.params.id);
-    if (id === null) {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
       res.status(400).json({ message: 'ID inválido' });
       return;
     }
@@ -84,7 +54,7 @@ export class MatchController {
       }
       res.json(partida);
     } catch (error) {
-      respondError(error, res, 'Error al obtener la partida');
+      handleControllerError(error, res, 'Error al obtener la partida');
     }
   }
 
@@ -95,14 +65,14 @@ export class MatchController {
       const nuevaPartida = await this.matchService.createMatch(data);
       res.status(201).json(nuevaPartida);
     } catch (error) {
-      respondError(error, res, 'Error al crear la partida');
+      handleControllerError(error, res, 'Error al crear la partida');
     }
   }
 
   // PUT /api/partidas/:id
   async updateMatch(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = getId(req.params.id);
-    if (id === null) {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
       res.status(400).json({ message: 'ID inválido' });
       return;
     }
@@ -116,14 +86,14 @@ export class MatchController {
       }
       res.json(actualizada);
     } catch (error) {
-      respondError(error, res, 'Error al actualizar la partida');
+      handleControllerError(error, res, 'Error al actualizar la partida');
     }
   }
 
   // DELETE /api/partidas/:id
   async deleteMatch(req: Request<IdParams>, res: Response): Promise<void> {
-    const id = getId(req.params.id);
-    if (id === null) {
+    const id = Number(req.params.id);
+    if (!Number.isSafeInteger(id) || id <= 0) {
       res.status(400).json({ message: 'ID inválido' });
       return;
     }
@@ -136,9 +106,15 @@ export class MatchController {
       }
       res.status(204).send();
     } catch (error) {
-      respondError(error, res, 'Error al eliminar la partida');
+      handleControllerError(error, res, 'Error al eliminar la partida');
     }
   }
 }
 
 export const PartidaController = MatchController;
+export function obtenerId(idParam: string): number | null {
+  if (!/^\d+$/.test(idParam)) return null;
+  const id = Number(idParam);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+export const responderError = (error: unknown, res: Response, msg: string) => handleControllerError(error, res, msg);

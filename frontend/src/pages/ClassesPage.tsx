@@ -12,6 +12,7 @@
 import { useEffect, useState } from 'react';
 import type { Clase } from '../interfaces';
 import { useUser } from '../context/UserContext';
+import { useToast } from '../context/ToastContext';
 import ClassDetail from '../components/clases/ClassDetail';
 import ClassForm from '../components/clases/ClassForm';
 import ClassList from '../components/clases/ClassList';
@@ -71,6 +72,8 @@ export function ClassesPage() {
     setRevision(value => value + 1);
   }
 
+  const { showToast } = useToast();
+
   async function handleSave(data: CreateClassData | UpdateClassData): Promise<void> {
     setGuardando(true);
     setError(null);
@@ -81,16 +84,20 @@ export function ClassesPage() {
         setClases((prev) => prev.map((c) => c.idClase === actualizada.idClase ? actualizada : c));
         setSeleccionada(actualizada);
         setMensaje('Clase actualizada correctamente.');
+        showToast('Clase actualizada correctamente', 'success');
       } else {
         const nueva = await createClass(data as CreateClassData);
         setClases((prev) => [...prev, nueva]);
         setSeleccionada(nueva);
         setMensaje('Clase creada correctamente.');
+        showToast('Clase creada correctamente', 'success');
       }
       setVista('listado');
       setEnEdicion(null);
     } catch (e) {
-      setError(getErrorMessage(e));
+      const msg = getErrorMessage(e);
+      setError(msg);
+      showToast(msg, 'error');
     } finally {
       setGuardando(false);
     }
@@ -104,8 +111,11 @@ export function ClassesPage() {
       setClases((prev) => prev.filter((c) => c.idClase !== idClase));
       if (seleccionada?.idClase === idClase) setSeleccionada(null);
       setMensaje('Clase eliminada correctamente.');
+      showToast('Clase eliminada correctamente', 'info');
     } catch (e) {
-      setError(getErrorMessage(e));
+      const msg = getErrorMessage(e);
+      setError(msg);
+      showToast(msg, 'error');
     }
   }
 

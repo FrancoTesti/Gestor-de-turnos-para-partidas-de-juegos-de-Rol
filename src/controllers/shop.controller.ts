@@ -1,13 +1,9 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import { ShopService, TiendaService } from '../services/shop.service';
 import {
-  ShopValidationError,
-  ErrorValidacionTienda,
   validateUpdateShop,
-  validarActualizacionTienda,
   validateCreateShop,
-  validarCreacionTienda,
 } from '../validators/shop.validator';
 
 type IdParams = {
@@ -36,8 +32,7 @@ export class ShopController {
       const tiendas = await this.shopService.getAll(filtros);
       res.json(tiendas);
     } catch (error) {
-      console.error('Error al obtener tiendas:', error);
-      res.status(500).json({ message: 'Error al obtener las tiendas' });
+      handleControllerError(error, res, 'Error al obtener las tiendas');
     }
   }
 
@@ -56,8 +51,7 @@ export class ShopController {
       }
       res.json(tienda);
     } catch (error) {
-      console.error('Error al obtener la tienda:', error);
-      res.status(500).json({ message: 'Error al obtener la tienda' });
+      handleControllerError(error, res, 'Error al obtener la tienda');
     }
   }
 
@@ -67,12 +61,7 @@ export class ShopController {
       const nuevaTienda = await this.shopService.createShop(data);
       res.status(201).json(nuevaTienda);
     } catch (error) {
-      if (error instanceof ShopValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al crear la tienda:', error);
-      res.status(500).json({ message: 'Error al crear la tienda' });
+      handleControllerError(error, res, 'Error al crear la tienda');
     }
   }
 
@@ -92,12 +81,7 @@ export class ShopController {
       }
       res.json(tiendaActualizada);
     } catch (error) {
-      if (error instanceof ShopValidationError) {
-        res.status(400).json({ message: error.message });
-        return;
-      }
-      console.error('Error al actualizar la tienda:', error);
-      res.status(500).json({ message: 'Error al actualizar la tienda' });
+      handleControllerError(error, res, 'Error al actualizar la tienda');
     }
   }
 
@@ -116,9 +100,7 @@ export class ShopController {
       }
       res.status(204).send();
     } catch (error) {
-      if (persistenceError(error, res)) return;
-      console.error('Error al eliminar la tienda:', error);
-      res.status(500).json({ message: 'Error al eliminar la tienda' });
+      handleControllerError(error, res, 'Error al eliminar la tienda');
     }
   }
 }

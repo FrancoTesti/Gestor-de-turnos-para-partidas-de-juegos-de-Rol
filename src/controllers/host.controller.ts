@@ -1,36 +1,14 @@
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import {
   HostService,
-  HostAlreadyExistsError,
-  UserNotFoundError,
+  AnfitrionService,
 } from '../services/host.service';
 import {
-  HostValidationError,
   validateCreateHost,
 } from '../validators/host.validator';
 
 type IdParams = { id: string };
-
-function respondError(error: unknown, res: Response, mensajeInterno: string): void {
-  if (persistenceError(error, res)) return;
-  if (error instanceof HostValidationError) {
-    res.status(400).json({ message: error.message });
-    return;
-  }
-  if (error instanceof UserNotFoundError) {
-    res.status(404).json({ message: error.message });
-    return;
-  }
-  if (error instanceof HostAlreadyExistsError) {
-    res.status(409).json({ message: error.message });
-    return;
-  }
-  console.error(mensajeInterno, error);
-  res.status(500).json({ message: mensajeInterno });
-}
-
-export const responderError = respondError;
 
 function getId(idParam: string): number | null {
   if (!/^\d+$/.test(idParam)) return null;
@@ -53,7 +31,7 @@ export class HostController {
       const anfitriones = await this.hostService.getAll();
       res.json(anfitriones);
     } catch (error) {
-      respondError(error, res, 'Error al obtener anfitriones');
+      handleControllerError(error, res, 'Error al obtener anfitriones');
     }
   }
 
@@ -73,7 +51,7 @@ export class HostController {
       }
       res.json(anfitrion);
     } catch (error) {
-      respondError(error, res, 'Error al obtener el anfitrión');
+      handleControllerError(error, res, 'Error al obtener el anfitrión');
     }
   }
 
@@ -84,7 +62,7 @@ export class HostController {
       const nuevoAnfitrion = await this.hostService.createHost(data);
       res.status(201).json(nuevoAnfitrion);
     } catch (error) {
-      respondError(error, res, 'Error al crear el anfitrión');
+      handleControllerError(error, res, 'Error al crear el anfitrión');
     }
   }
 
@@ -104,9 +82,10 @@ export class HostController {
       }
       res.status(204).send();
     } catch (error) {
-      respondError(error, res, 'Error al eliminar el anfitrión');
+      handleControllerError(error, res, 'Error al eliminar el anfitrión');
     }
   }
 }
 
 export const AnfitrionController = HostController;
+export const responderError = (error: unknown, res: Response, msg: string) => handleControllerError(error, res, msg);

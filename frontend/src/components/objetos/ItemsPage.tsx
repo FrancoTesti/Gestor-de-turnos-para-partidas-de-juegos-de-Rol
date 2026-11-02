@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { Personaje, Tienda, Inventario } from '../../interfaces';
 import { useUser } from '../../context/UserContext';
+import { useToast } from '../../context/ToastContext';
 import { api } from '../../services/api';
 import {
   getItems,
@@ -106,6 +107,8 @@ export function ItemsPage() {
     }
   }
 
+  const { showToast } = useToast();
+
   async function handleSave(datos: CreateItemData): Promise<void> {
     setError(null);
     setMensaje(null);
@@ -115,16 +118,20 @@ export function ItemsPage() {
         setObjetos((actuales) => actuales.map((objeto) => objeto.idObjeto === actualizado.idObjeto ? actualizado : objeto));
         setSeleccionado(actualizado);
         setMensaje('Objeto actualizado correctamente.');
+        showToast('Objeto actualizado correctamente', 'success');
       } else {
         const creado = await createItem(datos);
         setObjetos((actuales) => [...actuales, creado]);
         setSeleccionado(creado);
         setMensaje('Objeto creado correctamente.');
+        showToast('Objeto creado correctamente', 'success');
       }
       setVista('listado');
       setEnEdicion(undefined);
     } catch (e) {
-      setError(getErrorMessage(e));
+      const msg = getErrorMessage(e);
+      setError(msg);
+      showToast(msg, 'error');
     }
   }
 
@@ -137,14 +144,19 @@ export function ItemsPage() {
       setObjetos((actuales) => actuales.filter((actual) => actual.idObjeto !== objeto.idObjeto));
       if (seleccionado?.idObjeto === objeto.idObjeto) setSeleccionado(null);
       setMensaje('Objeto eliminado correctamente.');
+      showToast('Objeto eliminado correctamente', 'info');
     } catch (e) {
-      setError(getErrorMessage(e));
+      const msg = getErrorMessage(e);
+      setError(msg);
+      showToast(msg, 'error');
     }
   }
 
   async function handlePurchase(data: PurchaseItemData): Promise<void> {
     if (host) {
-      setError('Los anfitriones no tienen permitido comprar objetos de la tienda.');
+      const msg = 'Los anfitriones no tienen permitido comprar objetos de la tienda.';
+      setError(msg);
+      showToast(msg, 'warning');
       return;
     }
     if (!seleccionado) return;
@@ -165,8 +177,11 @@ export function ItemsPage() {
       );
       setCompraAbierta(false);
       setMensaje(`Compra realizada con éxito. Saldo restante: $${resultado.dineroRestante}.`);
+      showToast(`Objeto comprado con éxito (${resultado.objeto.nombre})`, 'success');
     } catch (e) {
-      setError(getErrorMessage(e));
+      const msg = getErrorMessage(e);
+      setError(msg);
+      showToast(msg, 'error');
     }
   }
 

@@ -15,7 +15,7 @@ import { getMissions } from '../services/mission.service';
 import type { Mision } from '../interfaces';
 import Alert from '../components/ui/Alert';
 import Loading from '../components/ui/Loading';
-import { NoticeModal, CoinIcon, ZapIcon } from '../components/ui';
+import { NoticeModal, CoinIcon, ZapIcon, CloseIcon } from '../components/ui';
 
 function getErrorMessage(e: unknown): string {
   return e instanceof Error ? e.message : 'No se pudo completar la operación';
@@ -192,9 +192,8 @@ export function SessionsPage() {
       
       {aviso && <p role="status" className="mensaje-exito">{aviso}</p>}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', alignItems: 'start' }}>
-        <div style={{ minWidth: 0 }}>
-          <div className="tabla-scroll">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+        <div className="tabla-scroll">
             <table className="app-table">
               <thead>
                 <tr>
@@ -301,24 +300,87 @@ export function SessionsPage() {
               </form>
             </div>
           )}
-        </div>
+      </div>
 
-        {selected && (
-          <aside style={{ padding: '1.5rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', background: 'var(--bg-card)', boxShadow: 'var(--shadow)' }}>
-            <h2 style={{ marginTop: 0 }}>Detalle: Sesión {selected.numSesion}</h2>
-            <p><strong>Partida:</strong> {partidas.find(p => p.idPartida === selected.idPartida)?.nombre}</p>
-            
+      {selected && (
+        <div
+          className="usuario-modal-overlay"
+          onClick={() => setSelected(null)}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="usuario-modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '560px',
+              width: '100%',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Ficha de Sesión
+                </p>
+                <h2 style={{ margin: '0.2rem 0 0', fontSize: '1.4rem' }}>Sesión #{selected.numSesion}</h2>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setSelected(null)}
+                aria-label="Cerrar"
+                style={{ padding: '0.4rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+
+            <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <span><strong>Partida:</strong> {partidas.find(p => p.idPartida === selected.idPartida)?.nombre ?? `#${selected.idPartida}`}</span>
+                <span>
+                  <strong>Estado: </strong>
+                  {selected.estadoSesion === 0 && <span className="badge badge-warning">Planificada</span>}
+                  {selected.estadoSesion === 1 && <span className="badge badge-info">En Curso</span>}
+                  {selected.estadoSesion === 2 && <span className="badge badge-success">Finalizada</span>}
+                </span>
+              </div>
+            </div>
+
             {/* Desglose de misiones de esta sesión */}
             {(() => {
               const misSes = misiones.filter(m => m.idPartida === selected.idPartida && m.numSesion === selected.numSesion);
               return misSes.length > 0 ? (
-                <div style={{ marginTop: '1rem', background: 'var(--bg-card-secondary)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
-                  <h4 style={{ margin: '0 0 0.5rem 0' }}>Desglose de Misiones y Recompensas</h4>
+                <div style={{ marginBottom: '1.25rem', background: 'var(--bg-card-secondary)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}>
+                  <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '0.95rem' }}>Misiones y Recompensas</h4>
                   {misSes.map(m => (
                     <div key={m.numMision} style={{ marginBottom: '0.5rem', paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-subtle)' }}>
                       <div><strong>Misión #{m.numMision}:</strong> {m.descripcion || 'Sin descripción'}</div>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem' }}>
-                        Estado: {m.estado ? 'Completada' : 'Pendiente'} | XP: <strong>{m.xpOtorgadoJugadores}</strong> | Oro: <strong>${m.dineroOtorgadoAJugadores}</strong>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginTop: '0.25rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                        <span>Estado: <strong style={{ color: m.estado ? 'var(--success-text)' : 'inherit' }}>{m.estado ? 'Completada' : 'Pendiente'}</strong></span>
+                        <span>XP: <strong>{m.xpOtorgadoJugadores}</strong></span>
+                        <span>Oro: <strong>${m.dineroOtorgadoAJugadores}</strong></span>
                       </div>
                     </div>
                   ))}
@@ -328,39 +390,53 @@ export function SessionsPage() {
 
             {/* ESTADO 0: planificada */}
             {selected.estadoSesion === 0 && esHostDeSeleccionada && (
-              <div style={{ marginTop: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.1rem' }}>Iniciar Sesión</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Seleccioná los personajes que van a jugar:</p>
-                <div style={{ background: 'var(--bg-card-secondary)', padding: '1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', maxHeight: '200px', overflowY: 'auto' }}>
+              <div style={{ marginTop: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: '0 0 0.4rem 0' }}>Iniciar Sesión</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem', marginBottom: '0.65rem' }}>Seleccioná los personajes que van a participar:</p>
+                <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem 1rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', maxHeight: '180px', overflowY: 'auto' }}>
                   {personajes.filter(p => p.idPartida === selected.idPartida).map(p => (
-                    <label key={p.idPersonaje} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0.5rem 0', cursor: 'pointer' }}>
-                      <input type="checkbox" checked={participantesIds.includes(p.idPersonaje)}
+                    <label key={p.idPersonaje} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', margin: '0.4rem 0', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={participantesIds.includes(p.idPersonaje)}
                         onChange={(e) => {
                           if (e.target.checked) setParticipantesIds([...participantesIds, p.idPersonaje]);
                           else setParticipantesIds(participantesIds.filter(id => id !== p.idPersonaje));
-                        }} />
-                      <span>{p.nombreFicticio} (Nivel {p.nivel})</span>
+                        }}
+                      />
+                      <span>{p.nombreFicticio} <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>(Nivel {p.nivel})</span></span>
                     </label>
                   ))}
-                  {personajes.filter(p => p.idPartida === selected.idPartida).length === 0 && <p style={{ color: 'var(--error-text)', margin: 0 }}>No hay personajes anotados en esta partida.</p>}
+                  {personajes.filter(p => p.idPartida === selected.idPartida).length === 0 && (
+                    <p style={{ color: 'var(--error-text)', margin: 0, fontSize: '0.9rem' }}>No hay personajes anotados en esta partida.</p>
+                  )}
                 </div>
-                <button className="btn-primary" onClick={() => void handleIniciar()} style={{ marginTop: '1rem' }}>Comenzar Sesión</button>
+                <button
+                  type="button"
+                  className="btn-primary"
+                  onClick={() => void handleIniciar()}
+                  style={{ marginTop: '1rem', width: '100%' }}
+                >
+                  Comenzar Sesión
+                </button>
               </div>
             )}
 
             {/* ESTADO 1: EN CURSO */}
             {selected.estadoSesion === 1 && (
-              <div style={{ marginTop: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.1rem' }}>Participantes en juego</h3>
+              <div style={{ marginTop: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>Participantes en juego</h3>
                 <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
                   {selected.participantes?.map(p => <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre}</li>)}
                 </ul>
                 {esHostDeSeleccionada && (
                   <div style={{ marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-                    <p style={{ color: 'var(--warning-text)', fontSize: '0.875rem', marginBottom: '0.75rem' }}>
-                      No podrás finalizar la sesión si hay misiones pendientes.
+                    <p style={{ color: 'var(--warning-text)', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+                      No podrás finalizar la sesión si aún tiene misiones pendientes.
                     </p>
-                    <button className="btn-danger" onClick={() => void handleFinalizar()}>Finalizar Sesión</button>
+                    <button type="button" className="btn-danger" style={{ width: '100%' }} onClick={() => void handleFinalizar()}>
+                      Finalizar Sesión
+                    </button>
                   </div>
                 )}
               </div>
@@ -368,9 +444,9 @@ export function SessionsPage() {
 
             {/* ESTADO 2: FINALIZADA */}
             {selected.estadoSesion === 2 && (
-              <div style={{ marginTop: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.1rem' }}>Resumen de Recompensas</h3>
-                <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', marginBottom: '1rem' }}>
+              <div style={{ marginTop: '0.5rem' }}>
+                <h3 style={{ fontSize: '1.1rem', margin: '0 0 0.5rem 0' }}>Resumen de Recompensas</h3>
+                <div style={{ background: 'var(--bg-card-secondary)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', marginBottom: '1rem' }}>
                   <p style={{ margin: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
                     <strong>Total entregado:</strong>{' '}
                     <span style={{ color: 'var(--success-text)', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}>
@@ -385,10 +461,10 @@ export function SessionsPage() {
                   </p>
                 </div>
 
-                <h3 style={{ fontSize: '1.1rem', marginTop: '1rem' }}>Participantes del historial</h3>
+                <h3 style={{ fontSize: '1.1rem', marginTop: '1rem', marginBottom: '0.5rem' }}>Participantes del historial</h3>
                 <ul style={{ paddingLeft: '1.25rem', margin: '0.5rem 0' }}>
                   {selected.participantes?.map(p => (
-                    <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre} {p.dioKarma ? '(Karma)' : ''}</li>
+                    <li key={p.idPersonaje} style={{ margin: '0.25rem 0' }}>{p.nombre} {p.dioKarma ? '(Karma otorgado)' : ''}</li>
                   ))}
                 </ul>
                 
@@ -405,18 +481,25 @@ export function SessionsPage() {
                         <option value={-1}>Mala experiencia (-1)</option>
                       </select>
                     </label>
-                    <button className="btn-primary" onClick={() => void handleCalificar()} style={{ marginTop: '0.5rem' }}>Enviar Calificación</button>
+                    <button type="button" className="btn-primary" onClick={() => void handleCalificar()} style={{ marginTop: '0.5rem', width: '100%' }}>Enviar Calificación</button>
                   </div>
                 )}
               </div>
             )}
 
-            <button type="button" className="btn-secondary" style={{ marginTop: '1.25rem' }} onClick={() => setSelected(null)}>
-              Cerrar detalle
-            </button>
-          </aside>
-        )}
-      </div>
+            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ minWidth: '110px' }}
+                onClick={() => setSelected(null)}
+              >
+                Cerrar detalle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <NoticeModal mensaje={errorAvisoModal} onClose={() => setErrorAvisoModal(null)} />
     </div>
