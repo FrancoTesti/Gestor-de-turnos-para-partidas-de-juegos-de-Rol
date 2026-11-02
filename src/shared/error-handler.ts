@@ -10,6 +10,7 @@ import { MatchValidationError } from '../validators/match.validator';
 import { CharacterValidationError } from '../validators/character.validator';
 import { PlayerValidationError } from '../validators/player.validator';
 import { HostValidationError } from '../validators/host.validator';
+import { ShopValidationError } from '../validators/shop.validator';
 
 // Errores de dominio / servicios
 import { HostNotFoundError } from '../services/match.service';
@@ -51,6 +52,8 @@ registerError(MatchValidationError, { status: 400 });
 registerError(CharacterValidationError, { status: 400 });
 registerError(PlayerValidationError, { status: 400 });
 registerError(HostValidationError, { status: 400 });
+registerError(ShopValidationError, { status: 400 });
+registerError(ZodError, { status: 400, message: (err: any) => err.issues?.map((i: any) => `${i.path.join('.')}: ${i.message}`).join('; ') || err.message });
 
 // 404: No encontrados
 registerError(HostNotFoundError, { status: 404 });
@@ -96,6 +99,12 @@ export function handleControllerError(error: unknown, res: Response, fallbackMes
         res.status(rule.status).json({ message });
         return;
       }
+    }
+
+    const errName = (error as Error).name || (error.constructor && error.constructor.name) || '';
+    if (/ValidationError|ErrorValidacion/i.test(errName)) {
+      res.status(400).json({ message: (error as Error).message });
+      return;
     }
   }
 
