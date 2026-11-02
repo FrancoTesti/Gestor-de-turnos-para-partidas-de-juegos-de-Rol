@@ -4,9 +4,8 @@ import {
   HostService,
   AnfitrionService,
 } from '../services/host.service';
-import {
-  validateCreateHost,
-} from '../validators/host.validator';
+import { validatePayload } from '../shared/validate';
+import { createHostSchema } from '../schemas/host.schema';
 
 type IdParams = { id: string };
 
@@ -58,7 +57,7 @@ export class HostController {
   // POST /api/anfitriones
   async createHost(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateHost(req.body);
+      const data = validatePayload(createHostSchema, req.body);
       const nuevoAnfitrion = await this.hostService.createHost(data);
       res.status(201).json(nuevoAnfitrion);
     } catch (error) {

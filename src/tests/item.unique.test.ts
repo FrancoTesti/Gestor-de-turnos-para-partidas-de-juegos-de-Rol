@@ -6,7 +6,7 @@ import { Partida } from '../entities/Match.entity';
 import { Personaje } from '../entities/Character.entity';
 import { Tienda } from '../entities/Shop.entity';
 import { ObjetoService } from '../services/item.service';
-import { ErrorValidacionObjeto } from '../validators/item.validator';
+import { ErrorValidacion as ErrorValidacionObjeto } from '../shared/validate';
 
 describe('ObjetoService - Objeto Único (esUnico)', () => {
   let objetoUnico: Objeto;

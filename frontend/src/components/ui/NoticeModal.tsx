@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { AlertTriangleIcon, CloseIcon } from './Icons';
+import { classifyError } from './ErrorRenderer';
 import './Modal.css';
 
 export interface NoticeModalProps {
@@ -14,11 +15,11 @@ export type AvisoModalProps = NoticeModalProps;
 
 export default function NoticeModal({
   isOpen,
-  titulo = 'Aviso del Sistema',
+  titulo,
   mensaje,
   onClose,
   onCerrar,
-  tipo = 'advertencia',
+  tipo,
 }: NoticeModalProps) {
   const cerrar = useCallback(() => {
     if (onClose) onClose();
@@ -39,7 +40,10 @@ export default function NoticeModal({
 
   if (!estaAbierto || !mensaje) return null;
 
-  const colorIcono = tipo === 'error' ? 'var(--error-text, #ef4444)' : 'var(--warning-text, #f59e0b)';
+  const clasificado = classifyError(mensaje);
+  const tituloFinal = titulo ?? (clasificado.category === 'server' ? 'Aviso del Sistema' : clasificado.title);
+  const tipoFinal = tipo ?? (clasificado.alertType === 'error' ? 'error' : clasificado.alertType === 'info' ? 'info' : 'advertencia');
+  const colorIcono = tipoFinal === 'error' ? 'var(--error-text, #ef4444)' : 'var(--warning-text, #f59e0b)';
 
   return (
     <div
@@ -85,7 +89,7 @@ export default function NoticeModal({
         </div>
 
         <h3 id="aviso-modal-titulo" style={{ margin: '0 0 0.75rem 0', fontSize: '1.25rem', color: 'var(--text-h)' }}>
-          {titulo}
+          {tituloFinal}
         </h3>
 
         <p style={{ margin: '0 0 1.5rem 0', color: 'var(--text)', fontSize: '0.95rem', lineHeight: 1.5 }}>

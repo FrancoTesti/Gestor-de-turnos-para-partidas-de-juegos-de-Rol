@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Clase } from '../entities/Class.entity';
 import { Tienda } from '../entities/Shop.entity';
 import { TiendaService } from '../services/shop.service';
-import { ErrorValidacionTienda } from '../validators/shop.validator';
+import { ErrorValidacion as ErrorValidacionTienda } from '../shared/validate';
 
 describe('TiendaService', () => {
   let clase: Clase;

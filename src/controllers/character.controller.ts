@@ -4,10 +4,8 @@ import {
   CharacterService,
   PersonajeService,
 } from '../services/character.service';
-import {
-  validateUpdateCharacter,
-  validateCreateCharacter,
-} from '../validators/character.validator';
+import { validatePayload } from '../shared/validate';
+import { createCharacterSchema, updateCharacterSchema } from '../schemas/character.schema';
 
 type IdParams = {
   id: string;
@@ -61,7 +59,7 @@ export class CharacterController {
 
   async createCharacter(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateCharacter(req.body);
+      const data = validatePayload(createCharacterSchema, req.body);
       const nuevoPersonaje = await this.characterService.createCharacter(data);
       res.status(201).json(nuevoPersonaje);
     } catch (error) {
@@ -77,7 +75,7 @@ export class CharacterController {
     }
 
     try {
-      const data = validateUpdateCharacter(req.body);
+      const data = validatePayload(updateCharacterSchema, req.body);
       const personajeActualizado = await this.characterService.updateCharacter(id, data);
       if (!personajeActualizado) {
         res.status(404).json({ message: 'Personaje no encontrado' });

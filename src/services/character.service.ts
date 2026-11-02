@@ -6,7 +6,7 @@ import { Partida } from '../entities/Match.entity';
 import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
 import { PersonajeSesion } from '../entities/CharacterSession.entity';
-import { ErrorValidacionPersonaje } from '../validators/character.validator';
+import { ErrorValidacion as ErrorValidacionPersonaje } from '../shared/validate';
 import { verifyPassword } from '../security/password';
 import type { ActualizarPersonajeDTO, CrearPersonajeDTO, PersonajePublicoDTO } from '../types/character.dto';
 

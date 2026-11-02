@@ -2,15 +2,7 @@ import type { Response, Request, NextFunction, RequestHandler } from 'express';
 import { ForeignKeyConstraintViolationException, UniqueConstraintViolationException } from '@mikro-orm/core';
 import { ZodError } from 'zod';
 import { HttpError } from '../security/authorization';
-
-// Errores de validación
-import { ClassValidationError } from '../validators/class.validator';
-import { ItemValidationError } from '../validators/item.validator';
-import { MatchValidationError } from '../validators/match.validator';
-import { CharacterValidationError } from '../validators/character.validator';
-import { PlayerValidationError } from '../validators/player.validator';
-import { HostValidationError } from '../validators/host.validator';
-import { ShopValidationError } from '../validators/shop.validator';
+import { ValidationError } from './validate';
 
 // Errores de dominio / servicios
 import { HostNotFoundError } from '../services/match.service';
@@ -45,15 +37,12 @@ export function registerError(ctor: ErrorConstructor, rule: ErrorRule): void {
 
 // --- Registro inicial de constructores de error ---
 
-// 400: Validaciones
-registerError(ClassValidationError, { status: 400 });
-registerError(ItemValidationError, { status: 400 });
-registerError(MatchValidationError, { status: 400 });
-registerError(CharacterValidationError, { status: 400 });
-registerError(PlayerValidationError, { status: 400 });
-registerError(HostValidationError, { status: 400 });
-registerError(ShopValidationError, { status: 400 });
-registerError(ZodError, { status: 400, message: (err: any) => err.issues?.map((i: any) => `${i.path.join('.')}: ${i.message}`).join('; ') || err.message });
+// 400: Validación general y Zod
+registerError(ValidationError, { status: 400 });
+registerError(ZodError, {
+  status: 400,
+  message: (err: any) => err.issues?.map((i: any) => `${i.path.join('.')}: ${i.message}`).join('; ') || err.message,
+});
 
 // 404: No encontrados
 registerError(HostNotFoundError, { status: 404 });
@@ -90,7 +79,6 @@ export function handleControllerError(error: unknown, res: Response, fallbackMes
   }
 
   if (error && typeof error === 'object') {
-    // Buscar en el registro por constructor o prototipo
     for (const [ctor, rule] of errorRegistry.entries()) {
       if (error instanceof ctor) {
         const message = typeof rule.message === 'function'

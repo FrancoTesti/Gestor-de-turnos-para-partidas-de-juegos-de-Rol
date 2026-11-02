@@ -8,7 +8,7 @@ import { Mision } from '../entities/Mission.entity';
 import { PersonajeSesion } from '../entities/CharacterSession.entity';
 import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
-import { ErrorValidacionPartida } from '../validators/match.validator';
+import { ErrorValidacion as ErrorValidacionPartida } from '../shared/validate';
 import { hashPassword } from '../security/password';
 import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/match.dto';
 
