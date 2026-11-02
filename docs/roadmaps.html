@@ -1,0 +1,1392 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Roadmaps del Código</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f4ef;
+    --surface: #ffffff;
+    --surface-2: #efece4;
+    --text: #1f1d1a;
+    --muted: #625d55;
+    --border: #d9d4c9;
+    --accent: #7a3e1d;
+    --code-bg: #f1ede4;
+    --emanuel: #2f6f9f;
+    --renzo: #7b4fa3;
+    --franco: #b5502b;
+    --alejandro: #2e7d4f;
+    --octavio: #8a6a0c;
+    --ok: #2e7d4f;
+    --err: #b3261e;
+    --warn-bg: #fbf1d9;
+    --warn-bd: #d9b860;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17161a; --surface: #201f24; --surface-2: #2a2930; --text: #ebe8e2; --muted: #a8a39a;
+      --border: #3a3840; --accent: #e39a6c; --code-bg: #2a2930; --emanuel: #6fb0e0; --renzo: #b993de;
+      --franco: #ee8d65; --alejandro: #6cc792; --octavio: #e0bd52; --ok: #6cc792; --err: #f08a82;
+      --warn-bg: #332c18; --warn-bd: #7a6526;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17161a; --surface: #201f24; --surface-2: #2a2930; --text: #ebe8e2; --muted: #a8a39a;
+    --border: #3a3840; --accent: #e39a6c; --code-bg: #2a2930; --emanuel: #6fb0e0; --renzo: #b993de;
+    --franco: #ee8d65; --alejandro: #6cc792; --octavio: #e0bd52; --ok: #6cc792; --err: #f08a82;
+    --warn-bg: #332c18; --warn-bd: #7a6526;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: "Lato", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 17px; line-height: 1.62;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 32px 16px 90px; }
+  h1 { font-size: 2.2rem; font-weight: 900; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.01em; }
+  h2 { font-size: 1.55rem; font-weight: 900; margin: 0 0 4px; line-height: 1.25; }
+  h3 { font-size: 1.2rem; font-weight: 700; margin: 30px 0 10px; }
+  h4 { margin: 0 0 4px; font-size: 1.02rem; font-weight: 700; }
+  p { margin: 0 0 12px; }
+  ul { margin: 6px 0 12px; padding-left: 22px; }
+  li { margin: 3px 0; }
+  .lead { color: var(--muted); font-size: 1.1rem; max-width: 72ch; }
+  code, pre { font-family: ui-monospace, "Cascadia Code", "Fira Code", Consolas, monospace; }
+  code {
+    font-size: 0.84em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere;
+  }
+  pre {
+    background: var(--code-bg); border: 1px solid var(--border); border-radius: 8px;
+    padding: 12px 14px; overflow-x: auto; font-size: 0.8rem; line-height: 1.5; margin: 6px 0 14px;
+    tab-size: 2;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  figure.src { margin: 8px 0 14px; }
+  figure.src figcaption {
+    font-family: ui-monospace, Consolas, monospace; font-size: 0.74rem; color: var(--muted);
+    background: var(--surface-2); border: 1px solid var(--border); border-bottom: none;
+    border-radius: 8px 8px 0 0; padding: 4px 12px;
+  }
+  figure.src pre { margin: 0; border-radius: 0 0 8px 8px; }
+  a { color: var(--accent); }
+
+  /* Índice */
+  nav.toc { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 10px; margin: 24px 0 36px; }
+  nav.toc a {
+    display: block; text-decoration: none; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-left: 5px solid var(--c, var(--accent)); border-radius: 8px; padding: 10px 12px;
+  }
+  nav.toc a small { display: block; color: var(--muted); font-size: 0.8rem; }
+  nav.toc a strong { display: block; line-height: 1.3; }
+
+  section.card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 26px 24px; margin: 0 0 30px; border-top: 6px solid var(--c, var(--accent)); scroll-margin-top: 16px;
+  }
+  .who { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; margin-bottom: 12px; }
+  .tag {
+    display: inline-block; font-size: 0.78rem; font-weight: 700; padding: 2px 10px; border-radius: 999px;
+    background: var(--surface-2); color: var(--c, var(--accent)); border: 1px solid var(--border);
+  }
+  .meta { color: var(--muted); font-size: 0.92rem; }
+  .sub { scroll-margin-top: 16px; }
+  .part-title {
+    display: flex; align-items: center; gap: 10px; margin: 38px 0 4px; padding-top: 22px; border-top: 2px dashed var(--border);
+  }
+  .part-title:first-of-type { border-top: none; padding-top: 0; }
+  .part-title .badge {
+    background: var(--c, var(--accent)); color: var(--bg); font-weight: 900; border-radius: 6px; padding: 2px 9px; font-size: 0.85rem; white-space: nowrap;
+  }
+  .part-title h3 { margin: 0; }
+
+  .lifeline { display: flex; flex-wrap: wrap; gap: 8px; align-items: stretch; margin: 12px 0 6px; }
+  .lifeline .node {
+    flex: 1 1 130px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px; border-bottom: 4px solid var(--c, var(--accent));
+  }
+  .lifeline .node b { display: block; }
+  .lifeline .node span { color: var(--muted); font-size: 0.85rem; }
+  .lifeline .arrow { align-self: center; color: var(--muted); font-size: 1.2rem; }
+
+  .pipe { display: flex; flex-wrap: wrap; gap: 8px 6px; margin: 14px 0 4px; counter-reset: p; }
+  .pipe div {
+    flex: 1 1 160px; background: var(--surface-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 9px 10px; font-size: 0.9rem; position: relative;
+  }
+  .pipe div::before {
+    counter-increment: p; content: counter(p); position: absolute; top: -9px; left: -6px; width: 22px; height: 22px;
+    border-radius: 50%; background: var(--accent); color: var(--bg); font-size: 0.75rem; font-weight: 700; display: grid; place-items: center;
+  }
+
+  ol.road { list-style: none; padding: 0; margin: 10px 0 0; counter-reset: s; }
+  ol.road > li { position: relative; padding: 0 0 20px 46px; counter-increment: s; margin: 0; }
+  ol.road > li::before {
+    content: counter(s); position: absolute; left: 0; top: 0; width: 30px; height: 30px; border-radius: 50%;
+    background: var(--c, var(--accent)); color: var(--bg); font-weight: 900; font-size: 0.9rem; display: grid; place-items: center;
+  }
+  ol.road > li::after { content: ""; position: absolute; left: 14px; top: 32px; bottom: 2px; width: 2px; background: var(--border); }
+  ol.road > li:last-child::after { display: none; }
+  ol.road .layer { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); font-weight: 700; }
+  ol.road .file { font-size: 0.93rem; }
+  ol.road .file ul { font-size: 0.93rem; }
+
+  .states { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin: 8px 0 14px; }
+  .states .st { border: 1px solid var(--border); background: var(--surface-2); border-radius: 6px; padding: 4px 10px; font-size: 0.88rem; }
+  .states .st code { background: none; padding: 0; }
+  .states .to { color: var(--muted); font-size: 0.9rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin: 6px 0 14px; }
+  th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 700; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .tbl { overflow-x: auto; }
+  .http { font-weight: 700; white-space: nowrap; }
+  .http.ok { color: var(--ok); }
+  .http.err { color: var(--err); }
+
+  .imports {
+    border: 1px solid var(--border); border-left: 4px solid var(--c, var(--accent)); border-radius: 0 8px 8px 0;
+    background: var(--surface-2); padding: 10px 14px 4px; margin: 10px 0 16px;
+  }
+  .imports > b { display: block; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin-bottom: 4px; }
+  .imports pre { background: var(--code-bg); }
+  .imports ul { font-size: 0.9rem; }
+
+  .say {
+    background: var(--surface-2); border-left: 4px solid var(--c, var(--accent)); border-radius: 0 8px 8px 0;
+    padding: 12px 16px; margin: 18px 0 0;
+  }
+  .say b.t { display: block; margin-bottom: 4px; }
+  .say ul { margin: 6px 0 0; }
+  .qa { margin-top: 10px; font-size: 0.93rem; }
+  .qa p { margin: 0 0 8px; }
+  .qa p b { color: var(--c, var(--accent)); }
+
+  .note {
+    background: var(--warn-bg); border: 1px solid var(--warn-bd); border-radius: 8px; padding: 10px 14px; margin: 14px 0; font-size: 0.93rem;
+  }
+
+  .c-emanuel { --c: var(--emanuel); }
+  .c-renzo { --c: var(--renzo); }
+  .c-franco { --c: var(--franco); }
+  .c-alejandro { --c: var(--alejandro); }
+  .c-octavio { --c: var(--octavio); }
+
+  footer { color: var(--muted); font-size: 0.85rem; margin-top: 40px; }
+
+  @media (max-width: 560px) {
+    body { font-size: 16px; }
+    h1 { font-size: 1.7rem; }
+    section.card { padding: 18px 14px; }
+    ol.road > li { padding-left: 40px; }
+    .lifeline .arrow { display: none; }
+  }
+  @media print {
+    body { background: #fff; }
+    section.card { break-inside: auto; }
+    figure.src, .say { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Roadmaps del código</h1>
+  <p class="lead">
+    Gestor de Turnos para Partidas de Rol. Cada integrante defiende <b>dos casos de uso de punta a punta</b>
+    (desde el clic en React hasta la fila en PostgreSQL y de vuelta) y <b>un punto de la arquitectura</b>.
+    Cada paso cita el archivo, la línea, la función y las librerías que intervienen.
+  </p>
+  <p class="meta">Referencias <code>archivo:línea</code> tomadas del commit <code>8604cc1</code> de <code>main</code>. Las rutas son relativas a la raíz del repo; las de React empiezan con <code>frontend/src/</code>.</p>
+</header>
+
+<nav class="toc" aria-label="Índice">
+  <a href="#general"><small>Para todos</small><strong>Mapa general, stack y capas</strong></a>
+  <a href="#emanuel" class="c-emanuel" style="--c:var(--emanuel)"><small>Emanuel Salomón</small><strong>Registro, login y sesión · Arquitectura: auth, cookies y hasheo</strong></a>
+  <a href="#franco" style="--c:var(--franco)"><small>Franco Testi</small><strong>Crear partida, misiones · Arquitectura: transacciones y bloqueos</strong></a>
+  <a href="#alejandro" style="--c:var(--alejandro)"><small>Alejandro Ciesco</small><strong>Personajes y clases · Arquitectura: modelo de datos y ORM</strong></a>
+  <a href="#renzo" style="--c:var(--renzo)"><small>Renzo Scollo</small><strong>Sesiones y karma · Arquitectura: frontend ↔ backend y CORS</strong></a>
+  <a href="#octavio" style="--c:var(--octavio)"><small>Octavio Gudiño</small><strong>Compra y venta · Arquitectura: validators, DTOs y errores</strong></a>
+  <a href="#errores"><small>Para todos</small><strong>Mapa de respuestas HTTP</strong></a>
+</nav>
+
+<!-- ============================================================ GENERAL -->
+<section class="card" id="general">
+  <h2>Mapa general</h2>
+  <p class="meta">Conviene que los cinco lo conozcan antes de presentar su parte.</p>
+
+  <h3>Stack y librerías (de <code>package.json</code> y <code>frontend/package.json</code>)</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Librería</th><th>Versión</th><th>Para qué se usa</th><th>Dónde</th></tr></thead>
+    <tbody>
+      <tr><td><b>express</b></td><td>^5.2.1</td><td>Servidor HTTP, routers y middlewares.</td><td><code>src/app.ts</code>, <code>src/routes/*</code></td></tr>
+      <tr><td><b>@mikro-orm/core</b> + <b>@mikro-orm/postgresql</b></td><td>^6.6.16</td><td>ORM: entidades con decoradores, <code>EntityManager</code>, Unit of Work, transacciones y bloqueos.</td><td><code>src/entities/*</code>, <code>src/services/*</code>, <code>src/mikro-orm.config.ts</code></td></tr>
+      <tr><td><b>pg</b></td><td>^8.23.1</td><td>Driver de PostgreSQL que usa MikroORM por debajo.</td><td>(indirecto)</td></tr>
+      <tr><td><b>zod</b></td><td>^4.4.3</td><td>Validación en tiempo de ejecución de lo que llega por HTTP.</td><td><code>src/validators/*</code>, <code>src/schemas/*</code>, <code>src/services/game.service.ts</code></td></tr>
+      <tr><td><b>reflect-metadata</b></td><td>^0.2.2</td><td>Metadatos que necesitan los decoradores de MikroORM (<code>import 'reflect-metadata'</code> en <code>app.ts:3</code>).</td><td><code>src/app.ts</code></td></tr>
+      <tr><td><b>dotenv</b></td><td>^17.4.2</td><td>Carga <code>.env</code> (<code>SUPABASE_DB_URL</code>, <code>CORS_ORIGIN</code>, <code>PORT</code>…).</td><td><code>src/app.ts:4</code>, <code>mikro-orm.config.ts:1</code></td></tr>
+      <tr><td><b>node:crypto</b> (nativo)</td><td>Node</td><td><code>scrypt</code>, <code>randomBytes</code>, <code>createHash</code>, <code>timingSafeEqual</code>. No se usa bcrypt ni jsonwebtoken.</td><td><code>src/security/*</code></td></tr>
+      <tr><td><b>TypeScript</b> / ts-node / nodemon</td><td>^5.9.3</td><td><code>strict: true</code>, <code>experimentalDecorators</code> y <code>emitDecoratorMetadata</code> (<code>tsconfig.json:13,18,19</code>).</td><td>raíz</td></tr>
+      <tr><td><b>react</b> / <b>react-dom</b></td><td>^19.2.7</td><td>Interfaz: componentes, hooks (<code>useState</code>, <code>useEffect</code>, <code>useMemo</code>, <code>useCallback</code>, <code>useRef</code>, <code>createContext</code>).</td><td><code>frontend/src/*</code></td></tr>
+      <tr><td><b>react-router-dom</b></td><td>^7.18.3</td><td>Rutas (<code>BrowserRouter</code>, <code>Routes</code>, <code>Route</code>, <code>Outlet</code>, <code>Navigate</code>, <code>useNavigate</code>).</td><td><code>App.tsx</code>, <code>MainLayout.tsx</code></td></tr>
+      <tr><td><b>vite</b> + @vitejs/plugin-react</td><td>^8.1.1</td><td>Servidor de desarrollo con <i>proxy</i> a la API y empaquetado a <code>frontend/dist</code>.</td><td><code>frontend/vite.config.ts</code></td></tr>
+      <tr><td><b>vitest</b>, Testing Library, jsdom</td><td>^4.1.11</td><td>Tests unitarios de backend (<code>src/tests</code>) y de componentes (<code>__tests__</code>).</td><td>ambos</td></tr>
+      <tr><td><b>@playwright/test</b> + @axe-core/playwright</td><td>^1.63.0</td><td>Tests E2E y de accesibilidad (<code>e2e/</code>).</td><td>raíz</td></tr>
+    </tbody>
+  </table></div>
+  <p class="meta"><b>Dato para la defensa:</b> no hay paquete <code>cors</code>, ni <code>bcrypt</code>, ni <code>jsonwebtoken</code>, ni <code>cookie-parser</code>. CORS, la cookie de sesión y el hasheo están escritos a mano con Express y <code>node:crypto</code>.</p>
+
+  <h3>Ciclo de vida de los objetos del dominio</h3>
+  <p>Cada objeto depende del anterior: no hay partida sin anfitrión, ni personaje sin partida, ni sesión sin partida.</p>
+  <div class="lifeline">
+    <div class="node" style="--c:var(--emanuel)"><b>Usuario</b><span>+ Jugador o Anfitrión</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--franco)"><b>Partida</b><span>la crea un Anfitrión</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--alejandro)"><b>Personaje</b><span>+ Inventario n.º 1</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--renzo)"><b>Sesión</b><span>+ PersonajeSesion</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--franco)"><b>Misión</b><span>reparte dinero y XP</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--octavio)"><b>Objeto</b><span>compra y venta</span></div><div class="arrow">→</div>
+    <div class="node" style="--c:var(--renzo)"><b>Karma</b><span>al anfitrión</span></div>
+  </div>
+
+  <h3>Estructura de carpetas</h3>
+<pre><code>src/
+  app.ts               punto de entrada: middlewares globales, routers, estáticos, manejo de errores
+  mikro-orm.config.ts  conexión a PostgreSQL y registro de entidades
+  entities/            12 clases con decoradores de MikroORM (una por tabla)
+  routes/              un router por recurso: URL → middleware de permiso → controlador
+  controllers/         lee req, llama al validador y al servicio, elige el código HTTP
+  validators/ schemas/ Zod (y uno manual) para validar el body
+  services/            reglas de negocio, transacciones y bloqueos
+  types/               DTOs: Crear…DTO, Actualizar…DTO, …PublicoDTO
+  security/            auth.ts (sesión), password.ts (scrypt), authorization.ts (permisos)
+  shared/validate.ts   middleware genérico que valida con un esquema de Zod
+  tests/ integration/  vitest (unitarios) y node:test (integración contra la BD)
+frontend/src/
+  main.tsx → App.tsx   monta Providers y rutas
+  context/             UserContext (sesión y roles), ThemeContext
+  services/            api.ts (único fetch) + un archivo por recurso
+  pages/ components/   pantallas y piezas de UI
+  interfaces.ts        tipos que reflejan las entidades
+e2e/                   Playwright</code></pre>
+
+  <h3>Arquitectura en capas</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>Capa</th><th>Dónde</th><th>Responsabilidad</th></tr></thead>
+    <tbody>
+      <tr><td>Página React</td><td><code>pages/*.tsx</code></td><td>Formulario, validación rápida en el cliente y mensajes al usuario.</td></tr>
+      <tr><td>Estado global</td><td><code>context/UserContext.tsx</code></td><td>Quién está logueado y con qué rol.</td></tr>
+      <tr><td>Cliente HTTP</td><td><code>services/api.ts</code> + <code>services/*.service.ts</code></td><td>Un único <code>fetch</code>: arma el JSON, traduce errores y avisa si la sesión expiró.</td></tr>
+      <tr><td>Servidor</td><td><code>src/app.ts</code></td><td>CORS, límite de 64 KB, defensa CSRF, un <code>EntityManager</code> por request, rutas y errores.</td></tr>
+      <tr><td>Ruta + permiso</td><td><code>routes/</code> + <code>security/authorization.ts</code></td><td>Qué URL atiende qué controlador y quién puede.</td></tr>
+      <tr><td>Controlador</td><td><code>controllers/</code></td><td>Traduce HTTP ↔ llamadas al servicio. No tiene reglas de negocio.</td></tr>
+      <tr><td>Validador</td><td><code>validators/</code>, <code>schemas/</code></td><td>Tipos, rangos y rechazo de campos de más.</td></tr>
+      <tr><td>Servicio</td><td><code>services/</code></td><td>Reglas de negocio, transacciones y bloqueos.</td></tr>
+      <tr><td>Entidad (ORM)</td><td><code>entities/</code></td><td>Mapeo clase ↔ tabla.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="meta">Convención: casi todo se exporta con <b>nombre en español y en inglés</b> (<code>export { PartidaService as MatchService }</code> en <code>match.service.ts</code>, <code>export const Match = Partida</code> en <code>Match.entity.ts</code>). Son alias del mismo símbolo.</p>
+
+  <h3>El recorrido de cualquier request (<code>src/app.ts</code>)</h3>
+  <div class="pipe">
+    <div><code>api()</code> hace <code>fetch('/api/…')</code> con la cookie <span class="meta">api.ts:58</span></div>
+    <div>CORS y cabeceras <span class="meta">app.ts:42-60</span></div>
+    <div><code>express.json</code> (64 KB) <span class="meta">app.ts:63</span></div>
+    <div>Defensa CSRF por <code>Origin</code> <span class="meta">app.ts:64-74</span></div>
+    <div><code>RequestContext.create</code>: un EM por request <span class="meta">app.ts:77</span></div>
+    <div><code>auth.requireAuth</code> carga <code>req.identity</code> <span class="meta">auth.ts:33</span></div>
+    <div>Middleware de permiso del router <span class="meta">authorization.ts</span></div>
+    <div>Controlador → validador → servicio <span class="meta">controllers/ services/</span></div>
+    <div><code>em.flush()</code> → SQL → DTO en JSON</div>
+    <div>Si algo lanza: <code>handleErrors</code> <span class="meta">app.ts:176</span></div>
+  </div>
+  <p>Los routers se montan en <code>app.ts:93-103</code>. Todos pasan por <code>auth.requireAuth</code> salvo <code>/api/auth</code> (línea 94), que contiene el registro y el login. Si no existe la ruta, <code>app.ts:124</code> responde 404 en JSON. El middleware de errores es el último: <code>app.use(handleErrors)</code> (línea 128).</p>
+
+  <h3>Ideas que se repiten en todos los casos de uso</h3>
+  <ul>
+    <li><b>DTO público:</b> el backend nunca devuelve la entidad tal cual. <code>toPublicMatch</code>, <code>toPublicCharacter</code> y <code>publicUser</code> dejan afuera las contraseñas.</li>
+    <li><b>Unit of Work:</b> se modifican objetos en memoria y <code>em.flush()</code> manda los <code>INSERT</code>/<code>UPDATE</code> juntos.</li>
+    <li><b>Transacción + bloqueo pesimista:</b> <code>em.transactional()</code> con <code>LockMode.PESSIMISTIC_WRITE</code> (<code>SELECT … FOR UPDATE</code>). Lo explica Franco en su punto de arquitectura.</li>
+    <li><b>Códigos HTTP con significado:</b> 400 datos inválidos, 401 sin sesión, 403 sin permiso, 404 no existe, 409 conflicto de estado.</li>
+  </ul>
+</section>
+
+<!-- ============================================================ EMANUEL -->
+<section class="card c-emanuel" id="emanuel">
+  <div class="who"><h2>Emanuel Salomón</h2><span class="tag">Backend · Seguridad, cuentas, núcleo Express</span></div>
+  <p class="meta">Dos casos de uso: <a href="#e-cu1">CU1 Registro e inicio de sesión</a> · <a href="#e-cu2">CU2 Recuperar la sesión, rutas protegidas y cierre de sesión</a> · y el punto de arquitectura <a href="#e-arq">Autenticación, cookies y hasheo de contraseñas</a>.</p>
+
+  <!-- CU1 -->
+  <div class="part-title sub" id="e-cu1"><span class="badge">CU1</span><h3>Registro e inicio de sesión</h3></div>
+  <p>Objetos que nacen: <b>Usuario</b> y su rol (<b>Jugador</b> o <b>Anfitrión</b>), un <b>token</b> en memoria del servidor y una <b>cookie</b> en el navegador.</p>
+  <div class="states">
+    <span class="st">Visitante</span><span class="to">→ <code>POST /api/auth/register</code> →</span>
+    <span class="st">Usuario + rol en BD</span><span class="to">→ <code>POST /api/auth/login</code> →</span>
+    <span class="st">Cookie <code>rpg_session</code> (8 h)</span>
+  </div>
+
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/security/auth.ts:1-9
+import { randomBytes, createHash } from 'node:crypto';
+import { Router, type Request, type RequestHandler } from 'express';
+import { EntityManager, UniqueConstraintViolationException } from '@mikro-orm/core';
+import { z } from 'zod';
+import { Usuario } from '../entities/User.entity';
+import { Jugador } from '../entities/Player.entity';
+import { Anfitrion } from '../entities/Host.entity';
+import { crearUsuarioSchema } from '../schemas/user.schema';
+import { hashPassword, verifyPassword } from './password';
+
+// frontend/src/context/UserContext.tsx:1-3
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import type { Usuario, Jugador, Anfitrion } from '../interfaces';
+import { api, ApiError, SESSION_EXPIRED_EVENT } from '../services/api';</code></pre>
+  </div>
+
+  <h3>Roadmap: registro</h3>
+  <ol class="road">
+    <li><span class="layer">Frontend · página</span><h4>El usuario completa el formulario</h4>
+      <p class="file"><code>frontend/src/pages/RegisterPage.tsx</code>. La función <code>validar()</code> (línea 28) repite las reglas del backend para avisar antes de enviar: nombre ≥ 2, nickname ≥ 3, contraseña ≥ 6 y que ambas contraseñas coincidan. El comentario de la línea 26 aclara que <i>«el servidor vuelve a validar»</i>. <code>handleRegister</code> (línea 49) llama a <code>registrarUsuario(…)</code> (línea 55) y, si sale bien, <code>navigate('/login')</code> (hook <code>useNavigate</code> de <code>react-router-dom</code>). El rol se elige con <code>useState&lt;'jugador' | 'anfitrion'&gt;</code> (línea 43).</p></li>
+    <li><span class="layer">Frontend · contexto</span><h4>El contexto manda el POST</h4>
+      <p class="file"><code>UserContext.tsx:53-57</code>: <code>await api('/auth/register', 'POST', { nombreUsuario, nickname, contrasena, tipo })</code> y después setea el mensaje «Cuenta creada». La función <code>api</code> está en <code>services/api.ts:55</code> y hace <code>fetch(\`/api${path}\`, { method, credentials: 'same-origin', headers, body: JSON.stringify(data) })</code> (líneas 58-60).</p></li>
+    <li><span class="layer">Servidor · freno</span><h4>Límite de intentos por IP</h4>
+      <p class="file"><code>auth.ts:50-58</code>: un <code>router.use</code> que corre antes de las rutas de <code>/api/auth</code>. Cuenta los POST por <code>req.ip</code> en el <code>Map attempts</code> (línea 22) y devuelve 429 pasados 30 en 15 minutos (línea 57). Por eso <code>app.ts:31</code> activa <code>app.set('trust proxy', 1)</code> en producción: detrás de Render la IP real viaja en <code>X-Forwarded-For</code>.</p></li>
+    <li><span class="layer">Servidor · validación</span><h4>Zod valida y le suma el campo <code>tipo</code></h4>
+      <p class="file"><code>auth.ts:61</code>: <code>crearUsuarioSchema.extend({ tipo: z.enum(['jugador','anfitrion']) }).parse(req.body)</code>. El esquema base está en <code>src/schemas/user.schema.ts:5-17</code> (<code>.trim()</code>, <code>.min()</code>, <code>.max()</code>) y termina en <code>.strict()</code>: cualquier campo no declarado, como <code>idUsuario</code>, se rechaza. Si <code>.parse</code> falla lanza <code>ZodError</code>, que <code>handleErrors</code> (<code>app.ts:178</code>) convierte en 400.</p></li>
+    <li><span class="layer">Servidor · regla</span><h4>El nickname no puede repetirse</h4>
+      <p class="file"><code>auth.ts:64</code> busca primero con <code>em.findOne(Usuario, { nickname })</code> para dar un mensaje claro (409). Pero dos registros simultáneos podrían pasar esa consulta, así que la BD es la última barrera: <code>User.entity.ts:19</code> declara <code>unique: true</code> y <code>auth.ts:76</code> captura <code>UniqueConstraintViolationException</code> (importada de <code>@mikro-orm/core</code>) para devolver el mismo mensaje.</p></li>
+    <li><span class="layer">Servidor · persistencia</span><h4>Usuario y rol en una sola transacción</h4>
+<figure class="src"><figcaption>src/security/auth.ts:66-72</figcaption>
+<pre><code>const result = await em.transactional(async tx =&gt; {
+  const u = tx.create(Usuario, { nombreUsuario: data.nombreUsuario, nickname: data.nickname,
+    imagen: data.imagen ?? '', contrasena: await hashPassword(data.contrasena) });
+  if (data.tipo === 'jugador') tx.create(Jugador, { usuario: u, estado: true });
+  else tx.create(Anfitrion, { usuario: u, cantPartidasActuales: 0, karma: 0 });
+  await tx.flush();
+  return publicUser(u);
+});</code></pre></figure>
+      <p class="file"><code>Jugador</code> y <code>Anfitrión</code> comparten la clave primaria con <code>Usuario</code>: <code>@OneToOne({ entity: () =&gt; Usuario, primary: true, fieldName: 'idUsuario' })</code> (<code>Player.entity.ts</code> y <code>Host.entity.ts</code>, línea 6). Es la forma de modelar «un usuario es jugador o anfitrión» con tablas separadas. Si falla el segundo insert, el usuario tampoco se guarda. La respuesta (201) usa <code>publicUser</code> (<code>auth.ts:13</code>), que no incluye la contraseña.</p></li>
+  </ol>
+
+  <h3>Roadmap: inicio de sesión</h3>
+  <ol class="road">
+    <li><span class="layer">Frontend</span><h4>Clic en «Ingresar»</h4>
+      <p class="file"><code>LoginPage.tsx:42</code> <code>handleLogin</code> corta con «Completa todos los campos» si falta algo (línea 45) y llama a <code>loguearse(nickname, contrasena)</code> dentro de un <code>try/catch/finally</code> (línea 50) para mostrar el error o apagar el estado <code>busy</code>. El input de contraseña usa <code>type={verContrasena ? 'text' : 'password'}</code> y <code>autoComplete="current-password"</code> (líneas 102-103).</p></li>
+    <li><span class="layer">Frontend · contexto</span><h4><code>loguearse</code></h4>
+      <p class="file"><code>UserContext.tsx:58-62</code>: <code>api&lt;Session&gt;('/auth/login', 'POST', …)</code>, sube <code>sessionVersion.current</code> (invalida cargas viejas), guarda la sesión con <code>setSession(s)</code> y llama a <code>recargar()</code>, que trae usuarios, jugadores y anfitriones en paralelo con <code>Promise.all</code> (línea 37).</p></li>
+    <li><span class="layer">Servidor · validación</span><h4>Esquema inline estricto</h4>
+      <p class="file"><code>auth.ts:81</code>: <code>z.object({ nickname: z.string().trim().min(1).max(50), contrasena: z.string().min(1).max(100) }).strict()</code>. En el login no se exige el mínimo de 6 caracteres: solo se comprueba la credencial.</p></li>
+    <li><span class="layer">Servidor · verificación</span><h4>Comparación en tiempo constante</h4>
+      <p class="file"><code>auth.ts:84</code> llama a <code>verifyPassword(data.contrasena, u?.contrasena ?? hashFalso)</code>. Si el nickname no existe se usa un hash falso con el mismo formato, así <code>scrypt</code> corre igual y no se puede averiguar qué nicknames existen midiendo el tiempo. Ambos casos devuelven el mismo 401 «Usuario o contraseña incorrecta» (línea 85). Lo cubre el test <i>«da el mismo mensaje para nickname inexistente y contraseña incorrecta»</i> en <code>src/tests/auth.accounts.test.ts</code>.</p></li>
+    <li><span class="layer">Servidor · sesión</span><h4>Se crea el token y la cookie</h4>
+<figure class="src"><figcaption>src/security/auth.ts:86-90</figcaption>
+<pre><code>for (const [key, value] of sessions) if (value.expires &lt;= Date.now() || value.id === u.idUsuario) sessions.delete(key);
+if (sessions.size &gt;= 5000) { res.status(503).json({ message: 'Servidor ocupado. Intentá más tarde.' }); return; }
+const token = randomBytes(32).toString('hex');
+sessions.set(digest(token), { id: u.idUsuario, password: u.contrasena, expires: Date.now() + sessionDuration });
+res.cookie(cookieName, token, { ...cookie, maxAge: sessionDuration })
+   .json({ usuario: publicUser(u), roles: await identity(u.idUsuario) });</code></pre></figure>
+      <p class="file">Antes de crear la sesión nueva se borran las vencidas y las anteriores del mismo usuario (una sola sesión por usuario). <code>randomBytes(32)</code> da 256 bits de entropía. El servidor guarda solo el <b>SHA-256</b> del token (<code>digest</code>, línea 14), así que si alguien viera la memoria del proceso no podría reutilizar los tokens. La respuesta trae <code>roles</code>, calculados por <code>identity()</code> (línea 26) con dos consultas en paralelo.</p></li>
+    <li><span class="layer">Frontend</span><h4>Entrar al sistema</h4>
+      <p class="file">La respuesta llega a <code>loguearse</code>; <code>LoginPage</code> hace <code>navigate('/dashboard')</code> (línea 50). El <code>useEffect</code> de la línea 36 también redirige si ya hay <code>usuarioLogueado</code>. Todo lo que sigue lo cubre el CU2.</p></li>
+  </ol>
+
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>El rol no lo decide el frontend: sale de la base en cada request (<code>identity()</code>) y viaja en <code>req.identity</code>.</li>
+      <li>La contraseña nunca se guarda ni se devuelve en claro; el hash y el token usan <code>node:crypto</code>.</li>
+      <li>Pruebas: <code>src/tests/auth.accounts.test.ts</code> (registro sin devolver la contraseña, nickname repetido, contraseña corta, login/me/logout) y, contra la BD real, <code>src/integration/game.test.ts</code> («registro persistente, hash, perfil atómico y nickname duplicado»).</li>
+    </ul>
+  </div>
+
+  <!-- CU2 -->
+  <div class="part-title sub" id="e-cu2"><span class="badge">CU2</span><h3>Recuperar la sesión, proteger rutas y cerrar sesión</h3></div>
+  <p>Qué pasa cuando el usuario recarga la página, cuando vence la sesión y cuando cierra sesión. Es el ciclo de vida del <b>token</b> y del estado <b>Session</b> en React.</p>
+  <div class="states">
+    <span class="st">Página recargada (sin estado)</span><span class="to">→ <code>GET /auth/me</code> →</span>
+    <span class="st">Sesión restaurada</span><span class="to">→ 8 h, 401 o <code>POST /auth/logout</code> →</span>
+    <span class="st">Sin sesión → <code>/login</code></span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// frontend/src/layouts/MainLayout.tsx:1-6
+import { useState, useEffect, useRef, type KeyboardEvent } from 'react';
+import { Outlet, useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
+import { useUser } from '../context/UserContext';
+import { Alert } from '../components/ui';
+import Modal from '../components/ui/Modal';
+import ThemeToggle from '../components/ui/ThemeToggle';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend · arranque</span><h4>Montaje de los Providers</h4>
+      <p class="file"><code>main.tsx:6-10</code> hace <code>createRoot(…).render(&lt;StrictMode&gt;&lt;App/&gt;&lt;/StrictMode&gt;)</code>. <code>App.tsx:23-25</code> anida <code>&lt;ThemeProvider&gt;</code> → <code>&lt;UserProvider&gt;</code> → <code>&lt;BrowserRouter&gt;</code>, así cualquier pantalla puede llamar a <code>useUser()</code> (<code>UserContext.tsx:87</code>).</p></li>
+    <li><span class="layer">Frontend · efecto</span><h4>Al montar, preguntar «¿quién soy?»</h4>
+      <p class="file"><code>UserContext.tsx:45</code>: <code>api&lt;Session&gt;('/auth/me').then(…)</code> dentro de un <code>useEffect</code> con bandera <code>active</code> para no actualizar estado si el componente se desmontó. Mientras tanto <code>cargandoSesion</code> vale <code>true</code>. Si responde 401 no muestra error (es lo esperado sin sesión); cualquier otro error sí.</p></li>
+    <li><span class="layer">Servidor · middleware</span><h4><code>requireAuth</code></h4>
+<figure class="src"><figcaption>src/security/auth.ts:33-48 (resumen)</figcaption>
+<pre><code>const token = tokenFrom(req);                         // lee la cookie a mano
+const session = sessions.get(token ? digest(token) : '');
+if (!session || session.expires &lt;= Date.now()) { sessions.delete(key); 401 'Iniciá sesión para continuar' }
+const [user, roles] = await Promise.all([em.findOne(Usuario, { idUsuario: session.id }), identity(session.id)]);
+if (!user || user.contrasena !== session.password)    { sessions.delete(key); 401 'La sesión expiró' }
+req.identity = roles;                                  // { idUsuario, anfitrion, jugador }
+next();</code></pre></figure>
+      <p class="file"><code>tokenFrom</code> (línea 24) parsea el encabezado <code>Cookie</code> sin librería. La comparación <code>user.contrasena !== session.password</code> hace que cambiar la contraseña invalide automáticamente las sesiones abiertas. <code>req.identity</code> está tipado con una declaración global de Express (<code>auth.ts:12</code>, <code>declare global { namespace Express … }</code>).</p></li>
+    <li><span class="layer">Servidor · ruta</span><h4><code>GET /api/auth/me</code></h4>
+      <p class="file"><code>auth.ts:92-95</code> responde <code>{ usuario: publicUser(u), roles: req.identity }</code>. El frontend lo guarda con <code>setSession</code> y vuelve a llamar a <code>recargar()</code>.</p></li>
+    <li><span class="layer">Frontend · guardia</span><h4>Rutas privadas</h4>
+      <p class="file"><code>MainLayout.tsx:79-80</code>: <code>if (cargandoSesion) return …Recuperando sesión…</code> y <code>if (!usuarioLogueado) return &lt;Navigate to="/login" replace /&gt;</code>. <code>MainLayout</code> es una <i>layout route</i> (<code>App.tsx:30</code>) que envuelve todas las páginas privadas y dibuja la pantalla hija en <code>&lt;Outlet /&gt;</code> (línea 197).</p></li>
+    <li><span class="layer">Frontend · expiración</span><h4>401 en cualquier pantalla</h4>
+      <p class="file"><code>api.ts:66-67</code>: si una respuesta es 401 (y no es login ni registro) hace <code>window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))</code>. <code>UserContext.tsx:32</code> escucha ese evento y ejecuta <code>clearSession()</code>; <code>MainLayout</code> vuelve a renderizar y redirige a <code>/login</code>. Se usa un evento del <code>window</code> porque <code>api.ts</code> es una función común y no puede usar hooks.</p></li>
+    <li><span class="layer">Cierre</span><h4>Logout</h4>
+      <p class="file"><code>MainLayout.tsx:48</code> <code>confirmarLogout</code> (abre antes un <code>Modal</code> de confirmación) → <code>UserContext.tsx:63</code> <code>logout</code> → <code>POST /auth/logout</code> → <code>auth.ts:96-99</code>: borra la entrada del <code>Map</code> y responde <code>res.clearCookie(cookieName, cookie).sendStatus(204)</code>. Hay que pasar las mismas opciones (<code>path: '/api'</code>) para que el navegador reconozca qué cookie borrar. El E2E <i>«cerrar sesión impide volver a las páginas privadas»</i> (<code>e2e/autenticacion.spec.ts</code>) lo verifica.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>Las sesiones viven en un <code>Map</code> en memoria: simple y rápido, pero reiniciar el servidor las cierra todas y no escalaría a varias instancias sin un almacén compartido (Redis, tabla en BD).</li>
+      <li>Hay doble control: el frontend oculta pantallas, pero la seguridad real está en <code>requireAuth</code> del backend.</li>
+    </ul>
+  </div>
+
+  <!-- ARQ -->
+  <div class="part-title sub" id="e-arq"><span class="badge">Arquitectura</span><h3>Autenticación, política de cookies y hasheo de contraseñas</h3></div>
+
+  <h4>1. Hasheo con scrypt (<code>src/security/password.ts</code>)</h4>
+<figure class="src"><figcaption>src/security/password.ts:1-21</figcaption>
+<pre><code>import { randomBytes, scrypt, timingSafeEqual } from 'node:crypto';
+import { promisify } from 'node:util';
+
+const derive = promisify(scrypt);
+// 99 caracteres: compatible con la columna existente de 100.
+export async function hashPassword(password: string): Promise&lt;string&gt; {
+  const salt = randomBytes(16).toString('hex');
+  const key = await derive(password, salt, 32) as Buffer;
+  return `s$${salt}$${key.toString('hex')}`;
+}
+export function isPasswordHash(value: string): boolean {
+  return /^s\$[a-f0-9]{32}\$[a-f0-9]{64}$/.test(value);
+}
+export async function verifyPassword(password: string, encoded: string): Promise&lt;boolean&gt; {
+  if (!isPasswordHash(encoded)) return false;
+  const [, salt, hash] = encoded.split('$');
+  const actual = await derive(password, salt, 32) as Buffer;
+  return timingSafeEqual(actual, Buffer.from(hash, 'hex'));
+}</code></pre></figure>
+  <ul>
+    <li><b>Por qué scrypt y no SHA-256:</b> es una función de derivación <i>lenta y que consume memoria a propósito</i>, pensada para contraseñas. Con los parámetros por defecto de Node (N=16384, r=8, p=1) cada intento de fuerza bruta cuesta caro.</li>
+    <li><b>Sal aleatoria por usuario</b> (<code>randomBytes(16)</code>, línea 7): dos usuarios con la misma contraseña obtienen hashes distintos y no sirven las tablas precalculadas. Lo comprueba el test <i>«hash con sal distinta…»</i> en <code>src/tests/security.test.ts</code>.</li>
+    <li><b>Formato autodescriptivo</b> <code>s$&lt;sal&gt;$&lt;hash&gt;</code>: 2 + 32 + 1 + 64 = 99 caracteres, para entrar en la columna <code>contrasena</code> de 100 (<code>User.entity.ts:13</code>).</li>
+    <li><b><code>timingSafeEqual</code></b> (línea 20) compara byte a byte sin cortar en la primera diferencia, para que el tiempo de respuesta no filtre información.</li>
+    <li><b><code>promisify(scrypt)</code></b> convierte la versión con <i>callback</i> en una que devuelve una promesa, y la derivación corre en el <i>thread pool</i> de libuv sin bloquear el event loop.</li>
+    <li>Las contraseñas de las <b>partidas privadas</b> usan la misma función (<code>match.service.ts:74</code>) y se verifican con <code>verifyPassword</code> (<code>character.service.ts:75</code>). El repo incluye además el script <code>npm run passwords:migrate</code> (<code>src/scripts/migrate-passwords.ts</code>), relacionado con la migración de contraseñas al formato hasheado.</li>
+  </ul>
+
+  <h4>2. Política de la cookie de sesión (<code>auth.ts:23</code>)</h4>
+<figure class="src"><figcaption>src/security/auth.ts:15-23</figcaption>
+<pre><code>const cookieName = 'rpg_session';
+const sessionDuration = 8 * 60 * 60 * 1000;
+const cookie = { httpOnly: true, sameSite: 'strict' as const,
+                 secure: process.env.NODE_ENV === 'production', path: '/api' };</code></pre></figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Atributo</th><th>Valor</th><th>Qué previene</th></tr></thead>
+    <tbody>
+      <tr><td><code>httpOnly</code></td><td><code>true</code></td><td>JavaScript de la página no puede leerla (<code>document.cookie</code>), así que un XSS no puede robar el token.</td></tr>
+      <tr><td><code>sameSite</code></td><td><code>'strict'</code></td><td>El navegador no la envía en pedidos que se originan en otro sitio. Primera línea contra CSRF.</td></tr>
+      <tr><td><code>secure</code></td><td><code>true</code> en producción</td><td>Solo viaja por HTTPS. En desarrollo (http://localhost) queda en <code>false</code>, si no el navegador la descartaría.</td></tr>
+      <tr><td><code>path</code></td><td><code>'/api'</code></td><td>Solo se adjunta a las llamadas de la API, no a los archivos estáticos.</td></tr>
+      <tr><td><code>maxAge</code></td><td>8 h (<code>auth.ts:90</code>)</td><td>La cookie vence sola; el servidor también controla <code>expires</code> en el <code>Map</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <p>Defensa en profundidad: además de <code>SameSite=Strict</code>, <code>app.ts:64-74</code> rechaza con 403 todo POST/PUT/DELETE cuyo <code>Origin</code> no sea el frontend autorizado ni el propio servidor. Lo prueba <code>src/tests/origin.test.ts</code> (<i>«rechaza con 403 un Origin ajeno»</i>). Se explica con más detalle en el punto de Renzo.</p>
+
+  <h4>3. Autorización: quién puede qué (<code>src/security/authorization.ts</code>)</h4>
+  <p>Autenticación responde «¿quién sos?» y autorización «¿podés hacer esto?». Son <i>middlewares</i> que se enganchan en cada ruta y usan <code>req.identity</code>:</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Middleware</th><th>Línea</th><th>Regla</th><th>Usado en</th></tr></thead>
+    <tbody>
+      <tr><td><code>requireAnfitrion</code></td><td>29</td><td>Solo anfitriones (catálogo).</td><td>clases, objetos, tiendas</td></tr>
+      <tr><td><code>requireOwnUser</code></td><td>34</td><td>Solo tu propia cuenta.</td><td><code>user.routes.ts</code> (PUT/DELETE)</td></tr>
+      <tr><td><code>requireOwnJugadorForPersonaje</code></td><td>62</td><td>Crear personajes solo para vos; <b>pisa</b> dinero/xp/nivel.</td><td><code>character.routes.ts:15</code></td></tr>
+      <tr><td><code>requireOwnedCharacterMiddleware</code></td><td>70</td><td>El personaje es tuyo; al editar solo nombre, raza y clase.</td><td><code>character.routes.ts:16</code></td></tr>
+      <tr><td><code>requireAnfitrionForPartida</code></td><td>91</td><td>Crear partidas como tu propio anfitrión.</td><td><code>match.routes.ts:16</code></td></tr>
+      <tr><td><code>requireHostedGameMiddleware</code></td><td>83</td><td>Solo el anfitrión de esa partida la modifica.</td><td><code>match.routes.ts:17-18</code></td></tr>
+      <tr><td><code>protectObjetoModifications</code></td><td>98</td><td>Un objeto en un inventario no se edita por el CRUD.</td><td><code>item.routes.ts:18</code></td></tr>
+      <tr><td><code>requireOwnedCharacterForCompra</code></td><td>107</td><td>Anfitriones no compran; el personaje debe ser tuyo.</td><td><code>item.routes.ts:14</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Los helpers <code>ownedCharacter</code> (línea 16) y <code>hostedGame</code> (línea 22) se reutilizan dentro de los servicios transaccionales. El tipo <code>HttpError(status, message)</code> (línea 8) permite lanzar un error con código HTTP desde cualquier capa, y <code>handleErrors</code> lo traduce (<code>app.ts:177</code>).</p>
+
+  <div class="say"><b class="t">Preguntas probables y cómo responderlas</b>
+    <div class="qa">
+      <p><b>¿Por qué no usaron JWT?</b> Para poder invalidar una sesión desde el servidor (logout, cambio de contraseña) sin listas negras. Con un token opaco guardado en el servidor, borrar la entrada del <code>Map</code> alcanza.</p>
+      <p><b>¿Qué pasa si se roba la cookie?</b> Al ser <code>HttpOnly</code> no se puede leer desde la página; por red, <code>Secure</code> exige HTTPS. Aun así, mientras no venza, serviría: de ahí el límite de 8 horas.</p>
+      <p><b>¿Por qué se hashea el token en el servidor?</b> Para que un volcado de memoria no entregue tokens válidos, igual que con las contraseñas.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ FRANCO -->
+<section class="card c-franco" id="franco">
+  <div class="who"><h2>Franco Testi</h2><span class="tag">Backend · Motor transaccional de juego y comercio</span></div>
+  <p class="meta">Dos casos de uso: <a href="#f-cu1">CU1 Crear y administrar una partida</a> · <a href="#f-cu2">CU2 Crear una misión y completarla repartiendo recompensas</a> · y el punto de arquitectura <a href="#f-arq">Transacciones, concurrencia y bloqueo pesimista</a>.</p>
+
+  <!-- CU1 -->
+  <div class="part-title sub" id="f-cu1"><span class="badge">CU1</span><h3>Crear y administrar una partida</h3></div>
+  <p>Objeto: <b>Partida</b> (<code>Match.entity.ts</code>). Pertenece a un Anfitrión, puede ser pública (<code>contrasena = ''</code>) o privada (hash scrypt).</p>
+  <div class="states">
+    <span class="st"><code>estado = true</code> (activa)</span><span class="to">→ <code>PUT</code> con <code>estado: 'finalizada'</code> (sin sesión en curso) →</span>
+    <span class="st"><code>estado = false</code></span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/services/match.service.ts:1-9
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { Sesion } from '../entities/Session.entity';
+import { Partida } from '../entities/Match.entity';
+import { Anfitrion } from '../entities/Host.entity';
+import { Personaje } from '../entities/Character.entity';
+import { ErrorValidacionPartida } from '../validators/match.validator';
+import { hashPassword } from '../security/password';
+import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/match.dto';
+
+// src/validators/match.validator.ts:1
+import { z } from 'zod';
+
+// src/routes/match.routes.ts:1-5
+import { EntityManager } from '@mikro-orm/core';
+import { Router } from 'express';
+import { MatchController, PartidaController } from '../controllers/match.controller';
+import { MatchService, PartidaService } from '../services/match.service';
+import { requireAnfitrionForPartida, requireHostedGameMiddleware } from '../security/authorization';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend</span><h4>Formulario genérico <code>ModulePage</code></h4>
+      <p class="file"><code>App.tsx:42</code> monta <code>&lt;ModulePage key="partidas" resource="partidas" /&gt;</code>. La pantalla se arma con un objeto de configuración (<code>ModulePage.tsx:15-16</code>): para <code>partidas</code> declara los campos <code>nombre</code>, <code>estado</code>, <code>limiteJugadores</code>, <code>esPrivada</code> y <code>contrasena</code>, cada uno creado con el helper <code>field()</code> (línea 14). <code>save()</code> (líneas 110-121) convierte tipos con <code>Number()</code>, agrega <code>data.idUsuarioAnfitrion = userId</code> (línea 118), borra la contraseña si la partida es pública (línea 119) y hace <code>api(…, selected ? 'PUT' : 'POST', data)</code> (línea 120). Todo pasa por <code>perform()</code> (línea 86), que maneja <code>busy</code>, errores y recarga con <code>setRevision</code>.</p></li>
+    <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/partidas</code></h4>
+      <p class="file"><code>match.routes.ts:16</code>: <code>router.post('/', requireAnfitrionForPartida, …)</code>. El middleware (<code>authorization.ts:91-95</code>) exige ser anfitrión <b>y</b> que <code>req.body.idUsuarioAnfitrion</code> sea tu id. Así nadie crea partidas a nombre de otro aunque manipule el body.</p></li>
+    <li><span class="layer">Controlador</span><h4><code>MatchController.createMatch</code></h4>
+      <p class="file"><code>match.controller.ts:92-100</code>: <code>const data = validateCreateMatch(req.body)</code> → <code>matchService.createMatch(data)</code> → <code>res.status(201).json(…)</code>. El <code>catch</code> delega en <code>respondError</code> (línea 20), que transforma <code>persistenceError</code> en 409, <code>MatchValidationError</code> en 400 y <code>HostNotFoundError</code> en 404; el resto es 500.</p></li>
+    <li><span class="layer">Validador</span><h4>Zod con reglas cruzadas</h4>
+<figure class="src"><figcaption>src/validators/match.validator.ts:4-5</figcaption>
+<pre><code>const fields = z.object({ nombre: z.string().trim().min(1).max(100), estado: z.enum(['activa','finalizada']),
+  limiteJugadores: z.number().int().positive().max(1000), esPrivada: z.boolean(),
+  contrasena: z.string().min(1).max(100).optional() }).strict();
+const create = fields.extend({ idUsuarioAnfitrion: z.number().int().positive().max(2147483647) })
+  .refine(d =&gt; !d.esPrivada || !!d.contrasena, 'Las partidas privadas requieren contraseña')
+  .refine(d =&gt; d.esPrivada || !d.contrasena, 'Una partida pública no debe tener contraseña');</code></pre></figure>
+      <p class="file"><code>.extend</code> agrega un campo, <code>.refine</code> escribe reglas que miran varios campos a la vez y <code>.strict()</code> prohíbe campos extra. La función <code>parse</code> (línea 6) usa <code>safeParse</code> y convierte el resultado en <code>ErrorValidacionPartida</code>.</p></li>
+    <li><span class="layer">Servicio</span><h4><code>createMatch</code>: del DTO a la entidad</h4>
+<figure class="src"><figcaption>src/services/match.service.ts:56-80</figcaption>
+<pre><code>const anfitrion = await this.em.findOne(Anfitrion, data.idUsuarioAnfitrion as any, { populate: ['usuario'] });
+if (!anfitrion) throw new AnfitrionNoEncontradoError(data.idUsuarioAnfitrion);
+const partida = this.em.create(Partida, {
+  nombre: data.nombre,
+  estado: data.estado === 'activa',                                   // 'activa' → true
+  limiteJugadores: data.limiteJugadores,
+  contrasena: data.esPrivada ? await hashPassword(data.contrasena!) : '', // '' = pública
+  anfitrion,
+} as any);
+await this.em.flush();
+return this.toPublicMatch(partida);</code></pre></figure>
+      <p class="file">El DTO usa <code>estado: 'activa' | 'finalizada'</code> (<code>match.dto.ts</code>) y la entidad un <code>boolean</code> (<code>Match.entity.ts:14</code>). <code>em.create</code> arma la entidad en memoria y <code>em.flush()</code> ejecuta el <code>INSERT</code>. <code>populate: ['usuario']</code> carga la relación para poder devolver el nickname del anfitrión.</p></li>
+    <li><span class="layer">Respuesta</span><h4>DTO público</h4>
+      <p class="file"><code>toPublicMatch</code> (línea 126) calcula <code>esPrivada: p.contrasena !== ''</code> (línea 134) y agrega <code>nicknameAnfitrion</code>. La contraseña (ni siquiera su hash) sale del servidor.</p></li>
+    <li><span class="layer">Editar / finalizar</span><h4><code>PUT /api/partidas/:id</code></h4>
+      <p class="file"><code>match.routes.ts:17</code> usa <code>requireHostedGameMiddleware</code> (<code>authorization.ts:83</code>, que llama a <code>hostedGame</code>). <code>updateMatch</code> (línea 83) abre una transacción y crea <code>new PartidaService(tx)</code>; <code>updateInTransaction</code> (línea 87) trae la partida con <code>lockMode: LockMode.PESSIMISTIC_WRITE</code> (línea 91). Reglas, en las líneas 94-104: no se finaliza con una sesión en curso (<code>count(Sesion, { partida, estadoSesion: 1 })</code>), pasar a privada exige contraseña, y el nuevo <code>limiteJugadores</code> no puede quedar por debajo de los personajes ya inscriptos.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>Por qué <code>estado</code> es <code>boolean</code> en la BD y <code>'activa'|'finalizada'</code> en la API: la API es legible; la BD, compacta. La conversión vive en el servicio.</li>
+      <li>Pruebas: <code>src/integration/game.test.ts</code> («cambio público/privado, contraseña, cupo y anfitrión propietario»).</li>
+    </ul>
+  </div>
+
+  <!-- CU2 -->
+  <div class="part-title sub" id="f-cu2"><span class="badge">CU2</span><h3>Crear una misión y completarla repartiendo recompensas</h3></div>
+  <p>Objeto: <b>Misión</b> (<code>Mission.entity.ts</code>), con clave compuesta <code>(idPartida, numSesion, numMision)</code>. Se crea pendiente y al completarla suma dinero y XP a los personajes que participaron.</p>
+  <div class="states">
+    <span class="st"><code>estado = false</code> (pendiente, editable)</span><span class="to">→ <code>POST …/completar</code> →</span>
+    <span class="st"><code>estado = true</code> (inmodificable)</span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/services/game.service.ts:1-12
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { z } from 'zod';
+import { Sesion } from '../entities/Session.entity';
+import { Mision } from '../entities/Mission.entity';
+import { Personaje } from '../entities/Character.entity';
+import { PersonajeSesion } from '../entities/CharacterSession.entity';
+import { HttpError, hostedGame, ownedCharacter, idSchema } from '../security/authorization';
+
+// frontend/src/pages/MissionsPage.tsx:1-8
+import React, { useEffect, useMemo, useState } from 'react';
+import { useUser } from '../context/UserContext';
+import { api } from '../services/api';
+import { getMissions, createMission, updateMission, deleteMission, completeMission } from '../services/mission.service';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend</span><h4>Crear la misión</h4>
+      <p class="file"><code>MissionsPage.tsx:101</code> <code>handleCrearOActualizar</code> valida en cliente (sesión elegida, número entero entre 1 y 2.147.483.647, descripción no vacía, dinero y XP ≥ 0) y llama a <code>createMission({…})</code> (línea 168) o <code>updateMission(…)</code> (línea 156) según <code>editando</code>. Los errores del servidor se traducen con <code>formatMissionError</code> (línea 18). Los wrappers están en <code>services/mission.service.ts:10-18</code>.</p></li>
+    <li><span class="layer">Ruta</span><h4><code>POST /api/misiones</code></h4>
+      <p class="file"><code>game.routes.ts:36</code> → <code>service.saveMission(req.identity!.idUsuario, req.body)</code>. En el <code>PUT</code> (línea 37) el router mezcla el body con los parámetros de la URL: <code>{ ...req.body, idPartida: routeId(req.params.game), … }</code>, así el cliente no puede cambiar la clave de la misión desde el body.</p></li>
+    <li><span class="layer">Servicio · validación</span><h4><code>missionSchema</code></h4>
+      <p class="file"><code>game.service.ts:16-21</code>: Zod con <code>idSchema</code> (entero positivo ≤ 2.147.483.647, definido en <code>authorization.ts:11</code>), descripción de 1 a 5000 caracteres, y <code>asistenciaGrupoGrande: amount.default(0)</code>. Aquí el validador vive en el propio servicio y <code>saveMission</code> hace <code>missionSchema.parse(body)</code> (línea 98).</p></li>
+    <li><span class="layer">Servicio · reglas</span><h4><code>saveMission</code> (líneas 97-111)</h4>
+      <ul>
+        <li><code>hostedGame(tx, data.idPartida, user)</code>: solo el anfitrión de esa partida.</li>
+        <li><code>this.session(...)</code> (línea 53) bloquea la sesión y carga <code>partida.anfitrion.usuario</code>.</li>
+        <li><code>conflict(sesion.estadoSesion === 2, 'La sesión está finalizada')</code>.</li>
+        <li><code>conflict(!update &amp;&amp; !!m, 'Ese número de misión ya existe')</code> y <code>conflict(m?.estado === true, 'Una misión completada no se puede modificar')</code>.</li>
+        <li><code>tx.create(Mision, {…, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0})</code> y <code>Object.assign(m, fields)</code>.</li>
+      </ul></li>
+    <li><span class="layer">Frontend</span><h4>Elegir la misión y repartir</h4>
+      <p class="file"><code>handleSeleccionar</code> (línea 220) pide <code>getSession()</code> para obtener los <b>participantes</b> y arma <code>recompensas</code> con <code>{ idPersonaje, dinero: 0, xp: 0 }</code> por cada uno. <code>handleChangeRecompensa</code> (línea 231) edita un valor inmutablemente con <code>prev.map(…)</code>. Se calcula <code>sumaDinero</code>/<code>sumaXp</code> con <code>reduce</code> (líneas 270-271) y <code>esCorrecto</code> (línea 272) habilita el botón solo si coinciden con <code>dineroTotal</code> y <code>xpTotal</code>.</p></li>
+    <li><span class="layer">Frontend → Ruta</span><h4>Completar</h4>
+      <p class="file"><code>handleCompletar</code> (línea 235) → <code>completeMission(game, session, mission, recompensas)</code> (<code>mission.service.ts:14</code>) → <code>POST /misiones/:game/:number/:mission/completar</code> con body <code>{ recompensas }</code> → <code>game.routes.ts:39</code> → <code>service.completeMission</code>.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>completeMission</code> (líneas 113-135)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:118-133 (resumen)</figcaption>
+<pre><code>const m = await tx.findOne(Mision, { sesion, numMision: mission }, lock);          // FOR UPDATE
+conflict(sesion.estadoSesion !== 1 || m.estado, 'La sesión debe estar en curso y la misión pendiente');
+const attendees = await tx.find(PersonajeSesion, { sesion });
+const ids = new Set(attendees.map(a =&gt; a.personaje.idPersonaje));
+conflict(data.recompensas.some(r =&gt; !ids.has(r.idPersonaje)), 'Solo los participantes…');
+const money = data.recompensas.reduce((n, r) =&gt; n + r.dinero, 0);
+const xp    = data.recompensas.reduce((n, r) =&gt; n + r.xp, 0);
+conflict(money !== m.dineroTotal || xp !== m.xpTotal, 'El reparto debe coincidir exactamente…');
+for (const reward of [...data.recompensas].sort((a, b) =&gt; a.idPersonaje - b.idPersonaje)) {
+  const p = await tx.findOneOrFail(Personaje, { idPersonaje: reward.idPersonaje }, lock);
+  conflict(p.dinero + reward.dinero &gt; 2147483647 || p.xp + reward.xp &gt; 2147483647, '…límite de almacenamiento');
+  p.dinero += reward.dinero; p.xp += reward.xp;
+}
+m.estado = true; m.dineroOtorgadoAJugadores = money; m.xpOtorgadoJugadores = xp;
+await tx.flush();</code></pre></figure>
+      <p class="file">Puntos para remarcar: (a) el esquema <code>rewardSchema</code> (línea 23) ya rechaza personajes repetidos con <code>.refine(… new Set(…).size === …)</code>; (b) <b>el orden</b>: los personajes se bloquean ordenados por id para evitar <i>deadlocks</i> entre dos transacciones; (c) el chequeo contra 2.147.483.647 evita un desborde del <code>integer</code> de PostgreSQL, que terminaría en un 500; (d) todo ocurre en una transacción: si cualquier regla falla, no se acredita nada.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>Por qué el reparto debe coincidir <b>exactamente</b>: la misión define un pozo; el anfitrión no puede crear dinero ni XP de la nada.</li>
+      <li>Pruebas: E2E <i>«el servidor rechaza reparto incorrecto, doble calificación y segunda sesión en curso»</i> (<code>e2e/rechazos.spec.ts</code>) y <code>src/integration/game.test.ts</code>.</li>
+    </ul>
+  </div>
+
+  <!-- ARQ -->
+  <div class="part-title sub" id="f-arq"><span class="badge">Arquitectura</span><h3>Transacciones, concurrencia y bloqueo pesimista</h3></div>
+  <p><b>El problema:</b> el servidor atiende muchos requests a la vez. Dos de ellos pueden leer el mismo dato, decidir en base a él y escribir, pisándose. Ejemplo: queda <b>un solo cupo</b> en una partida y dos jugadores crean su personaje al mismo tiempo.</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Tiempo</th><th>Sin bloqueo</th><th>Con <code>PESSIMISTIC_WRITE</code></th></tr></thead>
+    <tbody>
+      <tr><td>t1</td><td>A cuenta 9 de 10 personajes → hay cupo.</td><td>A pide la fila de la partida con <code>FOR UPDATE</code> y la obtiene.</td></tr>
+      <tr><td>t2</td><td>B cuenta 9 de 10 → también hay cupo.</td><td>B pide la misma fila y <b>espera</b>.</td></tr>
+      <tr><td>t3</td><td>A inserta. B inserta.</td><td>A cuenta 9, inserta (10) y hace commit; se libera la fila.</td></tr>
+      <tr><td>t4</td><td><b>11 personajes en una partida de 10.</b></td><td>B recibe la fila, cuenta 10 → «La partida no tiene cupos disponibles».</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>Piezas que lo hacen funcionar</h4>
+  <ol class="road">
+    <li><span class="layer">Un EntityManager por request</span><h4><code>RequestContext</code></h4>
+      <p class="file"><code>app.ts:77</code>: <code>app.use((req, res, next) =&gt; RequestContext.create(orm.em, next))</code>. MikroORM mantiene un <i>identity map</i> (caché de entidades cargadas); si fuera uno global, dos usuarios compartirían objetos. <code>RequestContext</code> usa <code>AsyncLocalStorage</code> de Node para que cada request tenga su propia copia (<i>fork</i>).</p></li>
+    <li><span class="layer">Unit of Work</span><h4><code>em.flush()</code></h4>
+      <p class="file">Las modificaciones sobre entidades (<code>p.dinero += …</code>) se acumulan y <code>flush()</code> las convierte en <code>UPDATE</code>/<code>INSERT</code>. MikroORM ordena las sentencias según las dependencias.</p></li>
+    <li><span class="layer">Transacción</span><h4><code>em.transactional(tx =&gt; …)</code></h4>
+      <p class="file"><code>BEGIN … COMMIT</code>; si la función lanza, hace <code>ROLLBACK</code>. Patrón repetido: <code>match.service.ts:84</code> (<code>new PartidaService(tx).updateInTransaction(…)</code>), <code>character.service.ts:55</code>, y todos los métodos de <code>game.service.ts</code> y <code>item.service.ts:174</code>. Se instancia el servicio con <code>tx</code> para que todas las consultas internas usen la misma transacción.</p></li>
+    <li><span class="layer">Bloqueo pesimista</span><h4><code>LockMode.PESSIMISTIC_WRITE</code></h4>
+<figure class="src"><figcaption>src/services/game.service.ts:25-29</figcaption>
+<pre><code>const lock = { lockMode: LockMode.PESSIMISTIC_WRITE } as const;
+// PostgreSQL no admite FOR UPDATE sobre el lado opcional de un LEFT JOIN: con relaciones opcionales
+// (Objeto.inventario / Objeto.tienda) hay que cargarlas en consultas aparte. El bloqueo queda en la fila raíz.
+const sinJoinOpcional = { strategy: 'select-in' } as const;
+const conflict = (condition: boolean, message: string) =&gt; { if (condition) throw new HttpError(409, message); };</code></pre></figure>
+      <p class="file"><code>SELECT … FOR UPDATE</code> bloquea esas filas hasta el fin de la transacción. «Pesimista» porque se asume que habrá conflicto y se bloquea antes de leer; la alternativa «optimista» (columna de versión) detecta el choque al escribir y reintenta.</p></li>
+    <li><span class="layer">Estrategia de carga</span><h4><code>strategy: 'select-in'</code></h4>
+      <p class="file">Por defecto MikroORM carga relaciones con <code>JOIN</code>. PostgreSQL rechaza <code>FOR UPDATE</code> sobre el lado nullable de un <code>LEFT JOIN</code> (error 500 en compra/venta, incidente 6 de <code>docs/seguimiento.md</code>). Con <code>select-in</code> las relaciones se piden en consultas separadas y el bloqueo queda en la fila principal (<code>item.service.ts:179</code>, <code>game.service.ts:28</code>).</p></li>
+    <li><span class="layer">Orden de bloqueo</span><h4>Evitar deadlocks</h4>
+      <p class="file">Si A bloquea (X, luego Y) y B bloquea (Y, luego X), quedan esperándose. La regla: <b>siempre el mismo orden</b>. Por eso <code>completeMission</code> ordena por <code>idPersonaje</code> (línea 127) y <code>play</code> pide los personajes con <code>orderBy: { idPersonaje: 'asc' }</code> (línea 68). En el resto de los métodos, el orden es siempre partida → sesión → misión o personaje → inventario → objeto.</p></li>
+    <li><span class="layer">Errores</span><h4><code>conflict()</code> y <code>HttpError</code></h4>
+      <p class="file">Una violación de regla de estado lanza <code>HttpError(409, mensaje)</code>; al salir de <code>transactional</code> se hace rollback y <code>handleErrors</code> (<code>app.ts:177</code>) responde el 409 con el mensaje.</p></li>
+  </ol>
+  <div class="say"><b class="t">Evidencia para mostrar</b>
+    <ul>
+      <li><code>docs/evidencia_concurrencia.md</code>.</li>
+      <li>Integración contra la BD: <code>src/integration/game.test.ts</code> — «dos compras concurrentes del mismo objeto: solo una gana y solo un débito» y «rollback real…». Se corre con <code>npm run test:integration</code>.</li>
+    </ul>
+    <div class="qa">
+      <p><b>¿Por qué pesimista y no optimista?</b> El dominio tiene contención real (cupos, objetos únicos, saldo) y las operaciones son cortas. Bloquear es más simple de razonar y no obliga al cliente a reintentar.</p>
+      <p><b>¿Qué es el nivel de aislamiento?</b> PostgreSQL usa <i>Read Committed</i> por defecto: sin <code>FOR UPDATE</code>, dos transacciones pueden leer el mismo valor viejo. El bloqueo explícito cierra esa ventana.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ ALEJANDRO -->
+<section class="card c-alejandro" id="alejandro">
+  <div class="who"><h2>Alejandro Ciesco</h2><span class="tag">Backend · Modelo de datos, Clases, Personajes</span></div>
+  <p class="meta">Dos casos de uso: <a href="#a-cu1">CU1 Crear un personaje (inscribirse a una partida)</a> · <a href="#a-cu2">CU2 Administrar el catálogo de clases</a> · y el punto de arquitectura <a href="#a-arq">Modelo de datos y ORM</a>.</p>
+
+  <!-- CU1 -->
+  <div class="part-title sub" id="a-cu1"><span class="badge">CU1</span><h3>Crear un personaje</h3></div>
+  <p>Objetos que nacen: un <b>Personaje</b> (une Jugador, Clase y Partida) y su <b>Inventario n.º 1</b> con 10 espacios.</p>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/services/character.service.ts:1-11
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { Personaje } from '../entities/Character.entity';
+import { Clase } from '../entities/Class.entity';
+import { Jugador } from '../entities/Player.entity';
+import { Partida } from '../entities/Match.entity';
+import { Inventario } from '../entities/Inventory.entity';
+import { Objeto } from '../entities/Item.entity';
+import { PersonajeSesion } from '../entities/CharacterSession.entity';
+import { ErrorValidacionPersonaje } from '../validators/character.validator';
+import { verifyPassword } from '../security/password';
+import type { ActualizarPersonajeDTO, CrearPersonajeDTO, PersonajePublicoDTO } from '../types/character.dto';
+
+// src/validators/character.validator.ts:1  (no usa Zod: validación manual)
+import type { ActualizarPersonajeDTO, CrearPersonajeDTO } from '../types/character.dto';
+
+// frontend/src/services/character.service.ts:1-2
+import type { Personaje } from '../interfaces.ts';
+import { api } from './api';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend</span><h4>Formulario de personaje</h4>
+      <p class="file"><code>CharactersPage.tsx:150</code> <code>handleGuardar</code>: controla nombre, raza, clase, partida y, si <code>requiereContrasena</code> (línea 148: la partida elegida tiene <code>esPrivada</code>), pide la contraseña. Arma <code>CreateCharacterData</code> con <code>idUsuarioJugador: userId</code> (línea 176) tomando el id del <code>useUser()</code>, no de un campo del formulario. Llama a <code>createCharacter(data)</code> (línea 180), que es <code>api&lt;Personaje&gt;('/personajes', 'POST', data)</code> en <code>services/character.service.ts:22</code>. En éxito agrega el personaje al estado con <code>setPersonajes(prev =&gt; [...prev, nuevo])</code> sin recargar.</p></li>
+    <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/personajes</code></h4>
+      <p class="file"><code>character.routes.ts:15</code> → <code>requireOwnJugadorForPersonaje</code> (<code>authorization.ts:62-68</code>). Exige ser jugador y crear el personaje para uno mismo; además <b>sobrescribe</b> el body: <code>req.body = { ...req.body, dinero: 100, xp: 0, nivel: 1 }</code> (línea 66). Aunque el cliente enviara otro dinero, se ignora.</p></li>
+    <li><span class="layer">Controlador</span><h4><code>createCharacter</code></h4>
+      <p class="file"><code>character.controller.ts:70-</code>: <code>validateCreateCharacter(req.body)</code> → servicio → 201. Mapeo de errores: <code>CharacterValidationError</code> → 400, <code>ReferenceNotFoundError</code> → 404 (línea 80).</p></li>
+    <li><span class="layer">Validador manual</span><h4><code>validateCreateCharacter</code></h4>
+      <p class="file"><code>character.validator.ts:40-73</code> con tres helpers: <code>getObject</code> (línea 11: el body debe ser un objeto, no un arreglo ni <code>null</code>), <code>validateText</code> (línea 18: <code>typeof 'string'</code>, <code>.trim()</code>, largo mínimo y máximo) y <code>validatePositiveNumber</code> (línea 32: <code>Number.isSafeInteger</code> y rango hasta 2.147.483.647). Es el único validador del proyecto escrito sin Zod; devuelve un <code>CrearPersonajeDTO</code> con solo los campos permitidos.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4>Reglas de inscripción</h4>
+<figure class="src"><figcaption>src/services/character.service.ts:54-78</figcaption>
+<pre><code>async createCharacter(data: CrearPersonajeDTO) {
+  return this.em.transactional(async tx =&gt; new PersonajeService(tx).createInTransaction(data));
+}
+private async createInTransaction(data) {
+  const clase   = await this.em.findOne(Clase,   { idClase: data.idClase });                               // 404 si no
+  const jugador = await this.em.findOne(Jugador, { usuario: { idUsuario: data.idUsuarioJugador } });       // 404 si no
+  const partida = await this.em.findOne(Partida, { idPartida: data.idPartida }, { lockMode: LockMode.PESSIMISTIC_WRITE });
+  if (!partida.estado) throw new ErrorValidacionPersonaje('La partida está finalizada');
+  if (!jugador.estado) throw new ErrorValidacionPersonaje('El jugador está inactivo');
+  if (partida.contrasena &amp;&amp; !await verifyPassword(data.contrasenaPartida ?? '', partida.contrasena)) …'Contraseña de partida incorrecta'
+  if (await this.em.count(Personaje, { partida }) &gt;= partida.limiteJugadores) …'La partida no tiene cupos disponibles'
+  if (await this.em.count(Personaje, { partida, jugador }) &gt; 0) …'Ya tenés un personaje en esta partida'</code></pre></figure>
+      <p class="file">Detalle de sintaxis: <code>{ usuario: { idUsuario } }</code> es una consulta por relación anidada de MikroORM (porque <code>Jugador</code> tiene como clave la relación <code>usuario</code>). El bloqueo de la línea 69 es lo que hace respetar el cupo con concurrencia (ver la arquitectura de Franco).</p></li>
+    <li><span class="layer">Persistencia</span><h4>Personaje y luego su inventario</h4>
+<figure class="src"><figcaption>src/services/character.service.ts:79-95</figcaption>
+<pre><code>const nuevoPersonaje = this.em.create(Personaje, { nombreFicticio: data.nombreFicticio, raza: data.raza,
+  nivel: 1, xp: 0, dinero: 100, clase, jugador, partida });
+await this.em.flush();                                   // INSERT personajes → se genera idPersonaje
+this.em.create(Inventario, { personaje: nuevoPersonaje, numInventario: 1, cantidadEspacio: 10 });
+await this.em.flush();                                   // INSERT inventarios (idPersonaje, 1)
+await this.em.populate(nuevoPersonaje, ['clase', 'jugador', 'jugador.usuario', 'partida']);
+return this.toPublicCharacter(nuevoPersonaje);</code></pre></figure>
+      <p class="file">Hay dos <code>flush</code> porque la clave compuesta del inventario necesita el <code>idPersonaje</code> autogenerado. Ambos están dentro de la misma transacción. <code>em.populate</code> carga las relaciones para armar el DTO y <code>toPublicCharacter</code> (línea 141) devuelve <code>claseNombre</code>, <code>jugadorNombre</code> y <code>partidaNombre</code>.</p></li>
+    <li><span class="layer">Editar y borrar</span><h4>Qué se puede cambiar y cuándo se borra</h4>
+      <p class="file"><code>requireOwnedCharacterMiddleware</code> (<code>authorization.ts:70-81</code>): en el <code>PUT</code> solo admite <code>nombreFicticio</code>, <code>raza</code> e <code>idClase</code>; la progresión se gana jugando. <code>deleteInTransaction</code> (<code>character.service.ts:128</code>) rechaza borrar si hay historial en <code>PersonajeSesion</code> (línea 132) o si hay objetos en el inventario (línea 133), y si no, elimina primero los inventarios y luego el personaje (<code>removeAndFlush</code>), respetando la FK.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>La regla de cupo depende del bloqueo, no solo del <code>if</code>.</li>
+      <li>Pruebas: <code>src/tests/character.service.test.ts</code> (crea con inventario inicial; falla si la clase/jugador no existe, partida finalizada, jugador inactivo…), E2E y <code>game.test.ts</code> («creación de personaje privado crea inventario y no permite dinero elegido por cliente»).</li>
+    </ul>
+  </div>
+
+  <!-- CU2 -->
+  <div class="part-title sub" id="a-cu2"><span class="badge">CU2</span><h3>Administrar el catálogo de clases</h3></div>
+  <p>Objeto: <b>Clase</b> (<code>Class.entity.ts</code>): <code>nombreClase</code> y <code>descripcionClase</code>. Es un catálogo que solo editan los anfitriones y que usan Personajes y Tiendas.</p>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/routes/class.routes.ts:1-5
+import { EntityManager } from '@mikro-orm/core';
+import { Router } from 'express';
+import { ClassController, ClaseController } from '../controllers/class.controller';
+import { ClassService, ClaseService } from '../services/class.service';
+import { requireAnfitrion } from '../security/authorization';
+
+// src/controllers/class.controller.ts:1-3
+import { type Request, type Response } from 'express';
+import { persistenceError } from './persistence-error';
+import { ClassService, ClaseService } from '../services/class.service';
+
+// frontend/src/pages/ClassesPage.tsx:12-26
+import { useEffect, useState } from 'react';
+import type { Clase } from '../interfaces';
+import { useUser } from '../context/UserContext';
+import ClassDetail from '../components/clases/ClassDetail';
+import ClassForm from '../components/clases/ClassForm';
+import ClassList from '../components/clases/ClassList';
+import { updateClass, createClass, deleteClass, getClasses, type UpdateClassData, type CreateClassData } from '../services/class.service';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend · lectura</span><h4>Listado</h4>
+      <p class="file"><code>ClassesPage.tsx:51</code> <code>getClasses()</code> en un <code>useEffect</code> que depende de <code>revision</code>. <code>esAnfitrion</code> (línea 36) sale de <code>rolDe(usuarioLogueado.idUsuario) === 'anfitrion'</code> y decide si se muestran los botones de alta, edición y baja. La página se divide en tres componentes: <code>ClassList</code>, <code>ClassDetail</code> y <code>ClassForm</code>.</p></li>
+    <li><span class="layer">Frontend · alta/edición</span><h4><code>handleSave</code></h4>
+      <p class="file"><code>ClassesPage.tsx:74-97</code>: si hay <code>enEdicion</code> llama a <code>updateClass(id, data)</code> y reemplaza el elemento con <code>prev.map(…)</code>; si no, <code>createClass(data)</code> (línea 85) y lo agrega con <code>[...prev, nueva]</code>. El tipo del argumento es una unión (<code>CreateClassData | UpdateClassData</code>) y se estrecha con <code>as</code>. Los tipos vienen de <code>services/class.service.ts:5-6</code>: <code>Omit&lt;Clase, 'idClase'&gt;</code> y <code>Partial&lt;…&gt;</code>.</p></li>
+    <li><span class="layer">Ruta + permiso</span><h4>CRUD protegido</h4>
+      <p class="file"><code>class.routes.ts:12-16</code>: <code>GET</code> abiertos a cualquier usuario autenticado; <code>POST</code>, <code>PUT</code> y <code>DELETE</code> con <code>requireAnfitrion</code> (<code>authorization.ts:29</code>) → 403 «El catálogo lo administran los anfitriones».</p></li>
+    <li><span class="layer">Controlador</span><h4><code>ClassController</code></h4>
+      <p class="file"><code>class.controller.ts</code>: <code>getId</code> (línea 17) valida el parámetro con <code>/^\d+$/</code> y <code>Number.isSafeInteger</code> antes de tocar la BD (400 «ID inválido»). <code>createClass</code> (línea 62) → <code>validateCreateClass</code> → 201. Cada método tiene su propio <code>try/catch</code> con un 500 genérico y <code>console.error</code>: no se filtra el detalle del error al cliente.</p></li>
+    <li><span class="layer">Validador</span><h4>Zod con <code>partial()</code></h4>
+      <p class="file"><code>class.validator.ts:4</code> define un único esquema <code>{ nombreClase: 1..50, descripcionClase: 1..5000 }.strict()</code> y <code>validateUpdateClass</code> (línea 11) lo reutiliza con <code>schema.partial().refine(v =&gt; Object.keys(v).length &gt; 0, 'Enviá al menos un campo')</code>: en la edición todos los campos son opcionales, pero un <code>{}</code> vacío se rechaza.</p></li>
+    <li><span class="layer">Servicio</span><h4><code>ClassService</code></h4>
+<figure class="src"><figcaption>src/services/class.service.ts:22-42</figcaption>
+<pre><code>async createClass(data) { const clase = this.em.create(Clase, data); await this.em.flush(); return this.toPublicClass(clase); }
+async updateClass(id, data) {
+  const clase = await this.em.findOne(Clase, { idClase: id });
+  if (!clase) return null;
+  this.em.assign(clase, data);          // copia solo los campos presentes
+  await this.em.flush();
+  return this.toPublicClass(clase);
+}
+async deleteClass(id) { const clase = await this.em.findOne(Clase, { idClase: id }); if (!clase) return false;
+  await this.em.removeAndFlush(clase); return true; }</code></pre></figure>
+      <p class="file"><code>em.assign</code> aplica el objeto parcial sobre la entidad. Es el CRUD más simple del proyecto, sin transacción propia porque cada operación toca una sola fila.</p></li>
+    <li><span class="layer">Errores de BD</span><h4>Borrar una clase en uso</h4>
+      <p class="file">Si un personaje referencia la clase, la FK impide el <code>DELETE</code> y MikroORM lanza <code>ForeignKeyConstraintViolationException</code>. <code>class.controller.ts:117</code> llama a <code>persistenceError(error, res)</code> (<code>controllers/persistence-error.ts:3-11</code>) y responde 409 «El registro tiene datos relacionados…». Un nombre duplicado, si hubiera restricción única, caería en la otra rama del mismo helper (<code>UniqueConstraintViolationException</code>).</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>La integridad referencial la garantiza la base de datos, y la API traduce esa violación a un mensaje comprensible.</li>
+      <li>Pruebas: <code>src/tests/class.service.test.ts</code>, <code>src/tests/class.controller.test.ts</code> y <code>frontend/src/pages/__tests__/ClassesPage.test.tsx</code>.</li>
+    </ul>
+  </div>
+
+  <!-- ARQ -->
+  <div class="part-title sub" id="a-arq"><span class="badge">Arquitectura</span><h3>Modelo de datos y ORM (MikroORM + PostgreSQL)</h3></div>
+
+  <h4>1. Entidades y relaciones</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Entidad (tabla)</th><th>Clave primaria</th><th>Relaciones y detalle</th></tr></thead>
+    <tbody>
+      <tr><td><code>Usuario</code> (<code>usuarios</code>)</td><td><code>idUsuario</code> autoincrement</td><td><code>nickname</code> con <code>unique: true</code> (<code>User.entity.ts:19</code>).</td></tr>
+      <tr><td><code>Jugador</code>, <code>Anfitrion</code></td><td><code>usuario</code> (la propia FK)</td><td><code>@OneToOne({ primary: true })</code> a Usuario: la PK <i>es</i> la FK.</td></tr>
+      <tr><td><code>Partida</code></td><td><code>idPartida</code></td><td><code>@ManyToOne</code> a Anfitrion (<code>idUsuarioAnfitrion</code>).</td></tr>
+      <tr><td><code>Sesion</code></td><td>Compuesta <code>(partida, numSesion)</code></td><td><code>@ManyToOne({ primary: true })</code> a Partida + <code>@PrimaryKey numSesion</code> con <code>autoincrement: false</code>. <code>[PrimaryKeyProp]?: ['partida','numSesion']</code> (línea 24).</td></tr>
+      <tr><td><code>Mision</code></td><td>Compuesta <code>(sesion, numMision)</code></td><td>FK compuesta a Sesion con <code>fieldNames: ['idPartida','numSesion']</code> (<code>Mission.entity.ts</code>).</td></tr>
+      <tr><td><code>Personaje</code></td><td><code>idPersonaje</code></td><td><code>@ManyToOne</code> a Clase, Jugador y Partida (<code>Character.entity.ts:29-38</code>).</td></tr>
+      <tr><td><code>Inventario</code></td><td>Compuesta <code>(personaje, numInventario)</code></td><td>Entidad débil de Personaje (<code>Inventory.entity.ts:7</code>).</td></tr>
+      <tr><td><code>PersonajeSesion</code></td><td>Compuesta <code>(personaje, sesion)</code></td><td>Tabla puente muchos-a-muchos con el atributo <code>dioKarma</code> (<code>CharacterSession.entity.ts:9-21</code>).</td></tr>
+      <tr><td><code>Objeto</code></td><td><code>idObjeto</code></td><td><code>tienda</code> e <code>inventario</code> son ambas <code>nullable: true</code>; el inventario es una FK compuesta con <code>fieldNames: ['idPersonaje','numInventario']</code> (<code>Item.entity.ts:30-37</code>). <code>esUnico</code> con <code>default: false</code> (línea 28).</td></tr>
+      <tr><td><code>Tienda</code>, <code>Clase</code></td><td><code>idTienda</code>, <code>idClase</code></td><td>Tienda: <code>clase</code> y <code>partida</code> opcionales.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>2. Cómo se declara una entidad</h4>
+<figure class="src"><figcaption>src/entities/Character.entity.ts (resumen)</figcaption>
+<pre><code>import { Entity, ManyToOne, OptionalProps, PrimaryKey, Property } from '@mikro-orm/core';
+
+@Entity({ tableName: 'personajes' })
+export class Personaje {
+  [OptionalProps]?: 'idPersonaje';                       // el id no hace falta al crear (lo genera la BD)
+  @PrimaryKey({ type: 'number', autoincrement: true }) idPersonaje!: number;
+  @Property({ type: 'string', length: 100 })           nombreFicticio!: string;
+  @ManyToOne({ entity: () =&gt; Clase, fieldName: 'idClase' }) clase!: Clase;   // arrow fn: evita import circular
+}
+export const Character = Personaje;                      // alias en inglés
+export type Character = Personaje;</code></pre></figure>
+  <ul>
+    <li><b>Decoradores</b> (<code>@Entity</code>, <code>@Property</code>, <code>@PrimaryKey</code>, <code>@ManyToOne</code>, <code>@OneToOne</code>) guardan metadatos que MikroORM lee al iniciar. Requieren <code>experimentalDecorators</code> y <code>emitDecoratorMetadata</code> (<code>tsconfig.json:18-19</code>) y el import de <code>reflect-metadata</code> (<code>app.ts:3</code>).</li>
+    <li><code>entity: () =&gt; Clase</code> usa una función flecha para que dos archivos que se referencian mutuamente no produzcan un <i>import</i> circular en tiempo de carga.</li>
+    <li><code>OptionalProps</code> y <code>PrimaryKeyProp</code> son trucos de tipos para que <code>em.create()</code> sepa qué campos son opcionales y cómo se compone la clave compuesta.</li>
+  </ul>
+
+  <h4>3. Configuración de la conexión (<code>src/mikro-orm.config.ts</code>)</h4>
+<figure class="src"><figcaption>src/mikro-orm.config.ts:43-69</figcaption>
+<pre><code>export default defineConfig({
+  entities: [Usuario, Jugador, Anfitrion, Clase, Partida, Sesion, Mision, Tienda, Personaje, Inventario, PersonajeSesion, Objeto],
+  clientUrl: process.env.SUPABASE_DB_URL,                 // postgres://usuario:clave@host:puerto/base
+  driverOptions: { connection: { ssl: sslDb } },          // sslDb = { rejectUnauthorized: false } salvo DB_SSL=false
+  pool: { min: 0, max: 10 },
+  ...(process.env.DB_SCHEMA ? enEsquema(process.env.DB_SCHEMA) : {}),
+  namingStrategy: EntityCaseNamingStrategy,               // columnas con el mismo nombre que la propiedad (camelCase)
+  debug: process.env.DB_DEBUG === 'true',                 // apagado: los logs de SQL pueden contener datos privados
+});</code></pre></figure>
+  <ul>
+    <li><b><code>defineConfig</code> de <code>@mikro-orm/postgresql</code></b> fija el driver. La URL del <i>pooler</i> de Supabase trae todo en un solo string.</li>
+    <li><b>Pool de conexiones</b> (<code>min 0, max 10</code>): se reutilizan conexiones en vez de abrir una por request.</li>
+    <li><b><code>EntityCaseNamingStrategy</code></b>: sin ella, MikroORM usaría <code>snake_case</code>. Así los nombres coinciden con <code>interfaces.ts</code> y con las columnas (<code>nombreUsuario</code>, <code>limiteJugadores</code>…).</li>
+    <li><b><code>enEsquema(schema)</code></b> (línea 29): para pruebas en un esquema temporal. Valida el nombre con <code>/^[a-z][a-z0-9_]{0,62}$/</code> porque se interpola en SQL (previene inyección) y fija el <code>search_path</code> en cada conexión nueva (<code>afterCreate</code>).</li>
+    <li>La conexión se abre en <code>app.ts:191</code>: <code>MikroORM.init(config)</code>; se pasa a <code>createApp(orm)</code> y a cada router como <code>orm.em</code>.</li>
+  </ul>
+
+  <h4>4. Del modelo a las tablas</h4>
+  <ul>
+    <li><code>npm run schema:create</code> ejecuta la CLI de MikroORM (<code>schema:create --run</code>) para crear las tablas a partir de las entidades; <code>npm run schema:dump</code> (<code>src/validate-entities.ts</code>) sirve para revisar el esquema generado.</li>
+    <li><code>SQL/rpg.sql</code> contiene el DER en SQL con claves primarias y foráneas compuestas, por ejemplo <code>PRIMARY KEY (idPartida, numSesion, numMision)</code> en <code>misiones</code>.</li>
+    <li><code>docs/DER_NEW.png</code> y <code>docs/modelo.md</code> documentan el modelo.</li>
+  </ul>
+  <div class="note"><b>Para tener claro antes de la defensa:</b> <code>SQL/rpg.sql</code> está escrito con sintaxis de MySQL (nombres entre acentos graves) y algunos comentarios de tests dicen «MySQL», pero la aplicación corre sobre <b>PostgreSQL</b> (<code>@mikro-orm/postgresql</code>, Supabase). El esquema vigente es el que genera <code>schema:create</code> a partir de las entidades; el <code>.sql</code> es un remanente de la etapa anterior. Conviene decirlo vos antes de que lo pregunten.</div>
+
+  <div class="say"><b class="t">Preguntas probables</b>
+    <div class="qa">
+      <p><b>¿Por qué claves compuestas y no un <code>id</code> para todo?</b> Modelan que una sesión «pertenece» a una partida y se numera dentro de ella (sesión 1, 2, 3…); es el criterio del DER del grupo. Cuesta más en el ORM (<code>fieldNames</code>, <code>PrimaryKeyProp</code>), pero evita columnas artificiales.</p>
+      <p><b>¿Qué es el <i>identity map</i>?</b> Cache por request: si pedís dos veces la misma fila, MikroORM devuelve el mismo objeto, y en el <code>flush</code> sabe qué cambió comparando contra una copia original.</p>
+      <p><b>¿Por qué DTOs y no devolver la entidad?</b> Para no exponer campos internos (<code>contrasena</code>) y poder cambiar la tabla sin romper la API.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ RENZO -->
+<section class="card c-renzo" id="renzo">
+  <div class="who"><h2>Renzo Scollo</h2><span class="tag">Frontend · Arquitectura React, flujo de turnos</span></div>
+  <p class="meta">Dos casos de uso: <a href="#r-cu1">CU1 Planificar e iniciar una sesión</a> · <a href="#r-cu2">CU2 Finalizar la sesión y calificar al anfitrión (karma)</a> · y el punto de arquitectura <a href="#r-arq">Interconexión frontend ↔ backend y protocolo CORS</a>.</p>
+
+  <!-- CU1 -->
+  <div class="part-title sub" id="r-cu1"><span class="badge">CU1</span><h3>Planificar e iniciar una sesión</h3></div>
+  <p>Objetos: una <b>Sesión</b> (clave compuesta <code>idPartida + numSesion</code>) y las filas de <b>PersonajeSesion</b> (la asistencia de cada personaje).</p>
+  <div class="states">
+    <span class="st"><code>0</code> Planificada</span><span class="to">→ <code>POST …/jugar</code> →</span>
+    <span class="st"><code>1</code> En curso</span><span class="to">→ <code>/finalizar</code> →</span>
+    <span class="st"><code>2</code> Finalizada</span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// frontend/src/pages/SessionsPage.tsx:1-22
+import React, { useEffect, useState } from 'react';
+import { useUser } from '../context/UserContext';
+import { api } from '../services/api';
+import type { Sesion, Partida, Personaje } from '../interfaces';
+import { getSessions, getSession, createSession, playSession, finishSession, rateHost, type SessionDetailDTO } from '../services/session.service';
+import { getMissions } from '../services/mission.service';
+import Alert from '../components/ui/Alert';
+import Loading from '../components/ui/Loading';
+import { NoticeModal, CoinIcon, ZapIcon } from '../components/ui';
+
+// frontend/src/services/session.service.ts:1-2
+import { api } from './api';
+import type { Sesion } from '../interfaces';
+
+// src/routes/game.routes.ts:1-11 (parcial)
+import { Router } from 'express';
+import { EntityManager } from '@mikro-orm/core';
+import { GameService, JuegoService, inventoryDTO, missionDTO, sessionDTO } from '../services/game.service';
+import { HttpError, ownedCharacter, routeId } from '../security/authorization';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend · carga</span><h4>Cuatro listados en paralelo</h4>
+      <p class="file"><code>SessionsPage.tsx:62</code>: <code>Promise.all([getSessions(), getMissions(), api&lt;Partida[]&gt;('/partidas'), api&lt;Personaje[]&gt;('/personajes')])</code> dentro de un <code>useEffect</code> con dependencia <code>[revision]</code> (línea 67). <code>recargar()</code> (línea 69) incrementa <code>revision</code> y fuerza la recarga. La bandera local <code>activo</code> evita actualizar el estado si el componente ya no está montado.</p></li>
+    <li><span class="layer">Frontend · formulario</span><h4>Planificar</h4>
+      <p class="file"><code>handleCrear</code> (línea 86): valida partida elegida, <code>numSesion</code> entero entre 1 y 2.147.483.647 (el máximo de un <code>int</code> de PostgreSQL) y <code>duracionSesion</code> entre 0 y ese máximo; luego <code>createSession({ idPartida, numSesion, duracionSesion })</code> (línea 122). <code>createSession</code> está en <code>session.service.ts:22</code>. El error del servidor se traduce con <code>formatSessionError</code> (línea 24).</p></li>
+    <li><span class="layer">Ruta</span><h4><code>POST /api/sesiones</code></h4>
+      <p class="file"><code>game.routes.ts:25</code> → <code>service.saveSession(req.identity!.idUsuario, req.body)</code>, y responde <code>201</code>. Todo el <code>createGameRouter</code> se monta en <code>app.ts:95</code> con <code>auth.requireAuth</code>.</p></li>
+    <li><span class="layer">Servicio</span><h4><code>saveSession</code> (líneas 37-51)</h4>
+      <ul>
+        <li><code>sessionSchema.parse(body)</code> (línea 15): <code>{ idPartida, numSesion, duracionSesion }.strict()</code>.</li>
+        <li><code>hostedGame(tx, idPartida, user)</code> + <code>tx.lock(partida, PESSIMISTIC_WRITE)</code> (líneas 40-41): solo el anfitrión, con la partida bloqueada.</li>
+        <li><code>conflict(!partida.estado, 'La partida está finalizada')</code> y <code>conflict(!update &amp;&amp; !!sesion, 'Ese número de sesión ya existe')</code>.</li>
+        <li><code>tx.create(Sesion, { partida, numSesion, duracionSesion, estadoSesion: 0, cantJugadores: 0 })</code> (línea 47): nace <b>planificada</b>. Solo se pueden editar sesiones en estado 0.</li>
+      </ul></li>
+    <li><span class="layer">Frontend</span><h4>Elegir participantes e iniciar</h4>
+      <p class="file"><code>handleIniciar</code> (línea 137) exige al menos un personaje en <code>participantesIds</code> y llama a <code>playSession(idPartida, numSesion, participantesIds)</code> (línea 145 → <code>session.service.ts:26</code>), que hace <code>POST /sesiones/:game/:number/jugar</code> con <code>{ idPersonajes }</code>. En éxito vuelve a pedir el detalle (<code>handleVerDetalle</code>, línea 76) y recarga.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>play</code> (líneas 59-75)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:62-73</figcaption>
+<pre><code>const partida = await hostedGame(tx, game, user);
+await tx.lock(partida, LockMode.PESSIMISTIC_WRITE);
+const sesion = await this.session(tx, game, number);
+conflict(!partida.estado || sesion.estadoSesion !== 0, 'La partida debe estar activa y la sesión planificada');
+conflict(!!await tx.findOne(Sesion, { partida, estadoSesion: 1 }), 'Ya hay otra sesión en curso en esta partida');
+conflict(data.idPersonajes.length &gt; partida.limiteJugadores, 'Se supera el límite de jugadores');
+const characters = await tx.find(Personaje, { idPersonaje: { $in: data.idPersonajes }, partida },
+                                 { ...lock, populate: ['jugador.usuario'], orderBy: { idPersonaje: 'asc' } });
+conflict(characters.length !== data.idPersonajes.length, 'Todos los personajes deben pertenecer a esta partida');
+conflict(new Set(characters.map(p =&gt; p.jugador.usuario.idUsuario)).size !== characters.length, 'Un jugador no puede participar con dos personajes');
+for (const personaje of characters) tx.create(PersonajeSesion, { personaje, sesion, dioKarma: false });
+sesion.cantJugadores = characters.length; sesion.estadoSesion = 1;</code></pre></figure>
+      <p class="file"><code>{ $in: […] }</code> es el operador <code>IN</code> de MikroORM. El <code>Set</code> detecta jugadores repetidos. Se crea un <code>PersonajeSesion</code> por participante con <code>dioKarma: false</code> y la sesión pasa a <code>1</code>.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>La sesión es una <b>máquina de estados</b>: cada endpoint comprueba el estado actual antes de cambiarlo. El backend rechaza cualquier salto.</li>
+      <li>El frontend valida para responder rápido; la autoridad es el servidor (si alguien saltea la pantalla, recibe 409).</li>
+      <li>Pruebas: <code>frontend/src/pages/__tests__/SessionsPage.test.tsx</code> y E2E <i>«dos usuarios completan juego, recompensas, karma y comercio con inventarios»</i>.</li>
+    </ul>
+  </div>
+
+  <!-- CU2 -->
+  <div class="part-title sub" id="r-cu2"><span class="badge">CU2</span><h3>Finalizar la sesión y calificar al anfitrión (karma)</h3></div>
+  <p>Objetos: el <b>estado</b> de la sesión (<code>1 → 2</code>), la marca <code>dioKarma</code> de cada <code>PersonajeSesion</code> y el <b>karma</b> del <code>Anfitrion</code>.</p>
+  <div class="states">
+    <span class="st"><code>1</code> En curso</span><span class="to">→ <code>/finalizar</code> (sin misiones pendientes) →</span>
+    <span class="st"><code>2</code> Finalizada</span><span class="to">→ <code>/calificar</code> (cada jugador, una vez) →</span>
+    <span class="st"><code>host.karma ± 1</code></span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/services/game.service.ts (usados por finish y rate)
+import { Mision } from '../entities/Mission.entity';
+import { PersonajeSesion } from '../entities/CharacterSession.entity';
+import { Anfitrion } from '../entities/Host.entity';
+import { z } from 'zod';                       // z.union([z.literal(-1), z.literal(1)])</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend</span><h4>Finalizar</h4>
+      <p class="file"><code>handleFinalizar</code> (<code>SessionsPage.tsx:154</code>) → <code>finishSession(idPartida, numSesion)</code> (línea 157 → <code>session.service.ts:30</code>) → <code>POST /sesiones/:game/:number/finalizar</code> (<code>game.routes.ts:29</code>). Los errores caen en el <code>catch</code> y se muestran en un <code>NoticeModal</code> (<code>setErrorAvisoModal</code>).</p></li>
+    <li><span class="layer">Servicio</span><h4><code>finish</code> (líneas 77-85)</h4>
+      <p class="file">En <code>em.transactional</code>: <code>hostedGame</code>, <code>this.session(...)</code> (bloquea la fila), <code>conflict(s.estadoSesion !== 1, 'La sesión no está en curso')</code> y <code>conflict(await tx.count(Mision, { sesion: s, estado: false }) &gt; 0, 'Completá o eliminá las misiones pendientes…')</code>. Después <code>s.estadoSesion = 2</code> y <code>flush</code>.</p></li>
+    <li><span class="layer">Frontend</span><h4>Calificar</h4>
+      <p class="file">El estado <code>valorKarma</code> es <code>useState&lt;1 | -1&gt;</code> (línea 58). <code>handleCalificar</code> (línea 166) llama a <code>rateHost(idPartida, numSesion, valorKarma)</code> (línea 169 → <code>session.service.ts:34</code>, <code>POST …/calificar</code> con <code>{ valor }</code>). La respuesta es <code>{ karma }</code>.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>rate</code> (líneas 148-162)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:149-160</figcaption>
+<pre><code>const { valor } = z.object({ valor: z.union([z.literal(-1), z.literal(1)]) }).strict().parse(body);
+// …
+conflict(sesion.estadoSesion !== 2, 'La sesión debe estar finalizada');
+conflict(sesion.partida.anfitrion.usuario.idUsuario === user, 'No podés calificarte a vos mismo');
+const allAttendance = await tx.find(PersonajeSesion, { sesion }, { ...lock, populate: ['personaje.jugador.usuario'] });
+const attendance = allAttendance.filter(a =&gt; a.personaje.jugador.usuario.idUsuario === user);
+if (!attendance.length) throw new HttpError(403, 'Solo pueden calificar los jugadores que participaron');
+conflict(attendance.some(a =&gt; a.dioKarma), 'Ya calificaste esta sesión');
+const host = await tx.findOneOrFail(Anfitrion, { usuario: { idUsuario: sesion.partida.anfitrion.usuario.idUsuario } }, lock);
+host.karma += valor; attendance.forEach(a =&gt; { a.dioKarma = true; });</code></pre></figure>
+      <p class="file"><code>z.union([z.literal(-1), z.literal(1)])</code> admite solo esos dos valores. El bloqueo sobre las filas de asistencia (línea 154) impide que dos clics seguidos sumen karma dos veces, y el del anfitrión (línea 158) evita pérdida de incrementos si dos jugadores califican a la vez. <code>populate: ['personaje.jugador.usuario']</code> carga tres niveles de relación en una sola llamada.</p></li>
+    <li><span class="layer">Frontend</span><h4>Reflejar el resultado</h4>
+      <p class="file">Después de calificar, <code>handleVerDetalle</code> actualiza <code>selected</code> con la lista de <code>participantes</code> (<code>dioKarma</code> en <code>true</code>) y <code>setAviso('Calificación enviada.')</code>.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>Reglas del karma: solo sesiones finalizadas, solo jugadores que participaron, una vez por sesión, nunca el propio anfitrión.</li>
+      <li>Pruebas: E2E <code>e2e/rechazos.spec.ts</code> (doble calificación rechazada) y <code>game.test.ts</code>.</li>
+    </ul>
+  </div>
+
+  <!-- ARQ -->
+  <div class="part-title sub" id="r-arq"><span class="badge">Arquitectura</span><h3>Interconexión frontend ↔ backend y protocolo CORS</h3></div>
+
+  <h4>1. Tres piezas, dos procesos</h4>
+<pre><code>DESARROLLO                                           PRODUCCIÓN (Render)
+Navegador ── http://localhost:5173 ──► Vite          Navegador ── https://…onrender.com ──► Express (PORT)
+                 │  fetch('/api/…')  (ruta relativa)                   │ /api/*  → routers
+                 ▼  proxy de Vite                                      │ resto  → frontend/dist (estáticos)
+              http://localhost:3000  (Express)                         ▼
+                 │                                                  PostgreSQL (Supabase)
+                 ▼
+          PostgreSQL (Supabase)</code></pre>
+  <ul>
+    <li><b>Desarrollo:</b> <code>frontend/vite.config.ts:9-14</code> configura <code>server.proxy['/api'] = { target: process.env.API_PROXY_TARGET ?? 'http://localhost:3000', changeOrigin: true }</code>. Para el navegador todo sale de <code>localhost:5173</code>: <b>mismo origen</b>, así que la cookie <code>SameSite=Strict</code> funciona y no hay <i>preflight</i>.</li>
+    <li><b>Producción:</b> <code>npm run build:all</code> compila el backend y corre <code>vite build</code> (<code>frontend/dist</code>). <code>app.ts:107-121</code> sirve esa carpeta con <code>express.static</code> y un <i>fallback</i> <code>app.get(/^\/(?!api(\/|$)).*/, …)</code> que devuelve <code>index.html</code> para cualquier ruta que no sea <code>/api</code>, de modo que al recargar <code>/dashboard</code> funcione el router de React. Los archivos de Vite tienen hash y se cachean 1 h; el HTML se marca <code>no-cache</code> (líneas 111-114).</li>
+    <li><b>El cliente HTTP:</b> <code>frontend/src/services/api.ts:55</code> es el único lugar con <code>fetch</code>. Usa ruta relativa (<code>`/api${path}`</code>) y <code>credentials: 'same-origin'</code>.</li>
+  </ul>
+
+  <h4>2. Qué es CORS y por qué existe</h4>
+  <p>El navegador aplica la <b>política de mismo origen</b>: una página en <code>https://a.com</code> no puede leer respuestas de <code>https://b.com</code>. <i>Origen</i> = esquema + host + puerto. <b>CORS</b> (Cross-Origin Resource Sharing) es el mecanismo por el cual el <i>servidor</i> le dice al navegador qué otros orígenes tiene permitido. Es una protección <b>del navegador</b>: <code>curl</code> o Postman no la aplican.</p>
+  <ul>
+    <li><b>Petición simple</b> (GET, POST con <code>text/plain</code>…): se envía directo con el encabezado <code>Origin</code> y el navegador decide si deja leer la respuesta según <code>Access-Control-Allow-Origin</code>.</li>
+    <li><b>Petición con preflight</b>: un POST/PUT/DELETE con <code>Content-Type: application/json</code> (nuestro caso, <code>api.ts:60</code>) o con <code>Authorization</code> hace antes un <code>OPTIONS</code> preguntando si está permitido. El servidor responde con los métodos y encabezados aceptados y recién ahí se envía la petición real.</li>
+    <li><b>Con credenciales</b> (cookies): el servidor debe enviar <code>Access-Control-Allow-Credentials: true</code> y el origen <b>explícito</b>; no vale <code>*</code>.</li>
+  </ul>
+
+  <h4>3. CORS escrito a mano en <code>app.ts:33-60</code></h4>
+<figure class="src"><figcaption>src/app.ts:34-60</figcaption>
+<pre><code>const allowedOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').trim().replace(/\/+$/, '');
+const allowedOrigins = [allowedOrigin];
+if (allowedOrigin === 'http://localhost:5173') allowedOrigins.push('http://127.0.0.1:5173');
+else if (allowedOrigin === 'http://127.0.0.1:5173') allowedOrigins.push('http://localhost:5173');
+
+app.use((req, res, next) =&gt; {
+  const origin = req.headers.origin;
+  if (origin &amp;&amp; allowedOrigins.includes(origin)) res.header('Access-Control-Allow-Origin', origin);
+  else res.header('Access-Control-Allow-Origin', allowedOrigin);
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('X-Content-Type-Options', 'nosniff');
+  res.header('Cache-Control', 'no-store');
+  res.header('Vary', 'Origin');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+  if (req.method === 'OPTIONS') { res.sendStatus(204); return; }
+  next();
+});</code></pre></figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Encabezado</th><th>Función</th></tr></thead>
+    <tbody>
+      <tr><td><code>Access-Control-Allow-Origin</code></td><td>Eco del origen si está en la lista blanca; si no, el origen configurado. Nunca <code>*</code>, porque hay cookies.</td></tr>
+      <tr><td><code>Access-Control-Allow-Credentials: true</code></td><td>Permite que el navegador envíe y acepte cookies en pedidos de otro origen.</td></tr>
+      <tr><td><code>Vary: Origin</code></td><td>Avisa a cachés y proxies que la respuesta depende del <code>Origin</code>, para que no sirvan la de un origen a otro.</td></tr>
+      <tr><td><code>Access-Control-Allow-Methods / -Headers</code></td><td>Respuesta al preflight: métodos y cabeceras admitidos. No figura <code>PATCH</code> porque la API solo usa <code>PUT</code>.</td></tr>
+      <tr><td><code>OPTIONS → 204</code></td><td>El preflight se contesta aquí, <b>antes</b> de <code>express.json</code> y de <code>requireAuth</code> (el preflight no lleva cookie).</td></tr>
+      <tr><td><code>Cache-Control: no-store</code>, <code>X-Content-Type-Options: nosniff</code></td><td>No cachear respuestas de la API y no dejar que el navegador «adivine» el tipo MIME.</td></tr>
+    </tbody>
+  </table></div>
+  <ul>
+    <li><b>Configuración:</b> <code>CORS_ORIGIN</code> (variable de entorno) define el único frontend autorizado; el valor por defecto es el servidor de Vite (<code>:5173</code>). Se normaliza quitando barras finales y se agrega el espejo <code>localhost</code> ↔ <code>127.0.0.1</code>.</li>
+    <li><b>Por qué a mano:</b> son unas 20 líneas, sin dependencia extra, y se ve exactamente qué se permite. Se prueba en <code>src/tests/origin.test.ts</code> (rechaza orígenes ajenos, acepta el propio, el de <code>CORS_ORIGIN</code> y <code>127.0.0.1:5173</code>, no exige <code>Origin</code> si no viene).</li>
+  </ul>
+
+  <h4>4. Defensa CSRF por <code>Origin</code> (<code>app.ts:64-74</code>)</h4>
+<figure class="src"><figcaption>src/app.ts:68-72</figcaption>
+<pre><code>const origenPropio = `${req.protocol}://${req.get('host')}`;
+const origenValido = req.headers.origin &amp;&amp; (allowedOrigins.includes(req.headers.origin) || req.headers.origin === origenPropio);
+if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) &amp;&amp; req.headers.origin &amp;&amp; !origenValido) {
+  res.status(403).json({ message: 'Origen no permitido' }); return;
+}</code></pre></figure>
+  <p><b>CSRF</b> es cuando otro sitio hace que el navegador de la víctima mande un POST a nuestra API aprovechando su cookie. El navegador siempre incluye <code>Origin</code> en los métodos que modifican datos, y un sitio ajeno no puede falsificarlo. Entonces: si trae <code>Origin</code> y no es el frontend autorizado ni el propio servidor, 403. Si no trae (<code>curl</code>, tests), pasa: esa defensa es para navegadores. Se combina con <code>SameSite=Strict</code>.</p>
+
+  <div class="note"><b>Matiz honesto para la defensa:</b> como <code>api.ts</code> usa rutas relativas, tanto en desarrollo (proxy de Vite) como en producción (mismo servidor) el navegador ve <i>un solo origen</i>. Los encabezados CORS quedan como una configuración lista para el caso de servir el frontend desde otro dominio (<code>CORS_ORIGIN</code>) y los controles de <code>Origin</code> sí se ejercitan siempre en los métodos de escritura.</div>
+
+  <h4>5. El contrato de datos y de errores</h4>
+  <ol class="road">
+    <li><span class="layer">Request</span><h4>JSON con campos del DTO</h4>
+      <p class="file"><code>api.ts:58-60</code>: <code>fetch</code> con <code>JSON.stringify(data)</code> solo si hay <code>data</code>; el encabezado <code>Content-Type</code> se agrega en ese caso. El backend lo lee con <code>express.json({ limit: '64kb' })</code> (<code>app.ts:63</code>).</p></li>
+    <li><span class="layer">Response OK</span><h4><code>response.json()</code> o 204</h4>
+      <p class="file"><code>api.ts:81-82</code>: si el estado es 204 devuelve <code>undefined</code>; si no, el JSON. La función es genérica: <code>api&lt;T&gt;(…): Promise&lt;T&gt;</code>, así cada llamada declara el tipo esperado (<code>api&lt;Sesion[]&gt;('/sesiones')</code>).</p></li>
+    <li><span class="layer">Response con error</span><h4>Dos formas posibles</h4>
+      <p class="file">El backend responde <code>{ message }</code> (<code>handleErrors</code>, controladores) o <code>{ message, errors: [{ campo, mensaje }] }</code> (middleware <code>validate</code>, <code>shared/validate.ts:19-26</code>). <code>api.ts:70-72</code> junta los <code>errors</code> en un texto <code>campo: mensaje; …</code>; si no hay, usa <code>body.message</code>; si el servidor está caído (502/503/504, línea 75) muestra «El servidor no está respondiendo…». Finalmente lanza <code>new ApiError(status, traducirErrorEspanol(msg))</code> (línea 79); <code>traducirErrorEspanol</code> (línea 7) convierte mensajes de Zod («too big») en frases claras.</p></li>
+    <li><span class="layer">Estado de sesión</span><h4>Evento global y <code>sessionVersion</code></h4>
+      <p class="file">El 401 emite <code>SESSION_EXPIRED_EVENT</code> (línea 67). En <code>UserContext.tsx:25</code>, <code>sessionVersion</code> es un <code>useRef</code> que se incrementa al cerrar o abrir sesión; <code>recargar</code> (línea 35) lo copia al empezar y descarta la respuesta si cambió (línea 38). Evita que una respuesta tardía de una sesión anterior pise el estado actual (<i>race condition</i>).</p></li>
+    <li><span class="layer">Routing</span><h4><code>BrowserRouter</code> + layout route</h4>
+      <p class="file"><code>App.tsx:25-56</code>: rutas públicas (<code>/login</code>, <code>/register</code>) y un <code>&lt;Route element={&lt;MainLayout /&gt;}&gt;</code> que agrupa las privadas (<code>/dashboard</code>, <code>/games</code>, <code>/sessions</code>, <code>/missions</code>, <code>/characters</code>, <code>/objects</code>, <code>/classes</code>, <code>/inventory</code>…). <code>/</code> redirige a <code>/login</code> con <code>&lt;Navigate replace /&gt;</code> y <code>*</code> muestra <code>NotFoundPage</code>.</p></li>
+  </ol>
+  <div class="say"><b class="t">Preguntas probables</b>
+    <div class="qa">
+      <p><b>¿Por qué CORS y CSRF son distintos?</b> CORS restringe qué sitios pueden <i>leer</i> respuestas; CSRF es sobre que otro sitio <i>provoque</i> una acción. Se cubren con mecanismos distintos (cabeceras CORS vs <code>SameSite</code> y verificación de <code>Origin</code>).</p>
+      <p><b>¿Qué haría el navegador si <code>Allow-Origin</code> fuera <code>*</code> con cookies?</b> Lo rechaza: con credenciales el origen debe ser explícito.</p>
+      <p><b>¿Por qué un <code>useRef</code> para <code>sessionVersion</code> y no <code>useState</code>?</b> Porque cambiarlo no debe re-renderizar y se necesita su valor actual dentro de callbacks asíncronos.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ OCTAVIO -->
+<section class="card c-octavio" id="octavio">
+  <div class="who"><h2>Octavio Gudiño</h2><span class="tag">Frontend · Contratos de tipos, comercio e inventarios</span></div>
+  <p class="meta">Dos casos de uso: <a href="#o-cu1">CU1 Comprar un objeto de la tienda</a> · <a href="#o-cu2">CU2 Vender un objeto y moverlo dentro del inventario</a> · y el punto de arquitectura <a href="#o-arq">Validators, DTOs y manejo de errores</a>.</p>
+
+  <!-- CU1 -->
+  <div class="part-title sub" id="o-cu1"><span class="badge">CU1</span><h3>Comprar un objeto de la tienda</h3></div>
+  <p>Objeto principal: el <b>Objeto</b>, que está en una <b>Tienda</b> (<code>tienda ≠ null</code>) o en un <b>Inventario</b> (<code>inventario ≠ null</code>), pero no en ambos.</p>
+  <div class="states">
+    <span class="st">En tienda</span><span class="to">→ comprar →</span>
+    <span class="st">Único: se <i>mueve</i> al inventario · Común: se <i>copia</i></span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// frontend/src/components/objetos/ItemsPage.tsx:1-21
+import { useEffect, useMemo, useState } from 'react';
+import type { Personaje, Tienda, Inventario } from '../../interfaces';
+import { useUser } from '../../context/UserContext';
+import { api } from '../../services/api';
+import { getItems, getItemById, createItem, updateItem, deleteItem, purchaseItem,
+         type CreateItemData, type PurchaseItemData, type ItemPublic } from '../../services/item.service';
+import { getCharacters } from '../../services/character.service';
+import { getShops } from '../../services/shop.service';
+import PurchaseItemForm from './PurchaseItemForm';
+
+// src/services/item.service.ts:1-12
+import { EntityManager, LockMode } from '@mikro-orm/core';
+import { Inventario } from '../entities/Inventory.entity';
+import { Objeto } from '../entities/Item.entity';
+import { Personaje } from '../entities/Character.entity';
+import { Tienda } from '../entities/Shop.entity';
+import { ErrorValidacionObjeto, validarCompraObjeto } from '../validators/item.validator';
+import { calculateValueByLevel } from './item.rules';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Frontend · formulario</span><h4>Elegir personaje, inventario y posición</h4>
+      <p class="file"><code>PurchaseItemForm.tsx</code> recibe por <i>props</i> (<code>PurchaseItemFormProps</code>, línea 7) el objeto, los personajes y los inventarios. Calcula en cada render <code>saldoInsuficiente = saldoActual &lt; objeto.valor</code> (línea 33) y <code>nivelInsuficiente</code> (línea 34) y deshabilita el botón (<code>disabled={comprando || … || saldoInsuficiente || nivelInsuficiente …}</code>, línea 123). <code>handleSubmit</code> (línea 41) llama a <code>onComprar({ idPersonaje, numInventario, posicion })</code> (línea 48).</p></li>
+    <li><span class="layer">Frontend · página</span><h4><code>handlePurchase</code></h4>
+      <p class="file"><code>ItemsPage.tsx:145</code>: si <code>host</code> es verdadero muestra «Los anfitriones no tienen permitido comprar» y corta (línea 146); si no, <code>purchaseItem(seleccionado.idObjeto, data)</code> (línea 154) → <code>services/item.service.ts:59</code>: <code>POST /objetos/${id}/comprar</code>. En éxito, si el objeto es único reemplaza el objeto en la lista (línea 155) y siempre actualiza el dinero del personaje con <code>{ ...personaje, dinero: resultado.dineroRestante }</code> (línea 163): se muestra el saldo nuevo sin pedirlo otra vez al servidor.</p></li>
+    <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/objetos/:id/comprar</code></h4>
+      <p class="file"><code>item.routes.ts:14</code>. Ojo con el <b>orden de las rutas</b>: <code>/:id/comprar</code> y <code>/sugeridos/clase/:idClase</code> se declaran antes de <code>/:id</code> para que Express no confunda «sugeridos» con un id. El middleware <code>requireOwnedCharacterForCompra</code> (<code>authorization.ts:107-115</code>) rechaza a los anfitriones (403) y verifica con <code>ownedCharacter(em, idSchema.parse(req.body.idPersonaje), idUsuario)</code> que el personaje sea del usuario.</p></li>
+    <li><span class="layer">Controlador + validador</span><h4><code>ItemController.buyItem</code></h4>
+      <p class="file"><code>item.controller.ts:142-</code> valida el id (<code>getId</code>), llama a <code>validateBuyItem(req.body)</code> (línea 150, esquema <code>compraSchema</code> en <code>item.validator.ts:10</code>: <code>idPersonaje</code> y <code>numInventario</code> enteros ≥ 1, <code>posicion</code> opcional, <code>.strict()</code>) y al servicio. En el <code>catch</code> traduce: <code>ItemValidationError</code> → 400; no encontrados → 404; <code>ItemNotAvailableError</code>, <code>InsufficientMoneyError</code>, <code>InventoryFullError</code>, <code>PositionOccupiedError</code>, <code>InsufficientLevelError</code> → <b>409</b> (línea 173).</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>ObjetoService.buyItem</code> (líneas 172-275)</h4>
+      <p class="file">Con <code>em.transactional</code> (línea 174) y bloqueos pesimistas en objeto, personaje, inventario y posiciones, controla en orden:</p>
+      <ul>
+        <li>Línea 173: <code>data = validarCompraObjeto(data)</code>, se revalida el DTO aunque venga del controlador (el servicio también se llama desde tests).</li>
+        <li>Líneas 175-182: carga el objeto con <code>strategy: 'select-in'</code> y exige <code>objeto.tienda</code> y <code>!objeto.inventario</code> → <code>ObjetoNoDisponibleError</code>.</li>
+        <li>Línea 190: <code>personaje.nivel &lt; objeto.nivelObjeto</code> → <code>NivelInsuficienteError</code>.</li>
+        <li>Líneas 192-199: si <code>esUnico</code>, busca el mismo nombre en inventarios de personajes de <b>esa partida</b> (consulta anidada <code>inventario: { personaje: { partida: { idPartida } } }</code>).</li>
+        <li>Líneas 203-208: el inventario debe ser de ese personaje (<code>InventarioNoEncontradoError</code>).</li>
+        <li>Línea 212: dinero; línea 214-215: <code>em.count(Objeto, { inventario })</code> contra <code>cantidadEspacio</code> (<code>InventarioLlenoError</code>).</li>
+        <li>Líneas 218-243: si el cliente pidió una <code>posicion</code>, debe estar libre (<code>PosicionOcupadaError</code>); si no, se recorre <code>0…cantidadEspacio-1</code> con un <code>Set</code> de posiciones ocupadas y se toma la primera libre.</li>
+      </ul></li>
+    <li><span class="layer">Persistencia</span><h4>Objeto único vs común</h4>
+<figure class="src"><figcaption>src/services/item.service.ts:244-266</figcaption>
+<pre><code>personaje.dinero -= objeto.valor;
+let objetoComprado: Objeto;
+if (objeto.esUnico) {                       // el MISMO registro cambia de dueño
+  objeto.tienda = null; objeto.inventario = inventario; objeto.posicion = targetPosicion;
+  objetoComprado = objeto;
+} else {                                    // la tienda conserva su "molde": se crea una copia
+  objetoComprado = em.create(Objeto, { nombre: objeto.nombre, descripcion: objeto.descripcion,
+    tipoObjeto: objeto.tipoObjeto, valor: objeto.valor, nivelObjeto: objeto.nivelObjeto,
+    esUnico: false, posicion: targetPosicion, tienda: null, inventario });
+}
+await em.flush();</code></pre></figure>
+      <p class="file">La respuesta (<code>ResultadoCompraObjetoDTO</code>, líneas 268-274) trae <code>objeto</code>, <code>idPersonaje</code>, <code>numInventario</code> y <code>dineroRestante</code>, que es justo lo que usa el frontend en <code>ItemsPage.tsx:163</code>. El descuento de dinero y el cambio de ubicación son atómicos: o pasan los dos o ninguno.</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>Por qué el frontend deshabilita el botón <i>y</i> el backend vuelve a validar: la UI es comodidad, el servidor es la autoridad.</li>
+      <li>Pruebas: <code>src/tests/item.purchase.test.ts</code> (descuenta dinero y mueve; dinero insuficiente, inventario lleno, posición ocupada, copia de no único), <code>item.unique.test.ts</code> y <code>frontend/.../PurchaseItemForm.test.tsx</code>. En integración: «dos compras concurrentes del mismo objeto: solo una gana y solo un débito».</li>
+    </ul>
+  </div>
+
+  <!-- CU2 -->
+  <div class="part-title sub" id="o-cu2"><span class="badge">CU2</span><h3>Vender un objeto y moverlo dentro del inventario</h3></div>
+  <p>Mismo objeto, camino inverso. Se vende a una tienda por un precio entre el <b>70 % y el 100 %</b> del valor; mover cambia solo la <code>posicion</code>.</p>
+  <div class="states">
+    <span class="st">En inventario</span><span class="to">→ mover →</span>
+    <span class="st">Otra posición</span><span class="to">→ vender →</span>
+    <span class="st">Único: vuelve a la tienda · Común: se elimina</span>
+  </div>
+  <div class="imports"><b>Imports y librerías de este caso</b>
+<pre><code>// src/services/sale.rules.ts   (sin imports: función pura)
+export function saleRange(valor: number) {
+  return { minimo: Math.ceil(valor * VENTA_MIN_PORCENTAJE / 100), maximo: Math.floor(valor * VENTA_MAX_PORCENTAJE / 100) };
+}
+
+// src/routes/game.routes.ts
+import { saleRange, rangoVenta } from '../services/sale.rules';
+import { Item, Objeto } from '../entities/Item.entity';
+
+// frontend/src/pages/ModulePage.tsx:1-8
+import React, { useEffect, useState, useMemo, useCallback, type ReactNode } from 'react';
+import { Link } from 'react-router-dom';
+import { api } from '../services/api';
+import { useUser } from '../context/UserContext';</code></pre>
+  </div>
+  <ol class="road">
+    <li><span class="layer">Backend · lectura</span><h4>El inventario ya informa el rango de venta</h4>
+      <p class="file"><code>game.routes.ts:47-53</code> <code>GET /inventarios/:character/:number</code>: <code>ownedCharacter(…)</code> (solo el dueño), carga los <code>Objeto</code> del inventario y agrega a cada uno <code>...saleRange(o.valor)</code> (línea 52) → <code>{ minimo, maximo }</code>. La regla vive en un solo lugar: <code>sale.rules.ts:12</code>, con <code>Math.ceil</code> para el mínimo y <code>Math.floor</code> para el máximo, de modo que el precio siempre sea entero y nunca se salga del rango (<code>src/tests/sale.rules.test.ts</code>).</p></li>
+    <li><span class="layer">Frontend · gestor de inventarios</span><h4>Vender desde <code>ModulePage</code></h4>
+      <p class="file">Pantalla <code>/inventory</code> (<code>App.tsx:50</code>, <code>ModulePage resource="inventarios"</code>). El precio elegido se recuerda por objeto en <code>sessionStorage</code> (<code>'precios_reventa_inventario'</code>, línea 520) dentro de <code>try/catch</code> por si el almacenamiento no está disponible. Al confirmar: <code>api(\`/objetos/${objetoVenta.idObjeto}/vender\`, 'POST', { idPersonaje, idTienda: Number(tiendaVenta), precio: precioReventa })</code> (línea 909) dentro de <code>perform()</code>, que recarga y muestra «¡Venta realizada con éxito!». Si no hay tienda elegida, corta antes con «Debés seleccionar una tienda receptora».</p></li>
+    <li><span class="layer">Ruta</span><h4><code>POST /api/objetos/:id/vender</code></h4>
+      <p class="file"><code>game.routes.ts:58</code> → <code>service.sell(req.identity!.idUsuario, routeId(req.params.id), req.body)</code>. <code>routeId</code> (<code>authorization.ts:12</code>) rechaza con 400 un id que no sea solo dígitos.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>sell</code> (líneas 206-231)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:207-228 (resumen)</figcaption>
+<pre><code>const data = saleSchema.parse(body);                               // { idPersonaje, idTienda, precio? }.strict()
+const object = await tx.findOne(Objeto, { idObjeto: objectId }, { ...lock, ...sinJoinOpcional, populate: ['inventario.personaje'] });
+const p = await ownedCharacter(tx, data.idPersonaje, user);  await tx.lock(p, LockMode.PESSIMISTIC_WRITE);
+conflict(object.inventario?.personaje.idPersonaje !== p.idPersonaje || !!object.tienda, 'El objeto no está en tu inventario');
+const tienda = await tx.findOne(Tienda, { idTienda: data.idTienda }, { populate: ['clase'] });
+conflict(!!tienda.clase &amp;&amp; !!p.clase &amp;&amp; tienda.clase.idClase !== p.clase.idClase, 'No podés vender a una tienda de otra clase');
+const rango = saleRange(object.valor);
+const precioVenta = data.precio !== undefined ? data.precio : object.valor;
+conflict(precioVenta &lt; rango.minimo || precioVenta &gt; rango.maximo, `El precio debe estar entre ${rango.minimo} y ${rango.maximo} (70–100 % del valor)`);
+conflict(p.dinero + precioVenta &gt; 2147483647, 'El saldo excedería el límite permitido');
+p.dinero += precioVenta;
+if (object.esUnico) { object.inventario = null; object.tienda = tienda; object.posicion = 0; }   // vuelve al catálogo
+else { tx.remove(object); }                                                                       // copia común: se elimina
+await tx.flush();</code></pre></figure>
+      <p class="file">Si el precio no se envía, se vende al 100 % del valor. El objeto único conserva su identidad y queda a la venta en la tienda compradora; por eso <code>item.unique.test.ts</code> prueba que <i>«permite volver a comprar un objeto único si fue vendido a una tienda»</i>.</p></li>
+    <li><span class="layer">Extra</span><h4>Mover dentro del inventario</h4>
+      <p class="file">Frontend: <code>ModulePage.tsx:682</code> <code>POST /inventarios/:character/:number/mover</code> con <code>{ idObjeto, posicion }</code>. Backend: <code>game.routes.ts:57</code> → <code>moveObject</code> (<code>game.service.ts:189-204</code>): valida con <code>z.object({ idObjeto: idSchema, posicion: amount }).strict()</code>, que el objeto sea del personaje (403), que <code>posicion &lt; cantidadEspacio</code> y que esté libre (línea 200, con <code>idObjeto: { $ne: object.idObjeto }</code> para ignorarse a sí mismo).</p></li>
+  </ol>
+  <div class="say"><b class="t">Qué contarle al profesor</b>
+    <ul>
+      <li>El rango 70–100 % es una regla de negocio pura (<code>sale.rules.ts</code>), por eso se prueba sin base de datos.</li>
+      <li>Pruebas: <code>src/tests/sale.rules.test.ts</code>, <code>src/tests/game.service.test.ts</code> (<code>saveInventory</code>, <code>moveObject</code>, ventas) y <code>src/tests/security.test.ts</code> («redondea límites sin salir del rango 70–100 %»).</li>
+    </ul>
+  </div>
+
+  <!-- ARQ -->
+  <div class="part-title sub" id="o-arq"><span class="badge">Arquitectura</span><h3>Validators, DTOs, contrato de tipos y manejo de errores</h3></div>
+
+  <h4>1. Por qué validar en el servidor</h4>
+  <p>TypeScript solo comprueba tipos <b>al compilar</b>. En tiempo de ejecución, <code>req.body</code> es cualquier cosa que alguien envíe (<code>{ "dinero": 999999 }</code>, un <code>null</code>, un arreglo…). Las anotaciones no protegen: hay que validar explícitamente. Eso hacen los <i>validators</i>.</p>
+
+  <h4>2. Los tres estilos de validación del proyecto</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Estilo</th><th>Dónde</th><th>Cómo falla</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. Middleware genérico</b> <code>validate(schema)</code></td><td><code>src/shared/validate.ts:13-31</code>, usado en <code>user.routes.ts</code>: <code>router.post('/', …, validate(createUserSchema), …)</code></td><td>Responde directo 400 con <code>{ message: 'Datos de entrada inválidos', errors: [{ campo, mensaje }] }</code> y <b>reemplaza</b> <code>req.body</code> por el resultado limpio (línea 28).</td></tr>
+      <tr><td><b>B. Validador por módulo (Zod)</b></td><td><code>validators/match.validator.ts</code>, <code>class.validator.ts</code>, <code>item.validator.ts</code></td><td>Una función <code>parse()</code> usa <code>safeParse</code> y lanza un error propio (<code>ErrorValidacionPartida</code>, <code>ErrorValidacionClase</code>, <code>ErrorValidacionObjeto</code>); el controlador lo captura y responde 400.</td></tr>
+      <tr><td><b>C. Zod dentro del servicio</b></td><td><code>game.service.ts:15-24</code>: <code>sessionSchema</code>, <code>missionSchema</code>, <code>inventorySchema</code>, <code>participationSchema</code>, <code>rewardSchema</code>, <code>saleSchema</code></td><td><code>schema.parse()</code> lanza <code>ZodError</code>; llega a <code>handleErrors</code> (<code>app.ts:178</code>) → 400 con <code>formatZodError</code> (línea 135), que convierte cada <code>issue</code> en una frase en castellano.</td></tr>
+      <tr><td><b>D. Manual (sin Zod)</b></td><td><code>validators/character.validator.ts</code></td><td>Helpers <code>getObject</code>, <code>validateText</code>, <code>validatePositiveNumber</code> que lanzan <code>ErrorValidacionPersonaje</code>.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="meta">Los estilos conviven porque el proyecto lo construyeron varias personas en etapas distintas. Si preguntan: la intención común es la misma (validar, no confiar en el cliente); unificar en Zod sería el siguiente paso de refactor.</p>
+
+  <h4>3. Anatomía de un esquema de Zod</h4>
+<figure class="src"><figcaption>src/validators/item.validator.ts:4-10</figcaption>
+<pre><code>const entero = z.number().int().min(0).max(2147483647);          // 2147483647 = máximo de INTEGER en PostgreSQL
+const schema = z.object({
+  nombre: z.string().trim().min(1).max(100), descripcion: z.string().trim().min(1),
+  tipoObjeto: z.string().trim().min(1).max(50), valor: entero,
+  nivelObjeto: entero.min(1), esUnico: z.boolean().optional(),
+  idTienda: entero.min(1).nullable().optional(), posicion: entero.optional(),
+}).strict();
+export const compraSchema = z.object({ idPersonaje: entero.min(1), numInventario: entero.min(1), posicion: entero.optional() }).strict();</code></pre></figure>
+  <div class="tbl"><table>
+    <thead><tr><th>Método</th><th>Efecto</th></tr></thead>
+    <tbody>
+      <tr><td><code>.trim()</code></td><td>Limpia espacios (transforma el dato, no solo lo valida).</td></tr>
+      <tr><td><code>.int().min().max()</code></td><td>Entero en rango. El máximo coincide con el <code>integer</code> de la BD: sin él, un valor enorme llegaría a PostgreSQL y fallaría con un 500.</td></tr>
+      <tr><td><code>.optional()</code> / <code>.nullable()</code></td><td>Campo ausente / valor <code>null</code> permitido (<code>idTienda</code>).</td></tr>
+      <tr><td><code>.strict()</code></td><td>Rechaza campos no declarados. Evita ataques de <i>mass assignment</i> como mandar <code>idUsuario</code> o <code>dinero</code> extra.</td></tr>
+      <tr><td><code>.partial()</code></td><td>Todos los campos opcionales: se usa para los <code>PUT</code> (<code>validateUpdateItem</code>, línea 17).</td></tr>
+      <tr><td><code>.extend()</code></td><td>Agrega campos a un esquema base (<code>create = fields.extend({ idUsuarioAnfitrion })</code>).</td></tr>
+      <tr><td><code>.refine(fn, msg)</code></td><td>Regla personalizada sobre varios campos (privada ⇒ contraseña).</td></tr>
+      <tr><td><code>safeParse</code> vs <code>parse</code></td><td><code>safeParse</code> devuelve <code>{ success, data | error }</code> sin lanzar; <code>parse</code> lanza <code>ZodError</code>.</td></tr>
+    </tbody>
+  </table></div>
+
+  <h4>4. DTOs: entidad ≠ lo que viaja por HTTP</h4>
+  <p>En <code>src/types/*.dto.ts</code> cada recurso tiene tres tipos con propósito distinto:</p>
+<figure class="src"><figcaption>src/types/match.dto.ts (resumen)</figcaption>
+<pre><code>export type EstadoPartida = 'activa' | 'finalizada';
+export interface CrearPartidaDTO { nombre: string; estado: EstadoPartida; limiteJugadores: number;
+                                   esPrivada: boolean; contrasena?: string; idUsuarioAnfitrion: number; }
+export type ActualizarPartidaDTO = Partial&lt;CrearPartidaDTO&gt;;       // todos opcionales
+export interface PartidaPublicaDTO { idPartida: number; nombre: string; estado: EstadoPartida;
+                                     limiteJugadores: number; esPrivada: boolean;
+                                     idUsuarioAnfitrion: number; nicknameAnfitrion: string; }   // SIN contraseña</code></pre></figure>
+  <ul>
+    <li><b>Entrada</b> (<code>Crear…DTO</code>, <code>Actualizar…DTO</code>): solo lo que el cliente puede enviar. No incluye ids autogenerados ni campos calculados.</li>
+    <li><b>Salida</b> (<code>…PublicoDTO</code>): lo que se puede mostrar. Se arma con funciones <code>toPublic…</code> (<code>toPublicMatch</code>, <code>toPublicCharacter</code>, <code>toPublicItem</code>, <code>toPublicClass</code>) y <b>nunca</b> incluye <code>contrasena</code>.</li>
+    <li>Cambiar una columna interna no rompe la API mientras el DTO se mantenga.</li>
+  </ul>
+
+  <h4>5. El contrato con el frontend</h4>
+  <ul>
+    <li><code>frontend/src/interfaces.ts</code> refleja las entidades (<code>Usuario</code>, <code>Partida</code>, <code>Sesion</code>, <code>Objeto</code>…) con comentarios <code>CP</code>/<code>CF</code> del DER (por ejemplo <code>estadoSesion: number; // 1 = en curso, 2 = finalizada</code>, línea 33).</li>
+    <li>Cada <code>services/*.service.ts</code> deriva sus tipos con utilidades de TypeScript: <code>CreateItemData = Omit&lt;PublicItem, 'idObjeto' | 'idPersonaje' | 'numInventario'&gt;</code> (<code>item.service.ts:21</code>), <code>UpdateItemData = Partial&lt;CreateItemData&gt;</code>, <code>CreateClassData = Omit&lt;Clase, 'idClase'&gt;</code>.</li>
+    <li>El contrato está <b>duplicado a mano</b> (DTOs del backend e interfaces del frontend); no hay un paquete compartido. Se mantiene con revisión y con los tests de componentes y E2E.</li>
+  </ul>
+
+  <h4>6. Quién convierte cada error en un código HTTP</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Se lanza…</th><th>Se captura en…</th><th>Resultado</th></tr></thead>
+    <tbody>
+      <tr><td><code>ErrorValidacion*</code> (match, class, item, personaje)</td><td><code>catch</code> del controlador</td><td class="http err">400</td></tr>
+      <tr><td><code>ZodError</code> (esquemas dentro de servicios)</td><td><code>handleErrors</code> <code>app.ts:178</code></td><td class="http err">400</td></tr>
+      <tr><td><code>HttpError(status, msg)</code> (<code>conflict()</code>, <code>hostedGame</code>, <code>ownedCharacter</code>)</td><td><code>handleErrors</code> <code>app.ts:177</code></td><td class="http err">400 / 403 / 404 / 409</td></tr>
+      <tr><td>Errores de dominio (<code>DineroInsuficienteError</code>, <code>InventarioLlenoError</code>…)</td><td><code>catch</code> de <code>item.controller.ts:142-175</code></td><td class="http err">404 / 409</td></tr>
+      <tr><td><code>UniqueConstraintViolationException</code>, <code>ForeignKeyConstraintViolationException</code></td><td><code>persistenceError</code> o <code>handleErrors</code> <code>app.ts:179-180</code></td><td class="http err">409</td></tr>
+      <tr><td>JSON mal formado (<code>SyntaxError</code>) / cuerpo &gt; 64 KB</td><td><code>handleErrors</code> <code>app.ts:181,183</code></td><td class="http err">400 / 413</td></tr>
+      <tr><td>Cualquier otro</td><td><code>handleErrors</code> <code>app.ts:184-185</code></td><td class="http err">500 con mensaje genérico y <code>console.error</code></td></tr>
+    </tbody>
+  </table></div>
+  <p>Clave de diseño: <b>el 500 nunca expone el detalle</b>. Lo que pasó queda en el log del servidor y el cliente solo recibe «No se pudo completar la operación».</p>
+
+  <div class="say"><b class="t">Preguntas probables</b>
+    <div class="qa">
+      <p><b>¿Por qué Zod y no <code>class-validator</code> u otro?</b> Esquemas declarativos, inferencia de tipos (<code>z.infer</code>) y un único objeto sirve de validador y de tipo. En <code>user.schema.ts</code> se exportan tipos con <code>z.infer&lt;typeof createUserSchema&gt;</code>.</p>
+      <p><b>¿Qué es <i>mass assignment</i>?</b> Que el cliente envíe campos de más y el servidor los guarde sin mirar (por ejemplo <code>dinero</code> o <code>idUsuario</code>). <code>.strict()</code> y los DTOs lo evitan; además <code>requireOwnJugadorForPersonaje</code> pisa los valores sensibles.</p>
+      <p><b>¿Por qué el frontend también valida?</b> Por experiencia de usuario: avisa sin ir al servidor. No reemplaza la validación del backend.</p>
+      <p><b>Pruebas:</b> <code>src/tests/user.schema.test.ts</code> (rechaza <code>idUsuario</code> por <code>.strict()</code>, rechaza <code>{}</code> en update), <code>src/tests/errors.test.ts</code> (413 y 400), <code>src/tests/host.validator.test.ts</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================ ERRORES -->
+<section class="card" id="errores">
+  <h2>Mapa de respuestas HTTP</h2>
+  <p class="meta">Sirve para los diez casos cuando el profesor pregunte «¿y si falla?».</p>
+  <div class="tbl"><table>
+    <thead><tr><th>Código</th><th>Quién lo genera</th><th>Ejemplo</th></tr></thead>
+    <tbody>
+      <tr><td class="http ok">200 / 201 / 204</td><td>Controlador o ruta</td><td>Partida creada (201), sesión borrada (204).</td></tr>
+      <tr><td class="http err">400</td><td>Zod, validadores, <code>routeId</code>/<code>getId</code></td><td>«Las partidas privadas requieren contraseña», «ID inválido».</td></tr>
+      <tr><td class="http err">401</td><td><code>requireAuth</code>, login</td><td>«Iniciá sesión para continuar», «Usuario o contraseña incorrecta».</td></tr>
+      <tr><td class="http err">403</td><td><code>authorization.ts</code>, defensa CSRF</td><td>«Ese personaje pertenece a otro jugador», «Origen no permitido».</td></tr>
+      <tr><td class="http err">404</td><td>Servicios y controladores</td><td>«Partida no encontrada».</td></tr>
+      <tr><td class="http err">409</td><td><code>conflict()</code>, errores de dominio, restricciones únicas o de FK</td><td>«Ya hay otra sesión en curso», «Ese nickname ya está en uso».</td></tr>
+      <tr><td class="http err">413 / 429 / 503</td><td><code>express.json</code>, límite de intentos, tope de sesiones</td><td>Body &gt; 64 KB; más de 30 POST en 15 min a <code>/api/auth</code>; 5000 sesiones activas.</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>
+  Material para la defensa de Desarrollo de Software. Las citas <code>archivo:línea</code> corresponden al commit <code>8604cc1</code>; si se modifica el código, conviene revisar las líneas con <code>grep -n</code>.
+</footer>
+</div>
+</body>
+</html>
