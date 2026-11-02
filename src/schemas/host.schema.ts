@@ -14,6 +14,6 @@ export const createHostSchema: z.ZodType<CrearAnfitrionDTO> = z.object({
     .int('El campo karma debe ser un número entero mayor o igual a 0')
     .min(0, 'El campo karma debe ser un número entero mayor o igual a 0')
     .default(0),
-}).strict();
+});
 
 export const crearAnfitrionSchema = createHostSchema;

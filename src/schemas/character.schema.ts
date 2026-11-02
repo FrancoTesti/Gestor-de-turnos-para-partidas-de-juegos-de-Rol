@@ -22,7 +22,7 @@ export const createCharacterSchema: z.ZodType<CrearPersonajeDTO> = z.object({
   contrasenaPartida: z.string({ message: 'Contraseña de partida inválida' })
     .max(100, 'Contraseña de partida inválida')
     .optional(),
-}).strict();
+});
 
 export const updateCharacterSchema: z.ZodType<ActualizarPersonajeDTO> = z.object({
   nombreFicticio: z.string({ message: "El campo 'nombreFicticio' debe ser un texto" })
@@ -36,7 +36,7 @@ export const updateCharacterSchema: z.ZodType<ActualizarPersonajeDTO> = z.object
     .max(50, "El campo 'raza' supera el máximo de 50 caracteres")
     .optional(),
   idClase: positiveId('idClase').optional(),
-}).strict().refine((v) => Object.keys(v).length > 0, 'Debe enviar al menos un campo para actualizar');
+}).refine((v) => Object.keys(v).length > 0, 'Debe enviar al menos un campo para actualizar');
 
 export const crearPersonajeSchema = createCharacterSchema;
 export const actualizarPersonajeSchema = updateCharacterSchema;
