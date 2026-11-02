@@ -267,6 +267,12 @@ export function MissionsPage() {
     return misiones;
   }, [misiones, filtroPartida, partidas.length, partidasDelUsuario]);
 
+  const esAnfitrionDePartida = (idPartida: number) => {
+    if (!host) return false;
+    const p = partidas.find(pt => Number(pt.idPartida) === Number(idPartida));
+    return p ? Number(p.idUsuarioAnfitrion) === Number(userId) : true;
+  };
+
   const sumaDinero = recompensas.reduce((acc, r) => acc + r.dinero, 0);
   const sumaXp = recompensas.reduce((acc, r) => acc + r.xp, 0);
   const esCorrecto = selectedMision && sumaDinero === selectedMision.dineroTotal && sumaXp === selectedMision.xpTotal;
@@ -352,7 +358,7 @@ export function MissionsPage() {
                       )}
                     </td>
                     <td>
-                      {!m.estado && host && (
+                      {!m.estado && esAnfitrionDePartida(m.idPartida) && (
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
                           <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
@@ -388,7 +394,7 @@ export function MissionsPage() {
                     }}
                   >
                     <option value="">Seleccionar...</option>
-                    {sesiones.filter(s => s.estadoSesion === 1 || editando).map(s => (
+                    {sesiones.filter(s => (s.estadoSesion === 1 || editando) && esAnfitrionDePartida(s.idPartida)).map(s => (
                       <option key={`${s.idPartida}-${s.numSesion}`} value={`${s.idPartida}-${s.numSesion}`}>
                         Partida {partidas.find(p => p.idPartida === s.idPartida)?.nombre} - S{s.numSesion}
                       </option>
