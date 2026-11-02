@@ -14,7 +14,7 @@ import { saleRange } from './sale.rules';
 const amount = z.number().int().min(0).max(2147483647);
 export const sessionSchema = z.object({ idPartida: idSchema, numSesion: idSchema, duracionSesion: amount }).strict();
 export const missionSchema = z.object({
-  idPartida: idSchema, numSesion: idSchema, numMision: idSchema,
+  idPartida: idSchema, numSesion: idSchema, numMision: idSchema.optional(),
   descripcion: z.string().trim().min(1).max(5000), dineroTotal: amount, xpTotal: amount,
   asistenciaGrupoGrande: amount.default(0),
 }).strict();
@@ -28,7 +28,28 @@ const lock = { lockMode: LockMode.PESSIMISTIC_WRITE } as const;
 const sinJoinOpcional = { strategy: 'select-in' } as const;
 const conflict = (condition: boolean, message: string) => { if (condition) throw new HttpError(409, message); };
 export const sessionDTO = (s: Sesion) => ({ idPartida: s.partida.idPartida, numSesion: s.numSesion, duracionSesion: s.duracionSesion, cantJugadores: s.cantJugadores, estadoSesion: s.estadoSesion });
-export const missionDTO = (m: Mision) => ({ idPartida: m.sesion.partida.idPartida, numSesion: m.sesion.numSesion, numMision: m.numMision, descripcion: m.descripcion, dineroTotal: m.dineroTotal, xpTotal: m.xpTotal, dineroOtorgadoAJugadores: m.dineroOtorgadoAJugadores, xpOtorgadoJugadores: m.xpOtorgadoJugadores, asistenciaGrupoGrande: m.asistenciaGrupoGrande, estado: m.estado });
+const REWARDS_MARKER_REGEX = /\n<!--RECOMPENSAS:(.*?)-->$/s;
+export const missionDTO = (m: Mision) => {
+  const match = typeof m.descripcion === 'string' ? m.descripcion.match(REWARDS_MARKER_REGEX) : null;
+  let recompensas: { idPersonaje: number; dinero: number; xp: number }[] | undefined;
+  if (match) {
+    try { recompensas = JSON.parse(match[1]); } catch { /* ignore */ }
+  }
+  const descripcion = match ? m.descripcion.replace(REWARDS_MARKER_REGEX, '') : m.descripcion;
+  return {
+    idPartida: m.sesion.partida.idPartida,
+    numSesion: m.sesion.numSesion,
+    numMision: m.numMision,
+    descripcion,
+    dineroTotal: m.dineroTotal,
+    xpTotal: m.xpTotal,
+    dineroOtorgadoAJugadores: m.dineroOtorgadoAJugadores,
+    xpOtorgadoJugadores: m.xpOtorgadoJugadores,
+    asistenciaGrupoGrande: m.asistenciaGrupoGrande,
+    estado: m.estado,
+    ...(recompensas ? { recompensas } : {}),
+  };
+};
 export const inventoryDTO = (i: Inventario) => ({ idPersonaje: i.personaje.idPersonaje, numInventario: i.numInventario, cantidadEspacio: i.cantidadEspacio });
 
 export class JuegoService {
@@ -100,12 +121,18 @@ export class JuegoService {
       await hostedGame(tx, data.idPartida, user);
       const sesion = await this.session(tx, data.idPartida, data.numSesion);
       conflict(sesion.estadoSesion === 2, 'La sesión está finalizada');
-      let m = await tx.findOne(Mision, { sesion, numMision: data.numMision }, lock);
+      let numMision = data.numMision;
+      if (numMision === undefined) {
+        if (update) throw new HttpError(400, 'ID inválido');
+        const existentes = await tx.find(Mision, { sesion });
+        numMision = existentes.reduce((max, item) => Math.max(max, item.numMision), 0) + 1;
+      }
+      let m = await tx.findOne(Mision, { sesion, numMision }, lock);
       if (update && !m) throw new HttpError(404, 'Misión no encontrada');
       conflict(!update && !!m, 'Ese número de misión ya existe');
       conflict(m?.estado === true, 'Una misión completada no se puede modificar');
       const fields = { descripcion: data.descripcion, dineroTotal: data.dineroTotal, xpTotal: data.xpTotal, asistenciaGrupoGrande: data.asistenciaGrupoGrande };
-      m ??= tx.create(Mision, { sesion, numMision: data.numMision, ...fields, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0 });
+      m ??= tx.create(Mision, { sesion, numMision, ...fields, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0 });
       Object.assign(m, fields); await tx.flush(); return missionDTO(m);
     });
   }
@@ -124,11 +151,14 @@ export class JuegoService {
       const money = data.recompensas.reduce((n, r) => n + r.dinero, 0);
       const xp = data.recompensas.reduce((n, r) => n + r.xp, 0);
       conflict(money !== m.dineroTotal || xp !== m.xpTotal, 'El reparto debe coincidir exactamente con el dinero y XP de la misión');
-      for (const reward of [...data.recompensas].sort((a, b) => a.idPersonaje - b.idPersonaje)) {
+      const sortedRewards = [...data.recompensas].sort((a, b) => a.idPersonaje - b.idPersonaje);
+      for (const reward of sortedRewards) {
         const p = await tx.findOneOrFail(Personaje, { idPersonaje: reward.idPersonaje }, lock);
         conflict(p.dinero + reward.dinero > 2147483647 || p.xp + reward.xp > 2147483647, 'La recompensa excede el límite de almacenamiento');
         p.dinero += reward.dinero; p.xp += reward.xp;
       }
+      const cleanDesc = m.descripcion.replace(REWARDS_MARKER_REGEX, '');
+      m.descripcion = `${cleanDesc}\n<!--RECOMPENSAS:${JSON.stringify(sortedRewards)}-->`;
       m.estado = true; m.dineroOtorgadoAJugadores = money; m.xpOtorgadoJugadores = xp;
       await tx.flush(); return missionDTO(m);
     });

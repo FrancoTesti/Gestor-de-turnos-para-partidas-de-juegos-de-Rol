@@ -67,6 +67,7 @@ export function MissionsPage() {
   const [misionAEliminar, setMisionAEliminar] = useState<Mision | null>(null);
 
   const [selectedMision, setSelectedMision] = useState<Mision | null>(null);
+  const [misionDetalleReparto, setMisionDetalleReparto] = useState<Mision | null>(null);
   const [participantes, setParticipantes] = useState<SessionDetailDTO['participantes']>([]);
   const [recompensas, setRecompensas] = useState<Reward[]>([]);
 
@@ -114,15 +115,8 @@ export function MissionsPage() {
     }
 
     const numMisionNum = Number(nuevaMision.numMision);
-    if (!nuevaMision.numMision || isNaN(numMisionNum) || !Number.isInteger(numMisionNum) || numMisionNum <= 0) {
+    if (editando && (!nuevaMision.numMision || isNaN(numMisionNum) || !Number.isInteger(numMisionNum) || numMisionNum <= 0)) {
       const msg = 'El número de misión debe ser un número entero mayor a 0.';
-      setErrorFormulario(msg);
-      setErrorAvisoModal(msg);
-      return;
-    }
-
-    if (numMisionNum > 2147483647) {
-      const msg = 'El número de misión es demasiado grande. Debe ser un número entero entre 1 y 2.147.483.647.';
       setErrorFormulario(msg);
       setErrorAvisoModal(msg);
       return;
@@ -168,7 +162,6 @@ export function MissionsPage() {
         await createMission({
           idPartida: idPartidaNum,
           numSesion: numSesionNum,
-          numMision: numMisionNum,
           descripcion: nuevaMision.descripcion.trim(),
           dineroTotal: dineroNum,
           xpTotal: xpNum,
@@ -245,26 +238,26 @@ export function MissionsPage() {
   };
 
   const misPersonajes = useMemo(() => {
-    return personajes.filter(p => p.idUsuarioJugador === userId);
+    return personajes.filter(p => Number(p.idUsuarioJugador) === Number(userId));
   }, [personajes, userId]);
 
   const partidasDelUsuario = useMemo(() => {
     return partidas.filter(p => {
-      const esAnfitrionDePartida = p.idUsuarioAnfitrion === userId;
-      const tienePjEnPartida = misPersonajes.some(pj => pj.idPartida === p.idPartida);
-      return esAnfitrionDePartida || tienePjEnPartida;
+      const esAnfitrion = Number(p.idUsuarioAnfitrion) === Number(userId);
+      const tienePjEnPartida = misPersonajes.some(pj => Number(pj.idPartida) === Number(p.idPartida));
+      return esAnfitrion || tienePjEnPartida;
     });
   }, [partidas, userId, misPersonajes]);
 
   const misionesFiltradas = useMemo(() => {
+    const idsPermitidos = new Set(partidasDelUsuario.map(p => Number(p.idPartida)));
+    const base = partidas.length > 0
+      ? misiones.filter(m => idsPermitidos.has(Number(m.idPartida)))
+      : misiones;
     if (filtroPartida) {
-      return misiones.filter(m => String(m.idPartida) === String(filtroPartida));
+      return base.filter(m => String(m.idPartida) === String(filtroPartida));
     }
-    if (partidas.length > 0 && partidasDelUsuario.length > 0) {
-      const idsPermitidos = new Set(partidasDelUsuario.map(p => p.idPartida));
-      return misiones.filter(m => idsPermitidos.has(m.idPartida));
-    }
-    return misiones;
+    return base;
   }, [misiones, filtroPartida, partidas.length, partidasDelUsuario]);
 
   const esAnfitrionDePartida = (idPartida: number) => {
@@ -300,8 +293,8 @@ export function MissionsPage() {
           onChange={(e) => setFiltroPartida(e.target.value)}
           style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
         >
-          <option value="">Todas las partidas visibles ({partidasDelUsuario.length > 0 ? partidasDelUsuario.length : partidas.length})</option>
-          {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
+          <option value="">Todas mis partidas ({partidasDelUsuario.length})</option>
+          {partidasDelUsuario.map((p) => (
             <option key={p.idPartida} value={String(p.idPartida)}>
               {p.nombre} (#{p.idPartida})
             </option>
@@ -334,41 +327,90 @@ export function MissionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {misionesFiltradas.map(m => (
-                  <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
-                    <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre || `Partida #${m.idPartida}`}</td>
-                    <td>S{m.numSesion}</td>
-                    <td>M{m.numMision}</td>
-                    <td>{m.descripcion}</td>
-                    <td style={{ fontWeight: 600 }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--success-text)' }}>
-                        <CoinIcon size={14} /> {m.dineroTotal}
-                      </span>
-                      <span style={{ color: 'var(--text-muted)', margin: '0 0.35rem', fontWeight: 400 }}>|</span>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--accent-text)' }}>
-                        <ZapIcon size={14} /> {m.xpTotal} XP
-                      </span>
-                    </td>
-                    <td>
-                      {m.estado ? (
-                        <span className="badge badge-success">Completada</span>
-                      ) : (
-                        <span className="badge badge-warning">Pendiente</span>
-                      )}
-                    </td>
-                    <td>
-                      {!m.estado && esAnfitrionDePartida(m.idPartida) && (
-                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                          <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
-                          <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
-                          <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)} aria-label="Eliminar misión" title="Eliminar misión">
-                            <CloseIcon size={13} />
-                          </button>
+                {misionesFiltradas.map(m => {
+                  const miPjEnPartida = misPersonajes.find(p => Number(p.idPartida) === Number(m.idPartida));
+                  const sesionDeMision = sesiones.find(s => Number(s.idPartida) === Number(m.idPartida) && Number(s.numSesion) === Number(m.numSesion));
+                  const miRecompensa = m.estado && miPjEnPartida
+                    ? (m.recompensas?.find(r => Number(r.idPersonaje) === Number(miPjEnPartida.idPersonaje))
+                      ?? (sesionDeMision?.cantJugadores === 1
+                        ? { idPersonaje: miPjEnPartida.idPersonaje, dinero: m.dineroOtorgadoAJugadores ?? m.dineroTotal, xp: m.xpOtorgadoJugadores ?? m.xpTotal }
+                        : undefined))
+                    : undefined;
+
+                  return (
+                    <tr key={`${m.idPartida}-${m.numSesion}-${m.numMision}`}>
+                      <td style={{ fontWeight: 600, color: 'var(--text-h)' }}>{partidas.find(p => p.idPartida === m.idPartida)?.nombre || `Partida #${m.idPartida}`}</td>
+                      <td>S{m.numSesion}</td>
+                      <td>M{m.numMision}</td>
+                      <td>{m.descripcion}</td>
+                      <td style={{ fontWeight: 600 }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--success-text)' }}>
+                          <CoinIcon size={14} /> {m.dineroTotal}
+                        </span>
+                        <span style={{ color: 'var(--text-muted)', margin: '0 0.35rem', fontWeight: 400 }}>|</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--accent-text)' }}>
+                          <ZapIcon size={14} /> {m.xpTotal} XP
+                        </span>
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '0.35rem' }}>
+                          {m.estado ? (
+                            <span className="badge badge-success">Completada</span>
+                          ) : (
+                            <span className="badge badge-warning">Pendiente</span>
+                          )}
+                          {miRecompensa && (
+                            <span
+                              style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '0.35rem',
+                                fontSize: '0.8rem',
+                                fontWeight: 700,
+                                padding: '0.2rem 0.55rem',
+                                borderRadius: 'var(--radius-sm)',
+                                background: 'var(--bg-card-secondary)',
+                                border: '1px solid var(--border-subtle)',
+                                color: 'var(--text-h)',
+                                whiteSpace: 'nowrap',
+                              }}
+                              title={`Recompensa obtenida con ${miPjEnPartida?.nombreFicticio ?? 'tu personaje'}`}
+                            >
+                              <span>Ganaste:</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem', color: 'var(--success-text)' }}>
+                                <CoinIcon size={12} /> +${miRecompensa.dinero}
+                              </span>
+                              <span style={{ color: 'var(--text-muted)' }}>|</span>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.15rem', color: 'var(--accent-text)' }}>
+                                <ZapIcon size={12} /> +{miRecompensa.xp} XP
+                              </span>
+                            </span>
+                          )}
                         </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                      <td>
+                        {!m.estado && esAnfitrionDePartida(m.idPartida) && (
+                          <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <button className="btn-primary btn-small" onClick={() => void handleSeleccionar(m)}>Repartir</button>
+                            <button className="btn-secondary btn-small" onClick={() => handleEditar(m)}>Editar</button>
+                            <button className="btn-danger btn-small" onClick={() => void handleEliminar(m)} aria-label="Eliminar misión" title="Eliminar misión">
+                              <CloseIcon size={13} />
+                            </button>
+                          </div>
+                        )}
+                        {m.estado && m.recompensas && m.recompensas.length > 0 && (
+                          <button
+                            type="button"
+                            className="btn-secondary btn-small"
+                            onClick={() => setMisionDetalleReparto(m)}
+                          >
+                            Ver reparto
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -376,7 +418,7 @@ export function MissionsPage() {
           {host && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.5rem', marginTop: '1.5rem', boxShadow: 'var(--shadow)' }}>
               <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form">
-                <h3 style={{ marginTop: 0 }}>{editando ? 'Editar Misión' : 'Crear Misión'}</h3>
+                <h3 style={{ marginTop: 0 }}>{editando ? `Editar Misión #${nuevaMision.numMision}` : 'Crear Misión'}</h3>
                 <label>Sesión en Curso:
                   <select
                     required
@@ -399,17 +441,6 @@ export function MissionsPage() {
                       </option>
                     ))}
                   </select>
-                </label>
-                <label>Número Misión:
-                  <input
-                    type="number"
-                    min="1"
-                    max="2147483647"
-                    disabled={editando}
-                    required
-                    value={nuevaMision.numMision}
-                    onChange={e => { setNuevaMision({ ...nuevaMision, numMision: e.target.value }); setErrorFormulario(''); }}
-                  />
                 </label>
                 <label>Descripción:
                   <input
@@ -576,6 +607,118 @@ export function MissionsPage() {
                 disabled={!esCorrecto}
               >
                 Confirmar y Completar Misión
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {misionDetalleReparto && (
+        <div
+          className="usuario-modal-overlay"
+          onClick={() => setMisionDetalleReparto(null)}
+          role="dialog"
+          aria-modal="true"
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1.25rem',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div
+            className="usuario-modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '520px',
+              width: '100%',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-lg)',
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 20px 45px rgba(0, 0, 0, 0.6)',
+              boxSizing: 'border-box',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-subtle)', paddingBottom: '0.75rem' }}>
+              <div>
+                <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                  Recompensas Otorgadas
+                </p>
+                <h2 style={{ margin: '0.2rem 0 0', fontSize: '1.4rem' }}>
+                  Misión #{misionDetalleReparto.numMision} (S{misionDetalleReparto.numSesion})
+                </h2>
+              </div>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setMisionDetalleReparto(null)}
+                aria-label="Cerrar"
+                style={{ padding: '0.4rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: '50%' }}
+              >
+                <CloseIcon size={16} />
+              </button>
+            </div>
+            <p style={{ marginTop: 0, marginBottom: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+              {misionDetalleReparto.descripcion}
+            </p>
+            <div style={{ display: 'grid', gap: '0.6rem' }}>
+              {misionDetalleReparto.recompensas?.map(r => {
+                const pj = personajes.find(p => Number(p.idPersonaje) === Number(r.idPersonaje));
+                const esMio = Number(pj?.idUsuarioJugador) === Number(userId);
+                return (
+                  <div
+                    key={r.idPersonaje}
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      padding: '0.75rem 1rem',
+                      borderRadius: 'var(--radius-sm)',
+                      background: esMio ? 'rgba(16, 185, 129, 0.1)' : 'var(--bg-card-secondary)',
+                      border: esMio ? '1px solid var(--success-border, #10b981)' : '1px solid var(--border-subtle)',
+                    }}
+                  >
+                    <div>
+                      <strong style={{ color: 'var(--text-h)' }}>
+                        {pj?.nombreFicticio || `Personaje #${r.idPersonaje}`}
+                      </strong>
+                      {esMio && (
+                        <span style={{ marginLeft: '0.5rem', fontSize: '0.75rem', fontWeight: 700, color: 'var(--success-text)' }}>
+                          (Tu personaje)
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--success-text)' }}>
+                        <CoinIcon size={14} /> +${r.dinero}
+                      </span>
+                      <span style={{ color: 'var(--text-muted)' }}>|</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.2rem', color: 'var(--accent-text)' }}>
+                        <ZapIcon size={14} /> +{r.xp} XP
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                className="btn-secondary"
+                style={{ minWidth: '110px' }}
+                onClick={() => setMisionDetalleReparto(null)}
+              >
+                Cerrar
               </button>
             </div>
           </div>
