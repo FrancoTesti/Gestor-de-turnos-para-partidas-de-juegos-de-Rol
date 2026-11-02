@@ -114,15 +114,8 @@ export function MissionsPage() {
     }
 
     const numMisionNum = Number(nuevaMision.numMision);
-    if (!nuevaMision.numMision || isNaN(numMisionNum) || !Number.isInteger(numMisionNum) || numMisionNum <= 0) {
+    if (editando && (!nuevaMision.numMision || isNaN(numMisionNum) || !Number.isInteger(numMisionNum) || numMisionNum <= 0)) {
       const msg = 'El número de misión debe ser un número entero mayor a 0.';
-      setErrorFormulario(msg);
-      setErrorAvisoModal(msg);
-      return;
-    }
-
-    if (numMisionNum > 2147483647) {
-      const msg = 'El número de misión es demasiado grande. Debe ser un número entero entre 1 y 2.147.483.647.';
       setErrorFormulario(msg);
       setErrorAvisoModal(msg);
       return;
@@ -168,7 +161,6 @@ export function MissionsPage() {
         await createMission({
           idPartida: idPartidaNum,
           numSesion: numSesionNum,
-          numMision: numMisionNum,
           descripcion: nuevaMision.descripcion.trim(),
           dineroTotal: dineroNum,
           xpTotal: xpNum,
@@ -245,26 +237,26 @@ export function MissionsPage() {
   };
 
   const misPersonajes = useMemo(() => {
-    return personajes.filter(p => p.idUsuarioJugador === userId);
+    return personajes.filter(p => Number(p.idUsuarioJugador) === Number(userId));
   }, [personajes, userId]);
 
   const partidasDelUsuario = useMemo(() => {
     return partidas.filter(p => {
-      const esAnfitrionDePartida = p.idUsuarioAnfitrion === userId;
-      const tienePjEnPartida = misPersonajes.some(pj => pj.idPartida === p.idPartida);
-      return esAnfitrionDePartida || tienePjEnPartida;
+      const esAnfitrion = Number(p.idUsuarioAnfitrion) === Number(userId);
+      const tienePjEnPartida = misPersonajes.some(pj => Number(pj.idPartida) === Number(p.idPartida));
+      return esAnfitrion || tienePjEnPartida;
     });
   }, [partidas, userId, misPersonajes]);
 
   const misionesFiltradas = useMemo(() => {
+    const idsPermitidos = new Set(partidasDelUsuario.map(p => Number(p.idPartida)));
+    const base = partidas.length > 0
+      ? misiones.filter(m => idsPermitidos.has(Number(m.idPartida)))
+      : misiones;
     if (filtroPartida) {
-      return misiones.filter(m => String(m.idPartida) === String(filtroPartida));
+      return base.filter(m => String(m.idPartida) === String(filtroPartida));
     }
-    if (partidas.length > 0 && partidasDelUsuario.length > 0) {
-      const idsPermitidos = new Set(partidasDelUsuario.map(p => p.idPartida));
-      return misiones.filter(m => idsPermitidos.has(m.idPartida));
-    }
-    return misiones;
+    return base;
   }, [misiones, filtroPartida, partidas.length, partidasDelUsuario]);
 
   const esAnfitrionDePartida = (idPartida: number) => {
@@ -300,8 +292,8 @@ export function MissionsPage() {
           onChange={(e) => setFiltroPartida(e.target.value)}
           style={{ padding: '0.45rem 0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)', background: 'var(--bg-card-secondary)', color: 'var(--text-h)', maxWidth: '100%', boxSizing: 'border-box' }}
         >
-          <option value="">Todas las partidas visibles ({partidasDelUsuario.length > 0 ? partidasDelUsuario.length : partidas.length})</option>
-          {(partidasDelUsuario.length > 0 ? partidasDelUsuario : partidas).map((p) => (
+          <option value="">Todas mis partidas ({partidasDelUsuario.length})</option>
+          {partidasDelUsuario.map((p) => (
             <option key={p.idPartida} value={String(p.idPartida)}>
               {p.nombre} (#{p.idPartida})
             </option>
@@ -377,7 +369,7 @@ export function MissionsPage() {
           {host && (
             <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.5rem', marginTop: '1.5rem', boxShadow: 'var(--shadow)' }}>
               <form onSubmit={(e) => void handleCrearOActualizar(e)} className="app-form">
-                <h3 style={{ marginTop: 0 }}>{editando ? 'Editar Misión' : 'Crear Misión'}</h3>
+                <h3 style={{ marginTop: 0 }}>{editando ? `Editar Misión #${nuevaMision.numMision}` : 'Crear Misión'}</h3>
                 <label>Sesión en Curso:
                   <select
                     required
@@ -400,17 +392,6 @@ export function MissionsPage() {
                       </option>
                     ))}
                   </select>
-                </label>
-                <label>Número Misión:
-                  <input
-                    type="number"
-                    min="1"
-                    max="2147483647"
-                    disabled={editando}
-                    required
-                    value={nuevaMision.numMision}
-                    onChange={e => { setNuevaMision({ ...nuevaMision, numMision: e.target.value }); setErrorFormulario(''); }}
-                  />
                 </label>
                 <label>Descripción:
                   <input

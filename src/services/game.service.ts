@@ -14,7 +14,7 @@ import { saleRange } from './sale.rules';
 const amount = z.number().int().min(0).max(2147483647);
 export const sessionSchema = z.object({ idPartida: idSchema, numSesion: idSchema, duracionSesion: amount }).strict();
 export const missionSchema = z.object({
-  idPartida: idSchema, numSesion: idSchema, numMision: idSchema,
+  idPartida: idSchema, numSesion: idSchema, numMision: idSchema.optional(),
   descripcion: z.string().trim().min(1).max(5000), dineroTotal: amount, xpTotal: amount,
   asistenciaGrupoGrande: amount.default(0),
 }).strict();
@@ -100,12 +100,18 @@ export class JuegoService {
       await hostedGame(tx, data.idPartida, user);
       const sesion = await this.session(tx, data.idPartida, data.numSesion);
       conflict(sesion.estadoSesion === 2, 'La sesión está finalizada');
-      let m = await tx.findOne(Mision, { sesion, numMision: data.numMision }, lock);
+      let numMision = data.numMision;
+      if (numMision === undefined) {
+        if (update) throw new HttpError(400, 'ID inválido');
+        const existentes = await tx.find(Mision, { sesion });
+        numMision = existentes.reduce((max, item) => Math.max(max, item.numMision), 0) + 1;
+      }
+      let m = await tx.findOne(Mision, { sesion, numMision }, lock);
       if (update && !m) throw new HttpError(404, 'Misión no encontrada');
       conflict(!update && !!m, 'Ese número de misión ya existe');
       conflict(m?.estado === true, 'Una misión completada no se puede modificar');
       const fields = { descripcion: data.descripcion, dineroTotal: data.dineroTotal, xpTotal: data.xpTotal, asistenciaGrupoGrande: data.asistenciaGrupoGrande };
-      m ??= tx.create(Mision, { sesion, numMision: data.numMision, ...fields, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0 });
+      m ??= tx.create(Mision, { sesion, numMision, ...fields, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0 });
       Object.assign(m, fields); await tx.flush(); return missionDTO(m);
     });
   }

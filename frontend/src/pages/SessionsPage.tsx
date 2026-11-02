@@ -176,11 +176,21 @@ export function SessionsPage() {
 
   if (loading) return <Loading />;
 
+  const userId = usuarioLogueado?.idUsuario ?? 0;
   const esAnfitrionDePartida = (idPartida: number) => {
     if (!host) return false;
     const p = partidas.find(pt => Number(pt.idPartida) === Number(idPartida));
-    return p ? Number(p.idUsuarioAnfitrion) === Number(usuarioLogueado?.idUsuario) : true;
+    return p ? Number(p.idUsuarioAnfitrion) === Number(userId) : true;
   };
+  const misPersonajes = personajes.filter(p => Number(p.idUsuarioJugador) === Number(userId));
+  const partidasDelUsuario = partidas.filter(p =>
+    Number(p.idUsuarioAnfitrion) === Number(userId) ||
+    misPersonajes.some(pj => Number(pj.idPartida) === Number(p.idPartida))
+  );
+  const idsPartidasVisibles = new Set(partidasDelUsuario.map(p => Number(p.idPartida)));
+  const sesionesVisibles = partidas.length > 0
+    ? sesiones.filter(s => idsPartidasVisibles.has(Number(s.idPartida)))
+    : sesiones;
   const esHostDeSeleccionada = selected ? esAnfitrionDePartida(selected.idPartida) : false;
 
   return (
@@ -210,7 +220,7 @@ export function SessionsPage() {
                 </tr>
               </thead>
               <tbody>
-                {sesiones.map(s => {
+                {sesionesVisibles.map(s => {
                   const misionesSesion = misiones.filter(m => m.idPartida === s.idPartida && m.numSesion === s.numSesion);
                   const misionRealizada = misionesSesion.find(m => m.estado);
                   const oroTotal = misionesSesion.reduce((acc, m) => acc + (m.estado ? m.dineroOtorgadoAJugadores : 0), 0);

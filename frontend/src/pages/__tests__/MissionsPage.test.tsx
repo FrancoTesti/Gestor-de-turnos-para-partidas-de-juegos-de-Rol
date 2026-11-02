@@ -48,8 +48,7 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
 
     await waitFor(() => expect(screen.getByRole('heading', { name: 'Crear Misión' })).toBeInTheDocument());
 
-    const inputNumMision = screen.getByLabelText(/Número Misión:/i);
-    fireEvent.change(inputNumMision, { target: { value: '3' } });
+    expect(screen.queryByLabelText(/Número Misión:/i)).not.toBeInTheDocument();
 
     const inputDesc = screen.getByLabelText(/Descripción:/i);
     fireEvent.change(inputDesc, { target: { value: 'Misión de prueba' } });
@@ -84,9 +83,6 @@ describe('MisionesPage - Interfaz y Validaciones', () => {
 
     const selectSesion = screen.getByLabelText(/Sesión en Curso:/i);
     fireEvent.change(selectSesion, { target: { value: '1-1' } });
-
-    const inputNumMision = screen.getByLabelText(/Número Misión:/i);
-    fireEvent.change(inputNumMision, { target: { value: '1' } });
 
     const inputDesc = screen.getByLabelText(/Descripción:/i);
     fireEvent.change(inputDesc, { target: { value: 'Misión con error' } });
