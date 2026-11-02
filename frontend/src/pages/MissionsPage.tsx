@@ -575,7 +575,7 @@ export function MissionsPage() {
                 onClick={() => void handleCompletar()}
                 disabled={!esCorrecto}
               >
-                Confirmar y Completar
+                Confirmar y Completar Misión
               </button>
             </div>
           </div>

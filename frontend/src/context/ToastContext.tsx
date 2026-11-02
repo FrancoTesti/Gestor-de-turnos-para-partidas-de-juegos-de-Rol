@@ -39,7 +39,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
       <aside className="toast-container" aria-live="polite" aria-label="Notificaciones del sistema">
         {toasts.map((toast) => (
-          <div key={toast.id} className={`toast-card toast-${toast.type}`} role="status">
+          <div key={toast.id} className={`toast-card toast-${toast.type}`}>
             <span className="toast-icon">
               {toast.type === 'success' && '✓'}
               {toast.type === 'error' && '✕'}
