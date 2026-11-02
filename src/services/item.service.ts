@@ -3,7 +3,8 @@ import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
 import { Personaje } from '../entities/Character.entity';
 import { Tienda } from '../entities/Shop.entity';
-import { ErrorValidacionObjeto, validarCompraObjeto } from '../validators/item.validator';
+import { ErrorValidacion as ErrorValidacionObjeto, validatePayload } from '../shared/validate';
+import { buyItemSchema } from '../schemas/item.schema';
 import { calculateValueByLevel } from './item.rules';
 import type {
   ActualizarObjetoDTO,
@@ -170,7 +171,7 @@ export class ObjetoService {
   }
 
   async buyItem(idObjeto: number, data: ComprarObjetoDTO): Promise<ResultadoCompraObjetoDTO> {
-    data = validarCompraObjeto(data);
+    data = validatePayload(buyItemSchema, data);
     return this.em.transactional(async (em) => {
       const objeto = await em.findOne(
         Objeto,

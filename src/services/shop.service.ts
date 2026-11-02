@@ -2,7 +2,7 @@ import { EntityManager } from '@mikro-orm/core';
 import { Clase } from '../entities/Class.entity';
 import { Partida } from '../entities/Match.entity';
 import { Tienda } from '../entities/Shop.entity';
-import { ErrorValidacionTienda } from '../validators/shop.validator';
+import { ErrorValidacion as ErrorValidacionTienda } from '../shared/validate';
 import type { ActualizarTiendaDTO, CrearTiendaDTO, TiendaPublicaDTO } from '../types/shop.dto';
 
 export class TiendaService {

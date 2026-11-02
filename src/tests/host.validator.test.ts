@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { HostValidationError, validateCreateHost } from '../validators/host.validator';
+import { ValidationError as HostValidationError, validatePayload } from '../shared/validate';
+import { createHostSchema } from '../schemas/host.schema';
+const validateCreateHost = (body: unknown) => validatePayload(createHostSchema, body);
 
 describe('host.validator', () => {
   it('completa con 0 los campos opcionales al crear', () => {

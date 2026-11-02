@@ -4,10 +4,8 @@ import {
   MatchService,
   PartidaService,
 } from '../services/match.service';
-import {
-  validateUpdateMatch,
-  validateCreateMatch,
-} from '../validators/match.validator';
+import { validatePayload } from '../shared/validate';
+import { createMatchSchema, updateMatchSchema } from '../schemas/match.schema';
 
 type IdParams = { id: string };
 
@@ -61,7 +59,7 @@ export class MatchController {
   // POST /api/partidas
   async createMatch(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateMatch(req.body);
+      const data = validatePayload(createMatchSchema, req.body);
       const nuevaPartida = await this.matchService.createMatch(data);
       res.status(201).json(nuevaPartida);
     } catch (error) {
@@ -78,7 +76,7 @@ export class MatchController {
     }
 
     try {
-      const data = validateUpdateMatch(req.body);
+      const data = validatePayload(updateMatchSchema, req.body);
       const actualizada = await this.matchService.updateMatch(id, data);
       if (!actualizada) {
         res.status(404).json({ message: 'Partida no encontrada' });

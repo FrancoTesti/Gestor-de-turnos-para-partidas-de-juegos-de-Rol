@@ -9,7 +9,7 @@ import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
 import { PersonajeSesion } from '../entities/CharacterSession.entity';
 import { PersonajeService, ErrorReferenciaNoEncontrada } from '../services/character.service';
-import { ErrorValidacionPersonaje } from '../validators/character.validator';
+import { ErrorValidacion as ErrorValidacionPersonaje } from '../shared/validate';
 import * as passwordSecurity from '../security/password';
 
 describe('PersonajeService', () => {

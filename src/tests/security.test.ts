@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import { hashPassword, verifyPassword } from '../security/password';
-import { validarCompraObjeto, validarActualizacionObjeto } from '../validators/item.validator';
+import { validatePayload } from '../shared/validate';
+import { buyItemSchema, updateItemSchema } from '../schemas/item.schema';
+const validarCompraObjeto = (body: unknown) => validatePayload(buyItemSchema, body);
+const validarActualizacionObjeto = (body: unknown) => validatePayload(updateItemSchema, body);
 import { rangoVenta } from '../services/sale.rules';
 import { inventorySchema, participationSchema, rewardSchema, saleSchema } from '../services/game.service';
 import { requireOwnedCharacterForCompra } from '../security/authorization';

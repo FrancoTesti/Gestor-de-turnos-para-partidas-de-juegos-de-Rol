@@ -1,10 +1,8 @@
 import { type Request, type Response } from 'express';
 import { handleControllerError } from '../shared/error-handler';
 import { ShopService, TiendaService } from '../services/shop.service';
-import {
-  validateUpdateShop,
-  validateCreateShop,
-} from '../validators/shop.validator';
+import { validatePayload } from '../shared/validate';
+import { createShopSchema, updateShopSchema } from '../schemas/shop.schema';
 
 type IdParams = {
   id: string;
@@ -57,7 +55,7 @@ export class ShopController {
 
   async createShop(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateShop(req.body);
+      const data = validatePayload(createShopSchema, req.body);
       const nuevaTienda = await this.shopService.createShop(data);
       res.status(201).json(nuevaTienda);
     } catch (error) {
@@ -73,7 +71,7 @@ export class ShopController {
     }
 
     try {
-      const data = validateUpdateShop(req.body);
+      const data = validatePayload(updateShopSchema, req.body);
       const tiendaActualizada = await this.shopService.updateShop(id, data);
       if (!tiendaActualizada) {
         res.status(404).json({ message: 'Tienda no encontrada' });

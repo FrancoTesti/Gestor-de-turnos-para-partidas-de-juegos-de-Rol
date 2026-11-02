@@ -4,10 +4,8 @@ import {
   PlayerService,
   JugadorService,
 } from '../services/player.service';
-import {
-  validateUpdatePlayer,
-  validateCreatePlayer,
-} from '../validators/player.validator';
+import { validatePayload } from '../shared/validate';
+import { createPlayerSchema, updatePlayerSchema } from '../schemas/player.schema';
 
 type IdParams = { id: string };
 
@@ -59,7 +57,7 @@ export class PlayerController {
   // POST /api/jugadores
   async createPlayer(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreatePlayer(req.body);
+      const data = validatePayload(createPlayerSchema, req.body);
       const nuevoJugador = await this.playerService.createPlayer(data);
       res.status(201).json(nuevoJugador);
     } catch (error) {
@@ -76,7 +74,7 @@ export class PlayerController {
     }
 
     try {
-      const data = validateUpdatePlayer(req.body);
+      const data = validatePayload(updatePlayerSchema, req.body);
       const actualizado = await this.playerService.updatePlayer(id, data);
       if (!actualizado) {
         res.status(404).json({ message: 'Jugador no encontrado' });

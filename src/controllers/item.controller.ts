@@ -4,11 +4,8 @@ import {
   ItemService,
   ObjetoService,
 } from '../services/item.service';
-import {
-  validateUpdateItem,
-  validateBuyItem,
-  validateCreateItem,
-} from '../validators/item.validator';
+import { validatePayload } from '../shared/validate';
+import { createItemSchema, updateItemSchema, buyItemSchema } from '../schemas/item.schema';
 
 type IdParams = {
   id: string;
@@ -59,7 +56,7 @@ export class ItemController {
 
   async createItem(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateItem(req.body);
+      const data = validatePayload(createItemSchema, req.body);
       const nuevoObjeto = await this.itemService.createItem(data);
       res.status(201).json(nuevoObjeto);
     } catch (error) {
@@ -75,7 +72,7 @@ export class ItemController {
     }
 
     try {
-      const data = validateUpdateItem(req.body);
+      const data = validatePayload(updateItemSchema, req.body);
       const objetoActualizado = await this.itemService.updateItem(id, data);
       if (!objetoActualizado) {
         res.status(404).json({ message: 'Objeto no encontrado' });
@@ -114,7 +111,7 @@ export class ItemController {
     }
 
     try {
-      const data = validateBuyItem(req.body);
+      const data = validatePayload(buyItemSchema, req.body);
       const resultado = await this.itemService.buyItem(id, data);
       res.json(resultado);
     } catch (error) {

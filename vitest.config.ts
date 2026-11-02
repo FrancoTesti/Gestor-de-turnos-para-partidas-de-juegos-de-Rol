@@ -20,7 +20,8 @@ export default defineConfig({
       include: [
         'src/services/**/*.ts',
         'src/controllers/**/*.ts',
-        'src/validators/**/*.ts',
+        'src/schemas/**/*.ts',
+        'src/shared/**/*.ts',
         'src/security/**/*.ts',
       ],
       exclude: ['src/**/*.test.ts'],

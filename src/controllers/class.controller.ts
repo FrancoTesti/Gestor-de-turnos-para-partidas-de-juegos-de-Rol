@@ -1,10 +1,8 @@
 import { type Request, type Response } from 'express';
 import { handleControllerError } from '../shared/error-handler';
 import { ClassService, ClaseService } from '../services/class.service';
-import {
-  validateUpdateClass,
-  validateCreateClass,
-} from '../validators/class.validator';
+import { validatePayload } from '../shared/validate';
+import { createClassSchema, updateClassSchema } from '../schemas/class.schema';
 
 type IdParams = {
   id: string;
@@ -55,7 +53,7 @@ export class ClassController {
 
   async createClass(req: Request, res: Response): Promise<void> {
     try {
-      const data = validateCreateClass(req.body);
+      const data = validatePayload(createClassSchema, req.body);
       const nuevaClase = await this.classService.createClass(data);
       res.status(201).json(nuevaClase);
     } catch (error) {
@@ -71,7 +69,7 @@ export class ClassController {
     }
 
     try {
-      const data = validateUpdateClass(req.body);
+      const data = validatePayload(updateClassSchema, req.body);
       const claseActualizada = await this.classService.updateClass(id, data);
       if (!claseActualizada) {
         res.status(404).json({ message: 'Clase no encontrada' });
