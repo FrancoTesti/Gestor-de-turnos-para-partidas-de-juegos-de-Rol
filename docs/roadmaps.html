@@ -204,7 +204,7 @@
     (desde el clic en React hasta la fila en PostgreSQL y de vuelta) y <b>un punto de la arquitectura</b>.
     Cada paso cita el archivo, la línea, la función y las librerías que intervienen.
   </p>
-  <p class="meta">Referencias <code>archivo:línea</code> tomadas del commit <code>8604cc1</code> de <code>main</code>. Las rutas son relativas a la raíz del repo; las de React empiezan con <code>frontend/src/</code>.</p>
+  <p class="meta">Referencias <code>archivo:línea</code> tomadas de <code>main</code> en el commit <code>14fe1e4</code> (ya con el refactor a <code>schemas/</code>, <code>shared/validate.ts</code>, <code>shared/error-handler.ts</code> y <code>ErrorRenderer</code> en el frontend). Las rutas son relativas a la raíz del repo; las de React empiezan con <code>frontend/src/</code>.</p>
 </header>
 
 <nav class="toc" aria-label="Índice">
@@ -213,7 +213,7 @@
   <a href="#franco" style="--c:var(--franco)"><small>Franco Testi</small><strong>Crear partida, misiones · Arquitectura: transacciones y bloqueos</strong></a>
   <a href="#alejandro" style="--c:var(--alejandro)"><small>Alejandro Ciesco</small><strong>Personajes y clases · Arquitectura: modelo de datos y ORM</strong></a>
   <a href="#renzo" style="--c:var(--renzo)"><small>Renzo Scollo</small><strong>Sesiones y karma · Arquitectura: frontend ↔ backend y CORS</strong></a>
-  <a href="#octavio" style="--c:var(--octavio)"><small>Octavio Gudiño</small><strong>Compra y venta · Arquitectura: validators, DTOs y errores</strong></a>
+  <a href="#octavio" style="--c:var(--octavio)"><small>Octavio Gudiño</small><strong>Compra y venta · Arquitectura: schemas, validación, DTOs y errores</strong></a>
   <a href="#errores"><small>Para todos</small><strong>Mapa de respuestas HTTP</strong></a>
 </nav>
 
@@ -229,7 +229,7 @@
       <tr><td><b>express</b></td><td>^5.2.1</td><td>Servidor HTTP, routers y middlewares.</td><td><code>src/app.ts</code>, <code>src/routes/*</code></td></tr>
       <tr><td><b>@mikro-orm/core</b> + <b>@mikro-orm/postgresql</b></td><td>^6.6.16</td><td>ORM: entidades con decoradores, <code>EntityManager</code>, Unit of Work, transacciones y bloqueos.</td><td><code>src/entities/*</code>, <code>src/services/*</code>, <code>src/mikro-orm.config.ts</code></td></tr>
       <tr><td><b>pg</b></td><td>^8.23.1</td><td>Driver de PostgreSQL que usa MikroORM por debajo.</td><td>(indirecto)</td></tr>
-      <tr><td><b>zod</b></td><td>^4.4.3</td><td>Validación en tiempo de ejecución de lo que llega por HTTP.</td><td><code>src/validators/*</code>, <code>src/schemas/*</code>, <code>src/services/game.service.ts</code></td></tr>
+      <tr><td><b>zod</b></td><td>^4.4.3</td><td>Validación en tiempo de ejecución de lo que llega por HTTP.</td><td><code>src/schemas/*</code>, <code>src/shared/validate.ts</code>, <code>src/services/game.service.ts</code></td></tr>
       <tr><td><b>reflect-metadata</b></td><td>^0.2.2</td><td>Metadatos que necesitan los decoradores de MikroORM (<code>import 'reflect-metadata'</code> en <code>app.ts:3</code>).</td><td><code>src/app.ts</code></td></tr>
       <tr><td><b>dotenv</b></td><td>^17.4.2</td><td>Carga <code>.env</code> (<code>SUPABASE_DB_URL</code>, <code>CORS_ORIGIN</code>, <code>PORT</code>…).</td><td><code>src/app.ts:4</code>, <code>mikro-orm.config.ts:1</code></td></tr>
       <tr><td><b>node:crypto</b> (nativo)</td><td>Node</td><td><code>scrypt</code>, <code>randomBytes</code>, <code>createHash</code>, <code>timingSafeEqual</code>. No se usa bcrypt ni jsonwebtoken.</td><td><code>src/security/*</code></td></tr>
@@ -262,11 +262,12 @@
   entities/            12 clases con decoradores de MikroORM (una por tabla)
   routes/              un router por recurso: URL → middleware de permiso → controlador
   controllers/         lee req, llama al validador y al servicio, elige el código HTTP
-  validators/ schemas/ Zod (y uno manual) para validar el body
+  schemas/             esquemas de Zod, un archivo por recurso (match.schema.ts, item.schema.ts…)
   services/            reglas de negocio, transacciones y bloqueos
   types/               DTOs: Crear…DTO, Actualizar…DTO, …PublicoDTO
   security/            auth.ts (sesión), password.ts (scrypt), authorization.ts (permisos)
-  shared/validate.ts   middleware genérico que valida con un esquema de Zod
+  shared/validate.ts   validatePayload() y el middleware validate(): ejecutan los esquemas
+  shared/error-handler.ts  registro «tipo de error → código HTTP» (handleControllerError)
   tests/ integration/  vitest (unitarios) y node:test (integración contra la BD)
 frontend/src/
   main.tsx → App.tsx   monta Providers y rutas
@@ -285,8 +286,8 @@ e2e/                   Playwright</code></pre>
       <tr><td>Cliente HTTP</td><td><code>services/api.ts</code> + <code>services/*.service.ts</code></td><td>Un único <code>fetch</code>: arma el JSON, traduce errores y avisa si la sesión expiró.</td></tr>
       <tr><td>Servidor</td><td><code>src/app.ts</code></td><td>CORS, límite de 64 KB, defensa CSRF, un <code>EntityManager</code> por request, rutas y errores.</td></tr>
       <tr><td>Ruta + permiso</td><td><code>routes/</code> + <code>security/authorization.ts</code></td><td>Qué URL atiende qué controlador y quién puede.</td></tr>
-      <tr><td>Controlador</td><td><code>controllers/</code></td><td>Traduce HTTP ↔ llamadas al servicio. No tiene reglas de negocio.</td></tr>
-      <tr><td>Validador</td><td><code>validators/</code>, <code>schemas/</code></td><td>Tipos, rangos y rechazo de campos de más.</td></tr>
+      <tr><td>Controlador</td><td><code>controllers/</code></td><td>Traduce HTTP ↔ llamadas al servicio y delega los errores en <code>handleControllerError</code>. No tiene reglas de negocio.</td></tr>
+      <tr><td>Esquemas y validación</td><td><code>schemas/</code>, <code>shared/validate.ts</code></td><td>Zod: tipos, rangos y reglas. <code>validatePayload</code> ejecuta el esquema y lanza <code>ValidationError</code>.</td></tr>
       <tr><td>Servicio</td><td><code>services/</code></td><td>Reglas de negocio, transacciones y bloqueos.</td></tr>
       <tr><td>Entidad (ORM)</td><td><code>entities/</code></td><td>Mapeo clase ↔ tabla.</td></tr>
     </tbody>
@@ -304,7 +305,7 @@ e2e/                   Playwright</code></pre>
     <div>Middleware de permiso del router <span class="meta">authorization.ts</span></div>
     <div>Controlador → validador → servicio <span class="meta">controllers/ services/</span></div>
     <div><code>em.flush()</code> → SQL → DTO en JSON</div>
-    <div>Si algo lanza: <code>handleErrors</code> <span class="meta">app.ts:176</span></div>
+    <div>Si algo lanza: <code>handleControllerError</code> en controladores, <code>handleErrors</code> en el resto <span class="meta">error-handler.ts:75 · app.ts:176</span></div>
   </div>
   <p>Los routers se montan en <code>app.ts:93-103</code>. Todos pasan por <code>auth.requireAuth</code> salvo <code>/api/auth</code> (línea 94), que contiene el registro y el login. Si no existe la ruta, <code>app.ts:124</code> responde 404 en JSON. El middleware de errores es el último: <code>app.use(handleErrors)</code> (línea 128).</p>
 
@@ -424,7 +425,7 @@ import ThemeToggle from '../components/ui/ThemeToggle';</code></pre>
   </div>
   <ol class="road">
     <li><span class="layer">Frontend · arranque</span><h4>Montaje de los Providers</h4>
-      <p class="file"><code>main.tsx:6-10</code> hace <code>createRoot(…).render(&lt;StrictMode&gt;&lt;App/&gt;&lt;/StrictMode&gt;)</code>. <code>App.tsx:23-25</code> anida <code>&lt;ThemeProvider&gt;</code> → <code>&lt;UserProvider&gt;</code> → <code>&lt;BrowserRouter&gt;</code>, así cualquier pantalla puede llamar a <code>useUser()</code> (<code>UserContext.tsx:87</code>).</p></li>
+      <p class="file"><code>main.tsx:6-10</code> hace <code>createRoot(…).render(&lt;StrictMode&gt;&lt;App/&gt;&lt;/StrictMode&gt;)</code>. <code>App.tsx:24-27</code> anida <code>&lt;ThemeProvider&gt;</code> → <code>&lt;UserProvider&gt;</code> → <code>&lt;ToastProvider&gt;</code> → <code>&lt;BrowserRouter&gt;</code>, así cualquier pantalla puede llamar a <code>useUser()</code> (<code>UserContext.tsx:87</code>).</p></li>
     <li><span class="layer">Frontend · efecto</span><h4>Al montar, preguntar «¿quién soy?»</h4>
       <p class="file"><code>UserContext.tsx:45</code>: <code>api&lt;Session&gt;('/auth/me').then(…)</code> dentro de un <code>useEffect</code> con bandera <code>active</code> para no actualizar estado si el componente se desmontó. Mientras tanto <code>cargandoSesion</code> vale <code>true</code>. Si responde 401 no muestra error (es lo esperado sin sesión); cualquier otro error sí.</p></li>
     <li><span class="layer">Servidor · middleware</span><h4><code>requireAuth</code></h4>
@@ -440,7 +441,7 @@ next();</code></pre></figure>
     <li><span class="layer">Servidor · ruta</span><h4><code>GET /api/auth/me</code></h4>
       <p class="file"><code>auth.ts:92-95</code> responde <code>{ usuario: publicUser(u), roles: req.identity }</code>. El frontend lo guarda con <code>setSession</code> y vuelve a llamar a <code>recargar()</code>.</p></li>
     <li><span class="layer">Frontend · guardia</span><h4>Rutas privadas</h4>
-      <p class="file"><code>MainLayout.tsx:79-80</code>: <code>if (cargandoSesion) return …Recuperando sesión…</code> y <code>if (!usuarioLogueado) return &lt;Navigate to="/login" replace /&gt;</code>. <code>MainLayout</code> es una <i>layout route</i> (<code>App.tsx:30</code>) que envuelve todas las páginas privadas y dibuja la pantalla hija en <code>&lt;Outlet /&gt;</code> (línea 197).</p></li>
+      <p class="file"><code>MainLayout.tsx:79-80</code>: <code>if (cargandoSesion) return …Recuperando sesión…</code> y <code>if (!usuarioLogueado) return &lt;Navigate to="/login" replace /&gt;</code>. <code>MainLayout</code> es una <i>layout route</i> (<code>App.tsx:32</code>) que envuelve todas las páginas privadas y dibuja la pantalla hija en <code>&lt;Outlet /&gt;</code> (línea 197).</p></li>
     <li><span class="layer">Frontend · expiración</span><h4>401 en cualquier pantalla</h4>
       <p class="file"><code>api.ts:66-67</code>: si una respuesta es 401 (y no es login ni registro) hace <code>window.dispatchEvent(new Event(SESSION_EXPIRED_EVENT))</code>. <code>UserContext.tsx:32</code> escucha ese evento y ejecuta <code>clearSession()</code>; <code>MainLayout</code> vuelve a renderizar y redirige a <code>/login</code>. Se usa un evento del <code>window</code> porque <code>api.ts</code> es una función común y no puede usar hooks.</p></li>
     <li><span class="layer">Cierre</span><h4>Logout</h4>
@@ -483,7 +484,7 @@ export async function verifyPassword(password: string, encoded: string): Promise
     <li><b>Formato autodescriptivo</b> <code>s$&lt;sal&gt;$&lt;hash&gt;</code>: 2 + 32 + 1 + 64 = 99 caracteres, para entrar en la columna <code>contrasena</code> de 100 (<code>User.entity.ts:13</code>).</li>
     <li><b><code>timingSafeEqual</code></b> (línea 20) compara byte a byte sin cortar en la primera diferencia, para que el tiempo de respuesta no filtre información.</li>
     <li><b><code>promisify(scrypt)</code></b> convierte la versión con <i>callback</i> en una que devuelve una promesa, y la derivación corre en el <i>thread pool</i> de libuv sin bloquear el event loop.</li>
-    <li>Las contraseñas de las <b>partidas privadas</b> usan la misma función (<code>match.service.ts:74</code>) y se verifican con <code>verifyPassword</code> (<code>character.service.ts:75</code>). El repo incluye además el script <code>npm run passwords:migrate</code> (<code>src/scripts/migrate-passwords.ts</code>), relacionado con la migración de contraseñas al formato hasheado.</li>
+    <li>Las contraseñas de las <b>partidas privadas</b> usan la misma función (<code>match.service.ts:79</code>) y se verifican con <code>verifyPassword</code> (<code>character.service.ts:75</code>). El repo incluye además el script <code>npm run passwords:migrate</code> (<code>src/scripts/migrate-passwords.ts</code>), relacionado con la migración de contraseñas al formato hasheado.</li>
   </ul>
 
   <h4>2. Política de la cookie de sesión (<code>auth.ts:23</code>)</h4>
@@ -509,17 +510,18 @@ const cookie = { httpOnly: true, sameSite: 'strict' as const,
   <div class="tbl"><table>
     <thead><tr><th>Middleware</th><th>Línea</th><th>Regla</th><th>Usado en</th></tr></thead>
     <tbody>
-      <tr><td><code>requireAnfitrion</code></td><td>29</td><td>Solo anfitriones (catálogo).</td><td>clases, objetos, tiendas</td></tr>
-      <tr><td><code>requireOwnUser</code></td><td>34</td><td>Solo tu propia cuenta.</td><td><code>user.routes.ts</code> (PUT/DELETE)</td></tr>
-      <tr><td><code>requireOwnJugadorForPersonaje</code></td><td>62</td><td>Crear personajes solo para vos; <b>pisa</b> dinero/xp/nivel.</td><td><code>character.routes.ts:15</code></td></tr>
-      <tr><td><code>requireOwnedCharacterMiddleware</code></td><td>70</td><td>El personaje es tuyo; al editar solo nombre, raza y clase.</td><td><code>character.routes.ts:16</code></td></tr>
-      <tr><td><code>requireAnfitrionForPartida</code></td><td>91</td><td>Crear partidas como tu propio anfitrión.</td><td><code>match.routes.ts:16</code></td></tr>
-      <tr><td><code>requireHostedGameMiddleware</code></td><td>83</td><td>Solo el anfitrión de esa partida la modifica.</td><td><code>match.routes.ts:17-18</code></td></tr>
-      <tr><td><code>protectObjetoModifications</code></td><td>98</td><td>Un objeto en un inventario no se edita por el CRUD.</td><td><code>item.routes.ts:18</code></td></tr>
-      <tr><td><code>requireOwnedCharacterForCompra</code></td><td>107</td><td>Anfitriones no compran; el personaje debe ser tuyo.</td><td><code>item.routes.ts:14</code></td></tr>
+      <tr><td><code>requireAnfitrion</code></td><td>30</td><td>Solo anfitriones (catálogo).</td><td>clases, objetos, tiendas</td></tr>
+      <tr><td><code>requireOwnUser</code></td><td>35</td><td>Solo tu propia cuenta.</td><td><code>user.routes.ts</code> (PUT/DELETE)</td></tr>
+      <tr><td><code>requireOwnJugadorForPersonaje</code></td><td>63</td><td>Crear personajes solo para vos; <b>pisa</b> dinero/xp/nivel.</td><td><code>character.routes.ts:15</code></td></tr>
+      <tr><td><code>requireOwnedCharacterMiddleware</code></td><td>71</td><td>El personaje es tuyo; al editar solo nombre, raza y clase.</td><td><code>character.routes.ts:16</code></td></tr>
+      <tr><td><code>requireAnfitrionForPartida</code></td><td>92</td><td>Crear partidas como tu propio anfitrión.</td><td><code>match.routes.ts:16</code></td></tr>
+      <tr><td><code>requireHostedGameMiddleware</code></td><td>84</td><td>Solo el anfitrión de esa partida la modifica.</td><td><code>match.routes.ts:17-18</code></td></tr>
+      <tr><td><code>requireHostedShopMiddleware</code></td><td>99</td><td>Solo anfitriones; si la tienda pertenece a una partida, debe ser del anfitrión de esa partida.</td><td><code>shop.routes.ts:14-16</code></td></tr>
+      <tr><td><code>protectObjetoModifications</code></td><td>121</td><td>Un objeto en un inventario no se edita por el CRUD.</td><td><code>item.routes.ts:18</code></td></tr>
+      <tr><td><code>requireOwnedCharacterForCompra</code></td><td>130</td><td>Anfitriones no compran; el personaje debe ser tuyo.</td><td><code>item.routes.ts:14</code></td></tr>
     </tbody>
   </table></div>
-  <p>Los helpers <code>ownedCharacter</code> (línea 16) y <code>hostedGame</code> (línea 22) se reutilizan dentro de los servicios transaccionales. El tipo <code>HttpError(status, message)</code> (línea 8) permite lanzar un error con código HTTP desde cualquier capa, y <code>handleErrors</code> lo traduce (<code>app.ts:177</code>).</p>
+  <p>Los helpers <code>ownedCharacter</code> (línea 17) y <code>hostedGame</code> (línea 23) se reutilizan dentro de los servicios transaccionales. El tipo <code>HttpError(status, message)</code> (línea 9) permite lanzar un error con código HTTP desde cualquier capa, y <code>handleErrors</code> lo traduce (<code>app.ts:177</code>).</p>
 
   <div class="say"><b class="t">Preguntas probables y cómo responderlas</b>
     <div class="qa">
@@ -543,18 +545,24 @@ const cookie = { httpOnly: true, sameSite: 'strict' as const,
     <span class="st"><code>estado = false</code></span>
   </div>
   <div class="imports"><b>Imports y librerías de este caso</b>
-<pre><code>// src/services/match.service.ts:1-9
+<pre><code>// src/services/match.service.ts (imports)
 import { EntityManager, LockMode } from '@mikro-orm/core';
 import { Sesion } from '../entities/Session.entity';
 import { Partida } from '../entities/Match.entity';
 import { Anfitrion } from '../entities/Host.entity';
 import { Personaje } from '../entities/Character.entity';
-import { ErrorValidacionPartida } from '../validators/match.validator';
+import { ErrorValidacion as ErrorValidacionPartida } from '../shared/validate';
 import { hashPassword } from '../security/password';
 import type { ActualizarPartidaDTO, CrearPartidaDTO, EstadoPartida, PartidaPublicaDTO } from '../types/match.dto';
 
-// src/validators/match.validator.ts:1
+// src/schemas/match.schema.ts:1
 import { z } from 'zod';
+
+// src/controllers/match.controller.ts:1-8
+import { type Request, type Response } from 'express';
+import { handleControllerError } from '../shared/error-handler';
+import { validatePayload } from '../shared/validate';
+import { createMatchSchema, updateMatchSchema } from '../schemas/match.schema';
 
 // src/routes/match.routes.ts:1-5
 import { EntityManager } from '@mikro-orm/core';
@@ -565,22 +573,29 @@ import { requireAnfitrionForPartida, requireHostedGameMiddleware } from '../secu
   </div>
   <ol class="road">
     <li><span class="layer">Frontend</span><h4>Formulario genérico <code>ModulePage</code></h4>
-      <p class="file"><code>App.tsx:42</code> monta <code>&lt;ModulePage key="partidas" resource="partidas" /&gt;</code>. La pantalla se arma con un objeto de configuración (<code>ModulePage.tsx:15-16</code>): para <code>partidas</code> declara los campos <code>nombre</code>, <code>estado</code>, <code>limiteJugadores</code>, <code>esPrivada</code> y <code>contrasena</code>, cada uno creado con el helper <code>field()</code> (línea 14). <code>save()</code> (líneas 110-121) convierte tipos con <code>Number()</code>, agrega <code>data.idUsuarioAnfitrion = userId</code> (línea 118), borra la contraseña si la partida es pública (línea 119) y hace <code>api(…, selected ? 'PUT' : 'POST', data)</code> (línea 120). Todo pasa por <code>perform()</code> (línea 86), que maneja <code>busy</code>, errores y recarga con <code>setRevision</code>.</p></li>
+      <p class="file"><code>App.tsx:44</code> monta <code>&lt;ModulePage key="partidas" resource="partidas" /&gt;</code>. La pantalla se arma con un objeto de configuración (<code>ModulePage.tsx:16-17</code>): para <code>partidas</code> declara los campos <code>nombre</code>, <code>estado</code>, <code>limiteJugadores</code>, <code>esPrivada</code> y <code>contrasena</code>, cada uno creado con el helper <code>field()</code> (línea 15). <code>save()</code> (desde la línea 126) convierte tipos con <code>Number()</code>, agrega <code>data.idUsuarioAnfitrion = userId</code> (línea 139), borra la contraseña si la partida es pública y hace <code>api(…, selected ? 'PUT' : 'POST', data)</code>. Todo pasa por <code>perform()</code> (línea 98), que maneja <code>busy</code>, errores y recarga con <code>setRevision</code>.</p></li>
     <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/partidas</code></h4>
-      <p class="file"><code>match.routes.ts:16</code>: <code>router.post('/', requireAnfitrionForPartida, …)</code>. El middleware (<code>authorization.ts:91-95</code>) exige ser anfitrión <b>y</b> que <code>req.body.idUsuarioAnfitrion</code> sea tu id. Así nadie crea partidas a nombre de otro aunque manipule el body.</p></li>
+      <p class="file"><code>match.routes.ts:16</code>: <code>router.post('/', requireAnfitrionForPartida, …)</code>. El middleware (<code>authorization.ts:92-96</code>) exige ser anfitrión <b>y</b> que <code>req.body.idUsuarioAnfitrion</code> sea tu id. Así nadie crea partidas a nombre de otro aunque manipule el body.</p></li>
     <li><span class="layer">Controlador</span><h4><code>MatchController.createMatch</code></h4>
-      <p class="file"><code>match.controller.ts:92-100</code>: <code>const data = validateCreateMatch(req.body)</code> → <code>matchService.createMatch(data)</code> → <code>res.status(201).json(…)</code>. El <code>catch</code> delega en <code>respondError</code> (línea 20), que transforma <code>persistenceError</code> en 409, <code>MatchValidationError</code> en 400 y <code>HostNotFoundError</code> en 404; el resto es 500.</p></li>
-    <li><span class="layer">Validador</span><h4>Zod con reglas cruzadas</h4>
-<figure class="src"><figcaption>src/validators/match.validator.ts:4-5</figcaption>
-<pre><code>const fields = z.object({ nombre: z.string().trim().min(1).max(100), estado: z.enum(['activa','finalizada']),
+      <p class="file"><code>match.controller.ts:60-68</code>: <code>const data = validatePayload(createMatchSchema, req.body)</code> (línea 62) → <code>matchService.createMatch(data)</code> → <code>res.status(201).json(…)</code>. El <code>catch</code> llama a <code>handleControllerError(error, res, 'Error al crear la partida')</code> (línea 66, definida en <code>shared/error-handler.ts:75</code>), que busca el tipo del error en un registro: <code>ValidationError</code> → 400, <code>HostNotFoundError</code> → 404, violaciones de clave única o foránea → 409; lo que no esté registrado es 500. El controlador no tiene ningún <code>if (error instanceof …)</code>.</p></li>
+    <li><span class="layer">Esquema</span><h4>Zod con reglas cruzadas</h4>
+<figure class="src"><figcaption>src/schemas/match.schema.ts:3-21</figcaption>
+<pre><code>const matchFieldsSchema = z.object({
+  nombre: z.string().trim().min(1).max(100), estado: z.enum(['activa', 'finalizada']),
   limiteJugadores: z.number().int().positive().max(1000), esPrivada: z.boolean(),
-  contrasena: z.string().min(1).max(100).optional() }).strict();
-const create = fields.extend({ idUsuarioAnfitrion: z.number().int().positive().max(2147483647) })
-  .refine(d =&gt; !d.esPrivada || !!d.contrasena, 'Las partidas privadas requieren contraseña')
-  .refine(d =&gt; d.esPrivada || !d.contrasena, 'Una partida pública no debe tener contraseña');</code></pre></figure>
-      <p class="file"><code>.extend</code> agrega un campo, <code>.refine</code> escribe reglas que miran varios campos a la vez y <code>.strict()</code> prohíbe campos extra. La función <code>parse</code> (línea 6) usa <code>safeParse</code> y convierte el resultado en <code>ErrorValidacionPartida</code>.</p></li>
+  contrasena: z.string().min(1).max(100).optional(),
+}).strict();
+
+export const createMatchSchema = matchFieldsSchema
+  .extend({ idUsuarioAnfitrion: z.number().int().positive().max(2147483647) })
+  .refine((d) =&gt; !d.esPrivada || !!d.contrasena, 'Las partidas privadas requieren contraseña')
+  .refine((d) =&gt; d.esPrivada || !d.contrasena, 'Una partida pública no debe tener contraseña');
+
+export const updateMatchSchema = matchFieldsSchema.partial().strict()
+  .refine((d) =&gt; Object.keys(d).length &gt; 0, 'Enviá al menos un campo');</code></pre></figure>
+      <p class="file"><code>.extend</code> agrega un campo, <code>.refine</code> escribe reglas que miran varios campos a la vez, <code>.strict()</code> prohíbe campos extra y <code>.partial()</code> deriva el esquema del <code>PUT</code> del mismo objeto base. El esquema solo <i>describe</i> las reglas; quien lo <i>ejecuta</i> es <code>validatePayload(schema, data)</code> (<code>shared/validate.ts:17-29</code>): exige que el body sea un objeto, corre <code>safeParse</code>, une los errores como <code>campo: mensaje; …</code> y lanza <code>ValidationError</code> (clase de las líneas 4-9).</p></li>
     <li><span class="layer">Servicio</span><h4><code>createMatch</code>: del DTO a la entidad</h4>
-<figure class="src"><figcaption>src/services/match.service.ts:56-80</figcaption>
+<figure class="src"><figcaption>src/services/match.service.ts:61-85</figcaption>
 <pre><code>const anfitrion = await this.em.findOne(Anfitrion, data.idUsuarioAnfitrion as any, { populate: ['usuario'] });
 if (!anfitrion) throw new AnfitrionNoEncontradoError(data.idUsuarioAnfitrion);
 const partida = this.em.create(Partida, {
@@ -594,9 +609,9 @@ await this.em.flush();
 return this.toPublicMatch(partida);</code></pre></figure>
       <p class="file">El DTO usa <code>estado: 'activa' | 'finalizada'</code> (<code>match.dto.ts</code>) y la entidad un <code>boolean</code> (<code>Match.entity.ts:14</code>). <code>em.create</code> arma la entidad en memoria y <code>em.flush()</code> ejecuta el <code>INSERT</code>. <code>populate: ['usuario']</code> carga la relación para poder devolver el nickname del anfitrión.</p></li>
     <li><span class="layer">Respuesta</span><h4>DTO público</h4>
-      <p class="file"><code>toPublicMatch</code> (línea 126) calcula <code>esPrivada: p.contrasena !== ''</code> (línea 134) y agrega <code>nicknameAnfitrion</code>. La contraseña (ni siquiera su hash) sale del servidor.</p></li>
+      <p class="file"><code>toPublicMatch</code> (línea 177) calcula <code>esPrivada: p.contrasena !== ''</code> (línea 185) y agrega <code>nicknameAnfitrion</code>. La contraseña (ni siquiera su hash) sale del servidor.</p></li>
     <li><span class="layer">Editar / finalizar</span><h4><code>PUT /api/partidas/:id</code></h4>
-      <p class="file"><code>match.routes.ts:17</code> usa <code>requireHostedGameMiddleware</code> (<code>authorization.ts:83</code>, que llama a <code>hostedGame</code>). <code>updateMatch</code> (línea 83) abre una transacción y crea <code>new PartidaService(tx)</code>; <code>updateInTransaction</code> (línea 87) trae la partida con <code>lockMode: LockMode.PESSIMISTIC_WRITE</code> (línea 91). Reglas, en las líneas 94-104: no se finaliza con una sesión en curso (<code>count(Sesion, { partida, estadoSesion: 1 })</code>), pasar a privada exige contraseña, y el nuevo <code>limiteJugadores</code> no puede quedar por debajo de los personajes ya inscriptos.</p></li>
+      <p class="file"><code>match.routes.ts:17</code> usa <code>requireHostedGameMiddleware</code> (<code>authorization.ts:84</code>, que llama a <code>hostedGame</code>). <code>updateMatch</code> (línea 89) abre una transacción y crea <code>new PartidaService(tx)</code>; <code>updateInTransaction</code> (línea 93) trae la partida con <code>lockMode: LockMode.PESSIMISTIC_WRITE</code> (línea 97). Reglas, en las líneas 100-110: no se finaliza con una sesión en curso (<code>count(Sesion, { partida, estadoSesion: 1 })</code>), pasar a privada exige contraseña, y el nuevo <code>limiteJugadores</code> no puede quedar por debajo de los personajes ya inscriptos.</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -630,25 +645,26 @@ import { getMissions, createMission, updateMission, deleteMission, completeMissi
   </div>
   <ol class="road">
     <li><span class="layer">Frontend</span><h4>Crear la misión</h4>
-      <p class="file"><code>MissionsPage.tsx:101</code> <code>handleCrearOActualizar</code> valida en cliente (sesión elegida, número entero entre 1 y 2.147.483.647, descripción no vacía, dinero y XP ≥ 0) y llama a <code>createMission({…})</code> (línea 168) o <code>updateMission(…)</code> (línea 156) según <code>editando</code>. Los errores del servidor se traducen con <code>formatMissionError</code> (línea 18). Los wrappers están en <code>services/mission.service.ts:10-18</code>.</p></li>
+      <p class="file"><code>MissionsPage.tsx:102</code> <code>handleCrearOActualizar</code> valida en cliente (sesión elegida, número entero entre 1 y 2.147.483.647, descripción no vacía, dinero y XP ≥ 0) y llama a <code>createMission({…})</code> (línea 162) o <code>updateMission(…)</code> (línea 150) según <code>editando</code>. Los errores del servidor se traducen con <code>formatMissionError</code> (línea 18). Los wrappers están en <code>services/mission.service.ts:10-18</code>.</p></li>
     <li><span class="layer">Ruta</span><h4><code>POST /api/misiones</code></h4>
       <p class="file"><code>game.routes.ts:36</code> → <code>service.saveMission(req.identity!.idUsuario, req.body)</code>. En el <code>PUT</code> (línea 37) el router mezcla el body con los parámetros de la URL: <code>{ ...req.body, idPartida: routeId(req.params.game), … }</code>, así el cliente no puede cambiar la clave de la misión desde el body.</p></li>
     <li><span class="layer">Servicio · validación</span><h4><code>missionSchema</code></h4>
-      <p class="file"><code>game.service.ts:16-21</code>: Zod con <code>idSchema</code> (entero positivo ≤ 2.147.483.647, definido en <code>authorization.ts:11</code>), descripción de 1 a 5000 caracteres, y <code>asistenciaGrupoGrande: amount.default(0)</code>. Aquí el validador vive en el propio servicio y <code>saveMission</code> hace <code>missionSchema.parse(body)</code> (línea 98).</p></li>
-    <li><span class="layer">Servicio · reglas</span><h4><code>saveMission</code> (líneas 97-111)</h4>
+      <p class="file"><code>game.service.ts:16-21</code>: Zod con <code>idSchema</code> (entero positivo ≤ 2.147.483.647, definido en <code>authorization.ts:12</code>), descripción de 1 a 5000 caracteres, y <code>asistenciaGrupoGrande: amount.default(0)</code>. <code>numMision</code> es ahora <code>idSchema.optional()</code> (línea 17): si no se envía, el servicio asigna el siguiente número. Este esquema vive en el propio servicio y <code>saveMission</code> hace <code>missionSchema.parse(body)</code> (línea 119).</p></li>
+    <li><span class="layer">Servicio · reglas</span><h4><code>saveMission</code> (líneas 118-137)</h4>
       <ul>
         <li><code>hostedGame(tx, data.idPartida, user)</code>: solo el anfitrión de esa partida.</li>
-        <li><code>this.session(...)</code> (línea 53) bloquea la sesión y carga <code>partida.anfitrion.usuario</code>.</li>
+        <li>Si <code>numMision</code> no vino, se calcula como el máximo existente + 1 (<code>reduce</code> con <code>Math.max</code>, líneas 124-129); en un <code>PUT</code> es obligatorio y falla con 400 «ID inválido».</li>
+        <li><code>this.session(...)</code> (línea 74) bloquea la sesión y carga <code>partida.anfitrion.usuario</code>.</li>
         <li><code>conflict(sesion.estadoSesion === 2, 'La sesión está finalizada')</code>.</li>
         <li><code>conflict(!update &amp;&amp; !!m, 'Ese número de misión ya existe')</code> y <code>conflict(m?.estado === true, 'Una misión completada no se puede modificar')</code>.</li>
         <li><code>tx.create(Mision, {…, estado: false, dineroOtorgadoAJugadores: 0, xpOtorgadoJugadores: 0})</code> y <code>Object.assign(m, fields)</code>.</li>
       </ul></li>
     <li><span class="layer">Frontend</span><h4>Elegir la misión y repartir</h4>
-      <p class="file"><code>handleSeleccionar</code> (línea 220) pide <code>getSession()</code> para obtener los <b>participantes</b> y arma <code>recompensas</code> con <code>{ idPersonaje, dinero: 0, xp: 0 }</code> por cada uno. <code>handleChangeRecompensa</code> (línea 231) edita un valor inmutablemente con <code>prev.map(…)</code>. Se calcula <code>sumaDinero</code>/<code>sumaXp</code> con <code>reduce</code> (líneas 270-271) y <code>esCorrecto</code> (línea 272) habilita el botón solo si coinciden con <code>dineroTotal</code> y <code>xpTotal</code>.</p></li>
+      <p class="file"><code>handleSeleccionar</code> (línea 213) pide <code>getSession()</code> para obtener los <b>participantes</b> y arma <code>recompensas</code> con <code>{ idPersonaje, dinero: 0, xp: 0 }</code> por cada uno. <code>handleChangeRecompensa</code> (línea 224) edita un valor inmutablemente con <code>prev.map(…)</code>. Se calcula <code>sumaDinero</code>/<code>sumaXp</code> con <code>reduce</code> (líneas 269-270) y <code>esCorrecto</code> (línea 271) habilita el botón solo si coinciden con <code>dineroTotal</code> y <code>xpTotal</code>.</p></li>
     <li><span class="layer">Frontend → Ruta</span><h4>Completar</h4>
-      <p class="file"><code>handleCompletar</code> (línea 235) → <code>completeMission(game, session, mission, recompensas)</code> (<code>mission.service.ts:14</code>) → <code>POST /misiones/:game/:number/:mission/completar</code> con body <code>{ recompensas }</code> → <code>game.routes.ts:39</code> → <code>service.completeMission</code>.</p></li>
-    <li><span class="layer">Servicio · transacción</span><h4><code>completeMission</code> (líneas 113-135)</h4>
-<figure class="src"><figcaption>src/services/game.service.ts:118-133 (resumen)</figcaption>
+      <p class="file"><code>handleCompletar</code> (línea 228) → <code>completeMission(game, session, mission, recompensas)</code> (<code>mission.service.ts:14</code>) → <code>POST /misiones/:game/:number/:mission/completar</code> con body <code>{ recompensas }</code> → <code>game.routes.ts:39</code> → <code>service.completeMission</code>.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>completeMission</code> (líneas 140-164)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:145-163 (resumen)</figcaption>
 <pre><code>const m = await tx.findOne(Mision, { sesion, numMision: mission }, lock);          // FOR UPDATE
 conflict(sesion.estadoSesion !== 1 || m.estado, 'La sesión debe estar en curso y la misión pendiente');
 const attendees = await tx.find(PersonajeSesion, { sesion });
@@ -657,14 +673,16 @@ conflict(data.recompensas.some(r =&gt; !ids.has(r.idPersonaje)), 'Solo los parti
 const money = data.recompensas.reduce((n, r) =&gt; n + r.dinero, 0);
 const xp    = data.recompensas.reduce((n, r) =&gt; n + r.xp, 0);
 conflict(money !== m.dineroTotal || xp !== m.xpTotal, 'El reparto debe coincidir exactamente…');
-for (const reward of [...data.recompensas].sort((a, b) =&gt; a.idPersonaje - b.idPersonaje)) {
+const sortedRewards = [...data.recompensas].sort((a, b) =&gt; a.idPersonaje - b.idPersonaje);
+for (const reward of sortedRewards) {
   const p = await tx.findOneOrFail(Personaje, { idPersonaje: reward.idPersonaje }, lock);
   conflict(p.dinero + reward.dinero &gt; 2147483647 || p.xp + reward.xp &gt; 2147483647, '…límite de almacenamiento');
   p.dinero += reward.dinero; p.xp += reward.xp;
 }
+m.descripcion = `${cleanDesc}\n&lt;!--RECOMPENSAS:${JSON.stringify(sortedRewards)}--&gt;`;   // guarda el reparto
 m.estado = true; m.dineroOtorgadoAJugadores = money; m.xpOtorgadoJugadores = xp;
 await tx.flush();</code></pre></figure>
-      <p class="file">Puntos para remarcar: (a) el esquema <code>rewardSchema</code> (línea 23) ya rechaza personajes repetidos con <code>.refine(… new Set(…).size === …)</code>; (b) <b>el orden</b>: los personajes se bloquean ordenados por id para evitar <i>deadlocks</i> entre dos transacciones; (c) el chequeo contra 2.147.483.647 evita un desborde del <code>integer</code> de PostgreSQL, que terminaría en un 500; (d) todo ocurre en una transacción: si cualquier regla falla, no se acredita nada.</p></li>
+      <p class="file">Puntos para remarcar: (a) el esquema <code>rewardSchema</code> (línea 23) ya rechaza personajes repetidos con <code>.refine(… new Set(…).size === …)</code>; (b) <b>el orden</b>: los personajes se bloquean ordenados por id para evitar <i>deadlocks</i> entre dos transacciones; (c) el chequeo contra 2.147.483.647 evita un desborde del <code>integer</code> de PostgreSQL, que terminaría en un 500; (d) todo ocurre en una transacción: si cualquier regla falla, no se acredita nada; (e) el reparto queda registrado dentro de la descripción de la misión como un comentario <code>&lt;!--RECOMPENSAS:[…]--&gt;</code> (línea 161), que <code>REWARDS_MARKER_REGEX</code> (línea 31) vuelve a leer para mostrarle a cada jugador lo que cobró.</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -693,7 +711,7 @@ await tx.flush();</code></pre></figure>
     <li><span class="layer">Unit of Work</span><h4><code>em.flush()</code></h4>
       <p class="file">Las modificaciones sobre entidades (<code>p.dinero += …</code>) se acumulan y <code>flush()</code> las convierte en <code>UPDATE</code>/<code>INSERT</code>. MikroORM ordena las sentencias según las dependencias.</p></li>
     <li><span class="layer">Transacción</span><h4><code>em.transactional(tx =&gt; …)</code></h4>
-      <p class="file"><code>BEGIN … COMMIT</code>; si la función lanza, hace <code>ROLLBACK</code>. Patrón repetido: <code>match.service.ts:84</code> (<code>new PartidaService(tx).updateInTransaction(…)</code>), <code>character.service.ts:55</code>, y todos los métodos de <code>game.service.ts</code> y <code>item.service.ts:174</code>. Se instancia el servicio con <code>tx</code> para que todas las consultas internas usen la misma transacción.</p></li>
+      <p class="file"><code>BEGIN … COMMIT</code>; si la función lanza, hace <code>ROLLBACK</code>. Patrón repetido: <code>match.service.ts:90</code> (<code>new PartidaService(tx).updateInTransaction(…)</code>), <code>character.service.ts:55</code>, y todos los métodos de <code>game.service.ts</code> y <code>item.service.ts:175</code>. Se instancia el servicio con <code>tx</code> para que todas las consultas internas usen la misma transacción.</p></li>
     <li><span class="layer">Bloqueo pesimista</span><h4><code>LockMode.PESSIMISTIC_WRITE</code></h4>
 <figure class="src"><figcaption>src/services/game.service.ts:25-29</figcaption>
 <pre><code>const lock = { lockMode: LockMode.PESSIMISTIC_WRITE } as const;
@@ -703,9 +721,9 @@ const sinJoinOpcional = { strategy: 'select-in' } as const;
 const conflict = (condition: boolean, message: string) =&gt; { if (condition) throw new HttpError(409, message); };</code></pre></figure>
       <p class="file"><code>SELECT … FOR UPDATE</code> bloquea esas filas hasta el fin de la transacción. «Pesimista» porque se asume que habrá conflicto y se bloquea antes de leer; la alternativa «optimista» (columna de versión) detecta el choque al escribir y reintenta.</p></li>
     <li><span class="layer">Estrategia de carga</span><h4><code>strategy: 'select-in'</code></h4>
-      <p class="file">Por defecto MikroORM carga relaciones con <code>JOIN</code>. PostgreSQL rechaza <code>FOR UPDATE</code> sobre el lado nullable de un <code>LEFT JOIN</code> (error 500 en compra/venta, incidente 6 de <code>docs/seguimiento.md</code>). Con <code>select-in</code> las relaciones se piden en consultas separadas y el bloqueo queda en la fila principal (<code>item.service.ts:179</code>, <code>game.service.ts:28</code>).</p></li>
+      <p class="file">Por defecto MikroORM carga relaciones con <code>JOIN</code>. PostgreSQL rechaza <code>FOR UPDATE</code> sobre el lado nullable de un <code>LEFT JOIN</code> (error 500 en compra/venta, incidente 6 de <code>docs/seguimiento.md</code>). Con <code>select-in</code> las relaciones se piden en consultas separadas y el bloqueo queda en la fila principal (<code>item.service.ts:180</code>, <code>game.service.ts:28</code>).</p></li>
     <li><span class="layer">Orden de bloqueo</span><h4>Evitar deadlocks</h4>
-      <p class="file">Si A bloquea (X, luego Y) y B bloquea (Y, luego X), quedan esperándose. La regla: <b>siempre el mismo orden</b>. Por eso <code>completeMission</code> ordena por <code>idPersonaje</code> (línea 127) y <code>play</code> pide los personajes con <code>orderBy: { idPersonaje: 'asc' }</code> (línea 68). En el resto de los métodos, el orden es siempre partida → sesión → misión o personaje → inventario → objeto.</p></li>
+      <p class="file">Si A bloquea (X, luego Y) y B bloquea (Y, luego X), quedan esperándose. La regla: <b>siempre el mismo orden</b>. Por eso <code>completeMission</code> ordena por <code>idPersonaje</code> (<code>sortedRewards</code>, línea 154) y <code>play</code> pide los personajes con <code>orderBy: { idPersonaje: 'asc' }</code> (línea 89). En el resto de los métodos, el orden es siempre partida → sesión → misión o personaje → inventario → objeto.</p></li>
     <li><span class="layer">Errores</span><h4><code>conflict()</code> y <code>HttpError</code></h4>
       <p class="file">Una violación de regla de estado lanza <code>HttpError(409, mensaje)</code>; al salir de <code>transactional</code> se hace rollback y <code>handleErrors</code> (<code>app.ts:177</code>) responde el 409 con el mensaje.</p></li>
   </ol>
@@ -739,11 +757,12 @@ import { Partida } from '../entities/Match.entity';
 import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
 import { PersonajeSesion } from '../entities/CharacterSession.entity';
-import { ErrorValidacionPersonaje } from '../validators/character.validator';
+import { ErrorValidacion as ErrorValidacionPersonaje } from '../shared/validate';
 import { verifyPassword } from '../security/password';
 import type { ActualizarPersonajeDTO, CrearPersonajeDTO, PersonajePublicoDTO } from '../types/character.dto';
 
-// src/validators/character.validator.ts:1  (no usa Zod: validación manual)
+// src/schemas/character.schema.ts:1-2
+import { z } from 'zod';
 import type { ActualizarPersonajeDTO, CrearPersonajeDTO } from '../types/character.dto';
 
 // frontend/src/services/character.service.ts:1-2
@@ -754,11 +773,23 @@ import { api } from './api';</code></pre>
     <li><span class="layer">Frontend</span><h4>Formulario de personaje</h4>
       <p class="file"><code>CharactersPage.tsx:150</code> <code>handleGuardar</code>: controla nombre, raza, clase, partida y, si <code>requiereContrasena</code> (línea 148: la partida elegida tiene <code>esPrivada</code>), pide la contraseña. Arma <code>CreateCharacterData</code> con <code>idUsuarioJugador: userId</code> (línea 176) tomando el id del <code>useUser()</code>, no de un campo del formulario. Llama a <code>createCharacter(data)</code> (línea 180), que es <code>api&lt;Personaje&gt;('/personajes', 'POST', data)</code> en <code>services/character.service.ts:22</code>. En éxito agrega el personaje al estado con <code>setPersonajes(prev =&gt; [...prev, nuevo])</code> sin recargar.</p></li>
     <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/personajes</code></h4>
-      <p class="file"><code>character.routes.ts:15</code> → <code>requireOwnJugadorForPersonaje</code> (<code>authorization.ts:62-68</code>). Exige ser jugador y crear el personaje para uno mismo; además <b>sobrescribe</b> el body: <code>req.body = { ...req.body, dinero: 100, xp: 0, nivel: 1 }</code> (línea 66). Aunque el cliente enviara otro dinero, se ignora.</p></li>
+      <p class="file"><code>character.routes.ts:15</code> → <code>requireOwnJugadorForPersonaje</code> (<code>authorization.ts:63-69</code>). Exige ser jugador y crear el personaje para uno mismo; además <b>sobrescribe</b> el body: <code>req.body = { ...req.body, dinero: 100, xp: 0, nivel: 1 }</code> (línea 67). Aunque el cliente enviara otro dinero, se ignora.</p></li>
     <li><span class="layer">Controlador</span><h4><code>createCharacter</code></h4>
-      <p class="file"><code>character.controller.ts:70-</code>: <code>validateCreateCharacter(req.body)</code> → servicio → 201. Mapeo de errores: <code>CharacterValidationError</code> → 400, <code>ReferenceNotFoundError</code> → 404 (línea 80).</p></li>
-    <li><span class="layer">Validador manual</span><h4><code>validateCreateCharacter</code></h4>
-      <p class="file"><code>character.validator.ts:40-73</code> con tres helpers: <code>getObject</code> (línea 11: el body debe ser un objeto, no un arreglo ni <code>null</code>), <code>validateText</code> (línea 18: <code>typeof 'string'</code>, <code>.trim()</code>, largo mínimo y máximo) y <code>validatePositiveNumber</code> (línea 32: <code>Number.isSafeInteger</code> y rango hasta 2.147.483.647). Es el único validador del proyecto escrito sin Zod; devuelve un <code>CrearPersonajeDTO</code> con solo los campos permitidos.</p></li>
+      <p class="file"><code>character.controller.ts:60-68</code>: <code>validatePayload(createCharacterSchema, req.body)</code> (línea 62) → servicio → 201. En el <code>catch</code>, <code>handleControllerError(error, res, 'Error interno al crear el personaje')</code>: <code>ValidationError</code> → 400 y <code>ReferenceNotFoundError</code> → 404 (registrado en <code>error-handler.ts:51</code>).</p></li>
+    <li><span class="layer">Esquema</span><h4><code>createCharacterSchema</code></h4>
+<figure class="src"><figcaption>src/schemas/character.schema.ts:4-25 (resumen)</figcaption>
+<pre><code>const positiveId = (campo: string) =&gt;
+  z.number({ message: `El campo ${campo} es obligatorio` })
+    .int(`El campo '${campo}' debe ser un número entero mayor o igual a 1`)
+    .min(1, `…mayor o igual a 1`).max(2147483647, `El campo '${campo}' supera el límite permitido`);
+
+export const createCharacterSchema: z.ZodType&lt;CrearPersonajeDTO&gt; = z.object({
+  nombreFicticio: z.string({ message: '…es obligatorio' }).trim().min(1, '…no puede estar vacío').max(100, '…'),
+  raza:           z.string({ message: '…es obligatorio' }).trim().min(1, '…').max(50, '…'),
+  idClase: positiveId('idClase'), idUsuarioJugador: positiveId('idUsuarioJugador'), idPartida: positiveId('idPartida'),
+  contrasenaPartida: z.string({ message: 'Contraseña de partida inválida' }).max(100, '…').optional(),
+});</code></pre></figure>
+      <p class="file">Antes había un validador escrito a mano; ahora es Zod como el resto. <code>positiveId</code> (línea 4) es una función que fabrica el esquema de un id (entero entre 1 y 2.147.483.647) con mensajes propios por campo. La anotación <code>z.ZodType&lt;CrearPersonajeDTO&gt;</code> hace que TypeScript verifique que el esquema produce <i>exactamente</i> el DTO. A diferencia de partidas o clases, este objeto <b>no</b> usa <code>.strict()</code>: Zod descarta los campos desconocidos en vez de rechazarlos, y eso es justo lo que se necesita con <code>dinero</code>, <code>xp</code> y <code>nivel</code>, que el middleware agrega al body (un fix reciente de <code>schemas/</code>). El esquema de edición (líneas 27-39) pone todo <code>.optional()</code> y exige al menos un campo con <code>.refine</code>.</p></li>
     <li><span class="layer">Servicio · transacción</span><h4>Reglas de inscripción</h4>
 <figure class="src"><figcaption>src/services/character.service.ts:54-78</figcaption>
 <pre><code>async createCharacter(data: CrearPersonajeDTO) {
@@ -785,7 +816,7 @@ await this.em.populate(nuevoPersonaje, ['clase', 'jugador', 'jugador.usuario', '
 return this.toPublicCharacter(nuevoPersonaje);</code></pre></figure>
       <p class="file">Hay dos <code>flush</code> porque la clave compuesta del inventario necesita el <code>idPersonaje</code> autogenerado. Ambos están dentro de la misma transacción. <code>em.populate</code> carga las relaciones para armar el DTO y <code>toPublicCharacter</code> (línea 141) devuelve <code>claseNombre</code>, <code>jugadorNombre</code> y <code>partidaNombre</code>.</p></li>
     <li><span class="layer">Editar y borrar</span><h4>Qué se puede cambiar y cuándo se borra</h4>
-      <p class="file"><code>requireOwnedCharacterMiddleware</code> (<code>authorization.ts:70-81</code>): en el <code>PUT</code> solo admite <code>nombreFicticio</code>, <code>raza</code> e <code>idClase</code>; la progresión se gana jugando. <code>deleteInTransaction</code> (<code>character.service.ts:128</code>) rechaza borrar si hay historial en <code>PersonajeSesion</code> (línea 132) o si hay objetos en el inventario (línea 133), y si no, elimina primero los inventarios y luego el personaje (<code>removeAndFlush</code>), respetando la FK.</p></li>
+      <p class="file"><code>requireOwnedCharacterMiddleware</code> (<code>authorization.ts:71-82</code>): en el <code>PUT</code> solo admite <code>nombreFicticio</code>, <code>raza</code> e <code>idClase</code>; la progresión se gana jugando. <code>deleteInTransaction</code> (<code>character.service.ts:128</code>) rechaza borrar si hay historial en <code>PersonajeSesion</code> (línea 132) o si hay objetos en el inventario (línea 133), y si no, elimina primero los inventarios y luego el personaje (<code>removeAndFlush</code>), respetando la FK.</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -805,10 +836,12 @@ import { ClassController, ClaseController } from '../controllers/class.controlle
 import { ClassService, ClaseService } from '../services/class.service';
 import { requireAnfitrion } from '../security/authorization';
 
-// src/controllers/class.controller.ts:1-3
+// src/controllers/class.controller.ts:1-5
 import { type Request, type Response } from 'express';
-import { persistenceError } from './persistence-error';
+import { handleControllerError } from '../shared/error-handler';
 import { ClassService, ClaseService } from '../services/class.service';
+import { validatePayload } from '../shared/validate';
+import { createClassSchema, updateClassSchema } from '../schemas/class.schema';
 
 // frontend/src/pages/ClassesPage.tsx:12-26
 import { useEffect, useState } from 'react';
@@ -821,15 +854,23 @@ import { updateClass, createClass, deleteClass, getClasses, type UpdateClassData
   </div>
   <ol class="road">
     <li><span class="layer">Frontend · lectura</span><h4>Listado</h4>
-      <p class="file"><code>ClassesPage.tsx:51</code> <code>getClasses()</code> en un <code>useEffect</code> que depende de <code>revision</code>. <code>esAnfitrion</code> (línea 36) sale de <code>rolDe(usuarioLogueado.idUsuario) === 'anfitrion'</code> y decide si se muestran los botones de alta, edición y baja. La página se divide en tres componentes: <code>ClassList</code>, <code>ClassDetail</code> y <code>ClassForm</code>.</p></li>
+      <p class="file"><code>ClassesPage.tsx:52</code> <code>getClasses()</code> en un <code>useEffect</code> que depende de <code>revision</code>. <code>esAnfitrion</code> (línea 37) sale de <code>rolDe(usuarioLogueado.idUsuario) === 'anfitrion'</code> y decide si se muestran los botones de alta, edición y baja. La página se divide en tres componentes: <code>ClassList</code>, <code>ClassDetail</code> y <code>ClassForm</code>.</p></li>
     <li><span class="layer">Frontend · alta/edición</span><h4><code>handleSave</code></h4>
-      <p class="file"><code>ClassesPage.tsx:74-97</code>: si hay <code>enEdicion</code> llama a <code>updateClass(id, data)</code> y reemplaza el elemento con <code>prev.map(…)</code>; si no, <code>createClass(data)</code> (línea 85) y lo agrega con <code>[...prev, nueva]</code>. El tipo del argumento es una unión (<code>CreateClassData | UpdateClassData</code>) y se estrecha con <code>as</code>. Los tipos vienen de <code>services/class.service.ts:5-6</code>: <code>Omit&lt;Clase, 'idClase'&gt;</code> y <code>Partial&lt;…&gt;</code>.</p></li>
+      <p class="file"><code>ClassesPage.tsx:77-104</code>: si hay <code>enEdicion</code> llama a <code>updateClass(id, data)</code> y reemplaza el elemento con <code>prev.map(…)</code>; si no, <code>createClass(data)</code> (línea 89) y lo agrega con <code>[...prev, nueva]</code>. El tipo del argumento es una unión (<code>CreateClassData | UpdateClassData</code>) y se estrecha con <code>as</code>. Los tipos vienen de <code>services/class.service.ts:5-6</code>: <code>Omit&lt;Clase, 'idClase'&gt;</code> y <code>Partial&lt;…&gt;</code>.</p></li>
     <li><span class="layer">Ruta + permiso</span><h4>CRUD protegido</h4>
       <p class="file"><code>class.routes.ts:12-16</code>: <code>GET</code> abiertos a cualquier usuario autenticado; <code>POST</code>, <code>PUT</code> y <code>DELETE</code> con <code>requireAnfitrion</code> (<code>authorization.ts:29</code>) → 403 «El catálogo lo administran los anfitriones».</p></li>
     <li><span class="layer">Controlador</span><h4><code>ClassController</code></h4>
-      <p class="file"><code>class.controller.ts</code>: <code>getId</code> (línea 17) valida el parámetro con <code>/^\d+$/</code> y <code>Number.isSafeInteger</code> antes de tocar la BD (400 «ID inválido»). <code>createClass</code> (línea 62) → <code>validateCreateClass</code> → 201. Cada método tiene su propio <code>try/catch</code> con un 500 genérico y <code>console.error</code>: no se filtra el detalle del error al cliente.</p></li>
-    <li><span class="layer">Validador</span><h4>Zod con <code>partial()</code></h4>
-      <p class="file"><code>class.validator.ts:4</code> define un único esquema <code>{ nombreClase: 1..50, descripcionClase: 1..5000 }.strict()</code> y <code>validateUpdateClass</code> (línea 11) lo reutiliza con <code>schema.partial().refine(v =&gt; Object.keys(v).length &gt; 0, 'Enviá al menos un campo')</code>: en la edición todos los campos son opcionales, pero un <code>{}</code> vacío se rechaza.</p></li>
+      <p class="file"><code>class.controller.ts</code>: <code>getId</code> (línea 11) valida el parámetro con <code>/^\d+$/</code> y <code>Number.isSafeInteger</code> antes de tocar la BD (400 «ID inválido»). <code>createClass</code> (línea 54) → <code>validatePayload(createClassSchema, req.body)</code> (línea 56) → 201. Todos los <code>catch</code> terminan en <code>handleControllerError(error, res, 'Error al crear la clase')</code>: el mensaje de la derecha es el 500 genérico, y el detalle real queda solo en el log del servidor.</p></li>
+    <li><span class="layer">Esquema</span><h4>Zod con <code>partial()</code></h4>
+<figure class="src"><figcaption>src/schemas/class.schema.ts:3-11</figcaption>
+<pre><code>export const createClassSchema = z.object({
+  nombreClase: z.string().trim().min(1, 'El campo nombreClase no puede estar vacío').max(50),
+  descripcionClase: z.string().trim().min(1, 'El campo descripcionClase no puede estar vacío').max(5000),
+}).strict();
+
+export const updateClassSchema = createClassSchema.partial().strict()
+  .refine((v) =&gt; Object.keys(v).length &gt; 0, 'Enviá al menos un campo');</code></pre></figure>
+      <p class="file">El esquema de edición se <b>deriva</b> del de creación con <code>.partial()</code>: todos los campos pasan a opcionales, pero un <code>{}</code> vacío se rechaza. Una sola fuente de verdad para las reglas. Lo ejecuta <code>validatePayload</code> en el controlador (líneas 56 y 72).</p></li>
     <li><span class="layer">Servicio</span><h4><code>ClassService</code></h4>
 <figure class="src"><figcaption>src/services/class.service.ts:22-42</figcaption>
 <pre><code>async createClass(data) { const clase = this.em.create(Clase, data); await this.em.flush(); return this.toPublicClass(clase); }
@@ -844,7 +885,7 @@ async deleteClass(id) { const clase = await this.em.findOne(Clase, { idClase: id
   await this.em.removeAndFlush(clase); return true; }</code></pre></figure>
       <p class="file"><code>em.assign</code> aplica el objeto parcial sobre la entidad. Es el CRUD más simple del proyecto, sin transacción propia porque cada operación toca una sola fila.</p></li>
     <li><span class="layer">Errores de BD</span><h4>Borrar una clase en uso</h4>
-      <p class="file">Si un personaje referencia la clase, la FK impide el <code>DELETE</code> y MikroORM lanza <code>ForeignKeyConstraintViolationException</code>. <code>class.controller.ts:117</code> llama a <code>persistenceError(error, res)</code> (<code>controllers/persistence-error.ts:3-11</code>) y responde 409 «El registro tiene datos relacionados…». Un nombre duplicado, si hubiera restricción única, caería en la otra rama del mismo helper (<code>UniqueConstraintViolationException</code>).</p></li>
+      <p class="file">Si un personaje referencia la clase, la FK impide el <code>DELETE</code> y MikroORM lanza <code>ForeignKeyConstraintViolationException</code>. El <code>catch</code> del controlador llama a <code>handleControllerError</code>, que la encuentra en el registro (<code>shared/error-handler.ts:66-69</code>) y responde 409 «El registro tiene datos relacionados. Resolvé esas relaciones antes de eliminarlo.». La clave única (<code>UniqueConstraintViolationException</code>) tiene su propia entrada en la línea 65. Antes esto lo hacía un helper aparte, <code>persistence-error.ts</code>, que ya no existe.</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -970,17 +1011,17 @@ import { HttpError, ownedCharacter, routeId } from '../security/authorization';<
       <p class="file"><code>handleCrear</code> (línea 86): valida partida elegida, <code>numSesion</code> entero entre 1 y 2.147.483.647 (el máximo de un <code>int</code> de PostgreSQL) y <code>duracionSesion</code> entre 0 y ese máximo; luego <code>createSession({ idPartida, numSesion, duracionSesion })</code> (línea 122). <code>createSession</code> está en <code>session.service.ts:22</code>. El error del servidor se traduce con <code>formatSessionError</code> (línea 24).</p></li>
     <li><span class="layer">Ruta</span><h4><code>POST /api/sesiones</code></h4>
       <p class="file"><code>game.routes.ts:25</code> → <code>service.saveSession(req.identity!.idUsuario, req.body)</code>, y responde <code>201</code>. Todo el <code>createGameRouter</code> se monta en <code>app.ts:95</code> con <code>auth.requireAuth</code>.</p></li>
-    <li><span class="layer">Servicio</span><h4><code>saveSession</code> (líneas 37-51)</h4>
+    <li><span class="layer">Servicio</span><h4><code>saveSession</code> (líneas 58-72)</h4>
       <ul>
         <li><code>sessionSchema.parse(body)</code> (línea 15): <code>{ idPartida, numSesion, duracionSesion }.strict()</code>.</li>
-        <li><code>hostedGame(tx, idPartida, user)</code> + <code>tx.lock(partida, PESSIMISTIC_WRITE)</code> (líneas 40-41): solo el anfitrión, con la partida bloqueada.</li>
+        <li><code>hostedGame(tx, idPartida, user)</code> + <code>tx.lock(partida, PESSIMISTIC_WRITE)</code> (líneas 61-62): solo el anfitrión, con la partida bloqueada.</li>
         <li><code>conflict(!partida.estado, 'La partida está finalizada')</code> y <code>conflict(!update &amp;&amp; !!sesion, 'Ese número de sesión ya existe')</code>.</li>
-        <li><code>tx.create(Sesion, { partida, numSesion, duracionSesion, estadoSesion: 0, cantJugadores: 0 })</code> (línea 47): nace <b>planificada</b>. Solo se pueden editar sesiones en estado 0.</li>
+        <li><code>tx.create(Sesion, { partida, numSesion, duracionSesion, estadoSesion: 0, cantJugadores: 0 })</code> (línea 68): nace <b>planificada</b>. Solo se pueden editar sesiones en estado 0.</li>
       </ul></li>
     <li><span class="layer">Frontend</span><h4>Elegir participantes e iniciar</h4>
       <p class="file"><code>handleIniciar</code> (línea 137) exige al menos un personaje en <code>participantesIds</code> y llama a <code>playSession(idPartida, numSesion, participantesIds)</code> (línea 145 → <code>session.service.ts:26</code>), que hace <code>POST /sesiones/:game/:number/jugar</code> con <code>{ idPersonajes }</code>. En éxito vuelve a pedir el detalle (<code>handleVerDetalle</code>, línea 76) y recarga.</p></li>
-    <li><span class="layer">Servicio · transacción</span><h4><code>play</code> (líneas 59-75)</h4>
-<figure class="src"><figcaption>src/services/game.service.ts:62-73</figcaption>
+    <li><span class="layer">Servicio · transacción</span><h4><code>play</code> (líneas 80-96)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:83-94</figcaption>
 <pre><code>const partida = await hostedGame(tx, game, user);
 await tx.lock(partida, LockMode.PESSIMISTIC_WRITE);
 const sesion = await this.session(tx, game, number);
@@ -1021,12 +1062,12 @@ import { z } from 'zod';                       // z.union([z.literal(-1), z.lite
   <ol class="road">
     <li><span class="layer">Frontend</span><h4>Finalizar</h4>
       <p class="file"><code>handleFinalizar</code> (<code>SessionsPage.tsx:154</code>) → <code>finishSession(idPartida, numSesion)</code> (línea 157 → <code>session.service.ts:30</code>) → <code>POST /sesiones/:game/:number/finalizar</code> (<code>game.routes.ts:29</code>). Los errores caen en el <code>catch</code> y se muestran en un <code>NoticeModal</code> (<code>setErrorAvisoModal</code>).</p></li>
-    <li><span class="layer">Servicio</span><h4><code>finish</code> (líneas 77-85)</h4>
+    <li><span class="layer">Servicio</span><h4><code>finish</code> (líneas 98-105)</h4>
       <p class="file">En <code>em.transactional</code>: <code>hostedGame</code>, <code>this.session(...)</code> (bloquea la fila), <code>conflict(s.estadoSesion !== 1, 'La sesión no está en curso')</code> y <code>conflict(await tx.count(Mision, { sesion: s, estado: false }) &gt; 0, 'Completá o eliminá las misiones pendientes…')</code>. Después <code>s.estadoSesion = 2</code> y <code>flush</code>.</p></li>
     <li><span class="layer">Frontend</span><h4>Calificar</h4>
       <p class="file">El estado <code>valorKarma</code> es <code>useState&lt;1 | -1&gt;</code> (línea 58). <code>handleCalificar</code> (línea 166) llama a <code>rateHost(idPartida, numSesion, valorKarma)</code> (línea 169 → <code>session.service.ts:34</code>, <code>POST …/calificar</code> con <code>{ valor }</code>). La respuesta es <code>{ karma }</code>.</p></li>
-    <li><span class="layer">Servicio · transacción</span><h4><code>rate</code> (líneas 148-162)</h4>
-<figure class="src"><figcaption>src/services/game.service.ts:149-160</figcaption>
+    <li><span class="layer">Servicio · transacción</span><h4><code>rate</code> (líneas 178-191)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:180-190</figcaption>
 <pre><code>const { valor } = z.object({ valor: z.union([z.literal(-1), z.literal(1)]) }).strict().parse(body);
 // …
 conflict(sesion.estadoSesion !== 2, 'La sesión debe estar finalizada');
@@ -1037,7 +1078,7 @@ if (!attendance.length) throw new HttpError(403, 'Solo pueden calificar los juga
 conflict(attendance.some(a =&gt; a.dioKarma), 'Ya calificaste esta sesión');
 const host = await tx.findOneOrFail(Anfitrion, { usuario: { idUsuario: sesion.partida.anfitrion.usuario.idUsuario } }, lock);
 host.karma += valor; attendance.forEach(a =&gt; { a.dioKarma = true; });</code></pre></figure>
-      <p class="file"><code>z.union([z.literal(-1), z.literal(1)])</code> admite solo esos dos valores. El bloqueo sobre las filas de asistencia (línea 154) impide que dos clics seguidos sumen karma dos veces, y el del anfitrión (línea 158) evita pérdida de incrementos si dos jugadores califican a la vez. <code>populate: ['personaje.jugador.usuario']</code> carga tres niveles de relación en una sola llamada.</p></li>
+      <p class="file"><code>z.union([z.literal(-1), z.literal(1)])</code> admite solo esos dos valores. El bloqueo sobre las filas de asistencia (línea 184) impide que dos clics seguidos sumen karma dos veces, y el del anfitrión (línea 188) evita pérdida de incrementos si dos jugadores califican a la vez. <code>populate: ['personaje.jugador.usuario']</code> carga tres niveles de relación en una sola llamada.</p></li>
     <li><span class="layer">Frontend</span><h4>Reflejar el resultado</h4>
       <p class="file">Después de calificar, <code>handleVerDetalle</code> actualiza <code>selected</code> con la lista de <code>participantes</code> (<code>dioKarma</code> en <code>true</code>) y <code>setAviso('Calificación enviada.')</code>.</p></li>
   </ol>
@@ -1128,11 +1169,11 @@ if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) &amp;&amp; req.headers.orig
     <li><span class="layer">Response OK</span><h4><code>response.json()</code> o 204</h4>
       <p class="file"><code>api.ts:81-82</code>: si el estado es 204 devuelve <code>undefined</code>; si no, el JSON. La función es genérica: <code>api&lt;T&gt;(…): Promise&lt;T&gt;</code>, así cada llamada declara el tipo esperado (<code>api&lt;Sesion[]&gt;('/sesiones')</code>).</p></li>
     <li><span class="layer">Response con error</span><h4>Dos formas posibles</h4>
-      <p class="file">El backend responde <code>{ message }</code> (<code>handleErrors</code>, controladores) o <code>{ message, errors: [{ campo, mensaje }] }</code> (middleware <code>validate</code>, <code>shared/validate.ts:19-26</code>). <code>api.ts:70-72</code> junta los <code>errors</code> en un texto <code>campo: mensaje; …</code>; si no hay, usa <code>body.message</code>; si el servidor está caído (502/503/504, línea 75) muestra «El servidor no está respondiendo…». Finalmente lanza <code>new ApiError(status, traducirErrorEspanol(msg))</code> (línea 79); <code>traducirErrorEspanol</code> (línea 7) convierte mensajes de Zod («too big») en frases claras.</p></li>
+      <p class="file">El backend responde <code>{ message }</code> (<code>handleErrors</code>, controladores) o <code>{ message, errors: [{ campo, mensaje }] }</code> (middleware <code>validate</code>, <code>shared/validate.ts:41-46</code>). <code>api.ts:70-72</code> junta los <code>errors</code> en un texto <code>campo: mensaje; …</code>; si no hay, usa <code>body.message</code>; si el servidor está caído (502/503/504, línea 75) muestra «El servidor no está respondiendo…». Finalmente lanza <code>new ApiError(status, traducirErrorEspanol(msg))</code> (línea 79); <code>traducirErrorEspanol</code> (línea 7) convierte mensajes de Zod («too big») en frases claras.</p></li>
     <li><span class="layer">Estado de sesión</span><h4>Evento global y <code>sessionVersion</code></h4>
       <p class="file">El 401 emite <code>SESSION_EXPIRED_EVENT</code> (línea 67). En <code>UserContext.tsx:25</code>, <code>sessionVersion</code> es un <code>useRef</code> que se incrementa al cerrar o abrir sesión; <code>recargar</code> (línea 35) lo copia al empezar y descarta la respuesta si cambió (línea 38). Evita que una respuesta tardía de una sesión anterior pise el estado actual (<i>race condition</i>).</p></li>
     <li><span class="layer">Routing</span><h4><code>BrowserRouter</code> + layout route</h4>
-      <p class="file"><code>App.tsx:25-56</code>: rutas públicas (<code>/login</code>, <code>/register</code>) y un <code>&lt;Route element={&lt;MainLayout /&gt;}&gt;</code> que agrupa las privadas (<code>/dashboard</code>, <code>/games</code>, <code>/sessions</code>, <code>/missions</code>, <code>/characters</code>, <code>/objects</code>, <code>/classes</code>, <code>/inventory</code>…). <code>/</code> redirige a <code>/login</code> con <code>&lt;Navigate replace /&gt;</code> y <code>*</code> muestra <code>NotFoundPage</code>.</p></li>
+      <p class="file"><code>App.tsx:27-58</code>: rutas públicas (<code>/login</code>, <code>/register</code>) y un <code>&lt;Route element={&lt;MainLayout /&gt;}&gt;</code> que agrupa las privadas (<code>/dashboard</code>, <code>/games</code>, <code>/sessions</code>, <code>/missions</code>, <code>/characters</code>, <code>/objects</code>, <code>/classes</code>, <code>/inventory</code>…). <code>/</code> redirige a <code>/login</code> con <code>&lt;Navigate replace /&gt;</code> y <code>*</code> muestra <code>NotFoundPage</code>.</p></li>
   </ol>
   <div class="say"><b class="t">Preguntas probables</b>
     <div class="qa">
@@ -1146,7 +1187,7 @@ if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) &amp;&amp; req.headers.orig
 <!-- ============================================================ OCTAVIO -->
 <section class="card c-octavio" id="octavio">
   <div class="who"><h2>Octavio Gudiño</h2><span class="tag">Frontend · Contratos de tipos, comercio e inventarios</span></div>
-  <p class="meta">Dos casos de uso: <a href="#o-cu1">CU1 Comprar un objeto de la tienda</a> · <a href="#o-cu2">CU2 Vender un objeto y moverlo dentro del inventario</a> · y el punto de arquitectura <a href="#o-arq">Validators, DTOs y manejo de errores</a>.</p>
+  <p class="meta">Dos casos de uso: <a href="#o-cu1">CU1 Comprar un objeto de la tienda</a> · <a href="#o-cu2">CU2 Vender un objeto y moverlo dentro del inventario</a> · y el punto de arquitectura <a href="#o-arq">Schemas, validación, DTOs y manejo de errores</a>.</p>
 
   <!-- CU1 -->
   <div class="part-title sub" id="o-cu1"><span class="badge">CU1</span><h3>Comprar un objeto de la tienda</h3></div>
@@ -1173,31 +1214,32 @@ import { Inventario } from '../entities/Inventory.entity';
 import { Objeto } from '../entities/Item.entity';
 import { Personaje } from '../entities/Character.entity';
 import { Tienda } from '../entities/Shop.entity';
-import { ErrorValidacionObjeto, validarCompraObjeto } from '../validators/item.validator';
+import { ErrorValidacion as ErrorValidacionObjeto, validatePayload } from '../shared/validate';
+import { buyItemSchema } from '../schemas/item.schema';
 import { calculateValueByLevel } from './item.rules';</code></pre>
   </div>
   <ol class="road">
     <li><span class="layer">Frontend · formulario</span><h4>Elegir personaje, inventario y posición</h4>
       <p class="file"><code>PurchaseItemForm.tsx</code> recibe por <i>props</i> (<code>PurchaseItemFormProps</code>, línea 7) el objeto, los personajes y los inventarios. Calcula en cada render <code>saldoInsuficiente = saldoActual &lt; objeto.valor</code> (línea 33) y <code>nivelInsuficiente</code> (línea 34) y deshabilita el botón (<code>disabled={comprando || … || saldoInsuficiente || nivelInsuficiente …}</code>, línea 123). <code>handleSubmit</code> (línea 41) llama a <code>onComprar({ idPersonaje, numInventario, posicion })</code> (línea 48).</p></li>
     <li><span class="layer">Frontend · página</span><h4><code>handlePurchase</code></h4>
-      <p class="file"><code>ItemsPage.tsx:145</code>: si <code>host</code> es verdadero muestra «Los anfitriones no tienen permitido comprar» y corta (línea 146); si no, <code>purchaseItem(seleccionado.idObjeto, data)</code> (línea 154) → <code>services/item.service.ts:59</code>: <code>POST /objetos/${id}/comprar</code>. En éxito, si el objeto es único reemplaza el objeto en la lista (línea 155) y siempre actualiza el dinero del personaje con <code>{ ...personaje, dinero: resultado.dineroRestante }</code> (línea 163): se muestra el saldo nuevo sin pedirlo otra vez al servidor.</p></li>
+      <p class="file"><code>ItemsPage.tsx:155</code>: si <code>host</code> es verdadero muestra «Los anfitriones no tienen permitido comprar» y corta (línea 156); si no, <code>purchaseItem(seleccionado.idObjeto, data)</code> (línea 166) → <code>services/item.service.ts:59</code>: <code>POST /objetos/${id}/comprar</code>. En éxito, si el objeto es único reemplaza el objeto en la lista (línea 167) y siempre actualiza el dinero del personaje con <code>{ ...personaje, dinero: resultado.dineroRestante }</code> (línea 175): se muestra el saldo nuevo sin pedirlo otra vez al servidor.</p></li>
     <li><span class="layer">Ruta + permiso</span><h4><code>POST /api/objetos/:id/comprar</code></h4>
-      <p class="file"><code>item.routes.ts:14</code>. Ojo con el <b>orden de las rutas</b>: <code>/:id/comprar</code> y <code>/sugeridos/clase/:idClase</code> se declaran antes de <code>/:id</code> para que Express no confunda «sugeridos» con un id. El middleware <code>requireOwnedCharacterForCompra</code> (<code>authorization.ts:107-115</code>) rechaza a los anfitriones (403) y verifica con <code>ownedCharacter(em, idSchema.parse(req.body.idPersonaje), idUsuario)</code> que el personaje sea del usuario.</p></li>
-    <li><span class="layer">Controlador + validador</span><h4><code>ItemController.buyItem</code></h4>
-      <p class="file"><code>item.controller.ts:142-</code> valida el id (<code>getId</code>), llama a <code>validateBuyItem(req.body)</code> (línea 150, esquema <code>compraSchema</code> en <code>item.validator.ts:10</code>: <code>idPersonaje</code> y <code>numInventario</code> enteros ≥ 1, <code>posicion</code> opcional, <code>.strict()</code>) y al servicio. En el <code>catch</code> traduce: <code>ItemValidationError</code> → 400; no encontrados → 404; <code>ItemNotAvailableError</code>, <code>InsufficientMoneyError</code>, <code>InventoryFullError</code>, <code>PositionOccupiedError</code>, <code>InsufficientLevelError</code> → <b>409</b> (línea 173).</p></li>
-    <li><span class="layer">Servicio · transacción</span><h4><code>ObjetoService.buyItem</code> (líneas 172-275)</h4>
-      <p class="file">Con <code>em.transactional</code> (línea 174) y bloqueos pesimistas en objeto, personaje, inventario y posiciones, controla en orden:</p>
+      <p class="file"><code>item.routes.ts:14</code>. Ojo con el <b>orden de las rutas</b>: <code>/:id/comprar</code> y <code>/sugeridos/clase/:idClase</code> se declaran antes de <code>/:id</code> para que Express no confunda «sugeridos» con un id. El middleware <code>requireOwnedCharacterForCompra</code> (<code>authorization.ts:130-138</code>) rechaza a los anfitriones (403) y verifica con <code>ownedCharacter(em, idSchema.parse(req.body.idPersonaje), idUsuario)</code> que el personaje sea del usuario.</p></li>
+    <li><span class="layer">Controlador + esquema</span><h4><code>ItemController.buyItem</code></h4>
+      <p class="file"><code>item.controller.ts:106-</code> valida el id (<code>getId</code>), llama a <code>validatePayload(buyItemSchema, req.body)</code> (línea 114) y al servicio. El esquema está en <code>schemas/item.schema.ts:21-25</code>: <code>idPersonaje</code> y <code>numInventario</code> enteros ≥ 1, <code>posicion</code> opcional, <code>.strict()</code>. El <code>catch</code> llama a <code>handleControllerError(error, res, 'Error al comprar el objeto')</code> (línea 118), que resuelve el código con el registro de <code>error-handler.ts</code>: <code>ItemNotFoundError</code>, <code>CharacterNotFoundError</code> e <code>InventoryNotFoundError</code> → <b>404</b> (líneas 52-54); <code>ItemNotAvailableError</code>, <code>InsufficientMoneyError</code>, <code>InventoryFullError</code>, <code>PositionOccupiedError</code> e <code>InsufficientLevelError</code> → <b>409</b> (líneas 60-64).</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>ObjetoService.buyItem</code> (líneas 173-277)</h4>
+      <p class="file">Con <code>em.transactional</code> (línea 175) y bloqueos pesimistas en objeto, personaje, inventario y posiciones, controla en orden:</p>
       <ul>
-        <li>Línea 173: <code>data = validarCompraObjeto(data)</code>, se revalida el DTO aunque venga del controlador (el servicio también se llama desde tests).</li>
-        <li>Líneas 175-182: carga el objeto con <code>strategy: 'select-in'</code> y exige <code>objeto.tienda</code> y <code>!objeto.inventario</code> → <code>ObjetoNoDisponibleError</code>.</li>
-        <li>Línea 190: <code>personaje.nivel &lt; objeto.nivelObjeto</code> → <code>NivelInsuficienteError</code>.</li>
-        <li>Líneas 192-199: si <code>esUnico</code>, busca el mismo nombre en inventarios de personajes de <b>esa partida</b> (consulta anidada <code>inventario: { personaje: { partida: { idPartida } } }</code>).</li>
-        <li>Líneas 203-208: el inventario debe ser de ese personaje (<code>InventarioNoEncontradoError</code>).</li>
-        <li>Línea 212: dinero; línea 214-215: <code>em.count(Objeto, { inventario })</code> contra <code>cantidadEspacio</code> (<code>InventarioLlenoError</code>).</li>
-        <li>Líneas 218-243: si el cliente pidió una <code>posicion</code>, debe estar libre (<code>PosicionOcupadaError</code>); si no, se recorre <code>0…cantidadEspacio-1</code> con un <code>Set</code> de posiciones ocupadas y se toma la primera libre.</li>
+        <li>Línea 174: <code>data = validatePayload(buyItemSchema, data)</code>, se revalida el DTO aunque venga del controlador (el servicio también se llama desde tests).</li>
+        <li>Líneas 176-184: carga el objeto con <code>strategy: 'select-in'</code> y exige <code>objeto.tienda</code> y <code>!objeto.inventario</code> → <code>ObjetoNoDisponibleError</code>.</li>
+        <li>Línea 192: <code>personaje.nivel &lt; objeto.nivelObjeto</code> → <code>NivelInsuficienteError</code>.</li>
+        <li>Líneas 194-201: si <code>esUnico</code>, busca el mismo nombre en inventarios de personajes de <b>esa partida</b> (consulta anidada <code>inventario: { personaje: { partida: { idPartida } } }</code>).</li>
+        <li>Líneas 205-210: el inventario debe ser de ese personaje (<code>InventarioNoEncontradoError</code>).</li>
+        <li>Línea 214: dinero; líneas 216-217: <code>em.count(Objeto, { inventario })</code> contra <code>cantidadEspacio</code> (<code>InventarioLlenoError</code>).</li>
+        <li>Líneas 220-245: si el cliente pidió una <code>posicion</code>, debe estar libre (<code>PosicionOcupadaError</code>); si no, se recorre <code>0…cantidadEspacio-1</code> con un <code>Set</code> de posiciones ocupadas y se toma la primera libre.</li>
       </ul></li>
     <li><span class="layer">Persistencia</span><h4>Objeto único vs común</h4>
-<figure class="src"><figcaption>src/services/item.service.ts:244-266</figcaption>
+<figure class="src"><figcaption>src/services/item.service.ts:246-268</figcaption>
 <pre><code>personaje.dinero -= objeto.valor;
 let objetoComprado: Objeto;
 if (objeto.esUnico) {                       // el MISMO registro cambia de dueño
@@ -1209,7 +1251,7 @@ if (objeto.esUnico) {                       // el MISMO registro cambia de dueñ
     esUnico: false, posicion: targetPosicion, tienda: null, inventario });
 }
 await em.flush();</code></pre></figure>
-      <p class="file">La respuesta (<code>ResultadoCompraObjetoDTO</code>, líneas 268-274) trae <code>objeto</code>, <code>idPersonaje</code>, <code>numInventario</code> y <code>dineroRestante</code>, que es justo lo que usa el frontend en <code>ItemsPage.tsx:163</code>. El descuento de dinero y el cambio de ubicación son atómicos: o pasan los dos o ninguno.</p></li>
+      <p class="file">La respuesta (<code>ResultadoCompraObjetoDTO</code>, líneas 270-276) trae <code>objeto</code>, <code>idPersonaje</code>, <code>numInventario</code> y <code>dineroRestante</code>, que es justo lo que usa el frontend en <code>ItemsPage.tsx:175</code>. El descuento de dinero y el cambio de ubicación son atómicos: o pasan los dos o ninguno.</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -1246,11 +1288,11 @@ import { useUser } from '../context/UserContext';</code></pre>
     <li><span class="layer">Backend · lectura</span><h4>El inventario ya informa el rango de venta</h4>
       <p class="file"><code>game.routes.ts:47-53</code> <code>GET /inventarios/:character/:number</code>: <code>ownedCharacter(…)</code> (solo el dueño), carga los <code>Objeto</code> del inventario y agrega a cada uno <code>...saleRange(o.valor)</code> (línea 52) → <code>{ minimo, maximo }</code>. La regla vive en un solo lugar: <code>sale.rules.ts:12</code>, con <code>Math.ceil</code> para el mínimo y <code>Math.floor</code> para el máximo, de modo que el precio siempre sea entero y nunca se salga del rango (<code>src/tests/sale.rules.test.ts</code>).</p></li>
     <li><span class="layer">Frontend · gestor de inventarios</span><h4>Vender desde <code>ModulePage</code></h4>
-      <p class="file">Pantalla <code>/inventory</code> (<code>App.tsx:50</code>, <code>ModulePage resource="inventarios"</code>). El precio elegido se recuerda por objeto en <code>sessionStorage</code> (<code>'precios_reventa_inventario'</code>, línea 520) dentro de <code>try/catch</code> por si el almacenamiento no está disponible. Al confirmar: <code>api(\`/objetos/${objetoVenta.idObjeto}/vender\`, 'POST', { idPersonaje, idTienda: Number(tiendaVenta), precio: precioReventa })</code> (línea 909) dentro de <code>perform()</code>, que recarga y muestra «¡Venta realizada con éxito!». Si no hay tienda elegida, corta antes con «Debés seleccionar una tienda receptora».</p></li>
+      <p class="file">Pantalla <code>/inventory</code> (<code>App.tsx:52</code>, <code>ModulePage resource="inventarios"</code>). El precio elegido se recuerda por objeto en <code>sessionStorage</code> (<code>'precios_reventa_inventario'</code>, línea 634) dentro de <code>try/catch</code> por si el almacenamiento no está disponible. Al confirmar: <code>api(\`/objetos/${objetoVenta.idObjeto}/vender\`, 'POST', { idPersonaje, idTienda: Number(tiendaVenta), precio: precioReventa })</code> (línea 1023) dentro de <code>perform()</code>, que recarga y muestra «¡Venta realizada con éxito!». Si no hay tienda elegida, corta antes con «Debés seleccionar una tienda receptora».</p></li>
     <li><span class="layer">Ruta</span><h4><code>POST /api/objetos/:id/vender</code></h4>
-      <p class="file"><code>game.routes.ts:58</code> → <code>service.sell(req.identity!.idUsuario, routeId(req.params.id), req.body)</code>. <code>routeId</code> (<code>authorization.ts:12</code>) rechaza con 400 un id que no sea solo dígitos.</p></li>
-    <li><span class="layer">Servicio · transacción</span><h4><code>sell</code> (líneas 206-231)</h4>
-<figure class="src"><figcaption>src/services/game.service.ts:207-228 (resumen)</figcaption>
+      <p class="file"><code>game.routes.ts:58</code> → <code>service.sell(req.identity!.idUsuario, routeId(req.params.id), req.body)</code>. <code>routeId</code> (<code>authorization.ts:13</code>) rechaza con 400 un id que no sea solo dígitos.</p></li>
+    <li><span class="layer">Servicio · transacción</span><h4><code>sell</code> (líneas 236-260)</h4>
+<figure class="src"><figcaption>src/services/game.service.ts:237-258 (resumen)</figcaption>
 <pre><code>const data = saleSchema.parse(body);                               // { idPersonaje, idTienda, precio? }.strict()
 const object = await tx.findOne(Objeto, { idObjeto: objectId }, { ...lock, ...sinJoinOpcional, populate: ['inventario.personaje'] });
 const p = await ownedCharacter(tx, data.idPersonaje, user);  await tx.lock(p, LockMode.PESSIMISTIC_WRITE);
@@ -1267,7 +1309,7 @@ else { tx.remove(object); }                                                     
 await tx.flush();</code></pre></figure>
       <p class="file">Si el precio no se envía, se vende al 100 % del valor. El objeto único conserva su identidad y queda a la venta en la tienda compradora; por eso <code>item.unique.test.ts</code> prueba que <i>«permite volver a comprar un objeto único si fue vendido a una tienda»</i>.</p></li>
     <li><span class="layer">Extra</span><h4>Mover dentro del inventario</h4>
-      <p class="file">Frontend: <code>ModulePage.tsx:682</code> <code>POST /inventarios/:character/:number/mover</code> con <code>{ idObjeto, posicion }</code>. Backend: <code>game.routes.ts:57</code> → <code>moveObject</code> (<code>game.service.ts:189-204</code>): valida con <code>z.object({ idObjeto: idSchema, posicion: amount }).strict()</code>, que el objeto sea del personaje (403), que <code>posicion &lt; cantidadEspacio</code> y que esté libre (línea 200, con <code>idObjeto: { $ne: object.idObjeto }</code> para ignorarse a sí mismo).</p></li>
+      <p class="file">Frontend: <code>ModulePage.tsx:796</code> <code>POST /inventarios/:character/:number/mover</code> con <code>{ idObjeto, posicion }</code>. Backend: <code>game.routes.ts:57</code> → <code>moveObject</code> (<code>game.service.ts:219-234</code>): valida con <code>z.object({ idObjeto: idSchema, posicion: amount }).strict()</code>, que el objeto sea del personaje (403), que <code>posicion &lt; cantidadEspacio</code> y que esté libre (línea 230, con <code>idObjeto: { $ne: object.idObjeto }</code> para ignorarse a sí mismo).</p></li>
   </ol>
   <div class="say"><b class="t">Qué contarle al profesor</b>
     <ul>
@@ -1277,48 +1319,66 @@ await tx.flush();</code></pre></figure>
   </div>
 
   <!-- ARQ -->
-  <div class="part-title sub" id="o-arq"><span class="badge">Arquitectura</span><h3>Validators, DTOs, contrato de tipos y manejo de errores</h3></div>
+  <div class="part-title sub" id="o-arq"><span class="badge">Arquitectura</span><h3>Schemas, validación, DTOs, contrato de tipos y manejo de errores</h3></div>
 
   <h4>1. Por qué validar en el servidor</h4>
-  <p>TypeScript solo comprueba tipos <b>al compilar</b>. En tiempo de ejecución, <code>req.body</code> es cualquier cosa que alguien envíe (<code>{ "dinero": 999999 }</code>, un <code>null</code>, un arreglo…). Las anotaciones no protegen: hay que validar explícitamente. Eso hacen los <i>validators</i>.</p>
+  <p>TypeScript solo comprueba tipos <b>al compilar</b>. En tiempo de ejecución, <code>req.body</code> es cualquier cosa que alguien envíe (<code>{ "dinero": 999999 }</code>, un <code>null</code>, un arreglo…). Las anotaciones no protegen: hay que validar explícitamente.</p>
 
-  <h4>2. Los tres estilos de validación del proyecto</h4>
+  <h4>2. Dónde vive cada pieza</h4>
+  <p>Después del refactor, las reglas y su ejecución están separadas. Ya no hay una carpeta <code>validators/</code> con un archivo por recurso.</p>
   <div class="tbl"><table>
-    <thead><tr><th>Estilo</th><th>Dónde</th><th>Cómo falla</th></tr></thead>
+    <thead><tr><th>Archivo</th><th>Qué contiene</th></tr></thead>
     <tbody>
-      <tr><td><b>A. Middleware genérico</b> <code>validate(schema)</code></td><td><code>src/shared/validate.ts:13-31</code>, usado en <code>user.routes.ts</code>: <code>router.post('/', …, validate(createUserSchema), …)</code></td><td>Responde directo 400 con <code>{ message: 'Datos de entrada inválidos', errors: [{ campo, mensaje }] }</code> y <b>reemplaza</b> <code>req.body</code> por el resultado limpio (línea 28).</td></tr>
-      <tr><td><b>B. Validador por módulo (Zod)</b></td><td><code>validators/match.validator.ts</code>, <code>class.validator.ts</code>, <code>item.validator.ts</code></td><td>Una función <code>parse()</code> usa <code>safeParse</code> y lanza un error propio (<code>ErrorValidacionPartida</code>, <code>ErrorValidacionClase</code>, <code>ErrorValidacionObjeto</code>); el controlador lo captura y responde 400.</td></tr>
-      <tr><td><b>C. Zod dentro del servicio</b></td><td><code>game.service.ts:15-24</code>: <code>sessionSchema</code>, <code>missionSchema</code>, <code>inventorySchema</code>, <code>participationSchema</code>, <code>rewardSchema</code>, <code>saleSchema</code></td><td><code>schema.parse()</code> lanza <code>ZodError</code>; llega a <code>handleErrors</code> (<code>app.ts:178</code>) → 400 con <code>formatZodError</code> (línea 135), que convierte cada <code>issue</code> en una frase en castellano.</td></tr>
-      <tr><td><b>D. Manual (sin Zod)</b></td><td><code>validators/character.validator.ts</code></td><td>Helpers <code>getObject</code>, <code>validateText</code>, <code>validatePositiveNumber</code> que lanzan <code>ErrorValidacionPersonaje</code>.</td></tr>
+      <tr><td><code>src/schemas/*.schema.ts</code></td><td>Un archivo por recurso con los <b>esquemas de Zod</b>: <code>createMatchSchema</code>/<code>updateMatchSchema</code>, <code>createItemSchema</code>/<code>updateItemSchema</code>/<code>buyItemSchema</code>, <code>createClassSchema</code>, <code>createCharacterSchema</code>, y los de usuario, anfitrión, jugador y tienda. Solo declaran reglas.</td></tr>
+      <tr><td><code>src/shared/validate.ts</code></td><td>Cómo se ejecuta un esquema: <code>validatePayload(schema, data)</code> (líneas 17-29), el middleware <code>validate(schema)</code> (líneas 36-53) y la clase <code>ValidationError</code> (líneas 4-9, con el alias <code>ErrorValidacion</code>).</td></tr>
+      <tr><td><code>src/shared/error-handler.ts</code></td><td>Cómo se traduce un error a HTTP: el registro <code>registerError(ctor, { status, message? })</code> y <code>handleControllerError</code> (línea 75).</td></tr>
+      <tr><td>Zod dentro de un servicio</td><td><code>game.service.ts:15-24</code> (<code>sessionSchema</code>, <code>missionSchema</code>, <code>inventorySchema</code>, <code>participationSchema</code>, <code>rewardSchema</code>, <code>saleSchema</code>) y el esquema de login en <code>auth.ts:81</code>. Se ejecutan con <code>schema.parse()</code>.</td></tr>
     </tbody>
   </table></div>
-  <p class="meta">Los estilos conviven porque el proyecto lo construyeron varias personas en etapas distintas. Si preguntan: la intención común es la misma (validar, no confiar en el cliente); unificar en Zod sería el siguiente paso de refactor.</p>
 
-  <h4>3. Anatomía de un esquema de Zod</h4>
-<figure class="src"><figcaption>src/validators/item.validator.ts:4-10</figcaption>
+  <h4>3. Los tres caminos por los que se valida hoy</h4>
+  <div class="tbl"><table>
+    <thead><tr><th>Camino</th><th>Quién lo usa</th><th>Cómo falla</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. <code>validatePayload</code> en el controlador</b></td><td>Partidas, clases, objetos, personajes, anfitriones, jugadores y tiendas. También <code>ObjetoService.buyItem</code> (<code>item.service.ts:174</code>).</td><td>Comprueba que el body sea un objeto, hace <code>safeParse</code>, une los errores como <code>campo: mensaje; …</code> y lanza <code>ValidationError</code> → 400.</td></tr>
+      <tr><td><b>B. Middleware <code>validate(schema)</code></b></td><td>Rutas de usuario: <code>user.routes.ts:24-25</code> (<code>validate(createUserSchema)</code>, <code>validate(updateUserSchema)</code>).</td><td>Responde directo 400 con <code>{ message: 'Datos de entrada inválidos', errors: [{ campo, mensaje }] }</code> y <b>reemplaza</b> <code>req.body</code> por el dato ya limpio (línea 50).</td></tr>
+      <tr><td><b>C. <code>schema.parse()</code> en el servicio</b></td><td><code>game.service.ts</code> (sesiones, misiones, inventarios, ventas) y el login.</td><td>Lanza <code>ZodError</code>: en <code>game.routes.ts</code> llega a <code>handleErrors</code> (<code>app.ts:178</code>, con <code>formatZodError</code> en castellano) y en los controladores lo atrapa el registro (<code>error-handler.ts:42-45</code>) → 400.</td></tr>
+    </tbody>
+  </table></div>
+  <p class="meta">Los tres caminos conviven porque el proyecto se construyó por partes. Si preguntan: el de los controladores ya está unificado en un solo <code>validatePayload</code> y un solo registro de errores. Falta llevar <code>game.service.ts</code> a <code>schemas/</code> para que todo esté en el mismo lugar.</p>
+
+  <h4>4. Anatomía de un esquema de Zod</h4>
+<figure class="src"><figcaption>src/schemas/item.schema.ts:3-25</figcaption>
 <pre><code>const entero = z.number().int().min(0).max(2147483647);          // 2147483647 = máximo de INTEGER en PostgreSQL
-const schema = z.object({
+
+export const createItemSchema = z.object({
   nombre: z.string().trim().min(1).max(100), descripcion: z.string().trim().min(1),
   tipoObjeto: z.string().trim().min(1).max(50), valor: entero,
   nivelObjeto: entero.min(1), esUnico: z.boolean().optional(),
   idTienda: entero.min(1).nullable().optional(), posicion: entero.optional(),
 }).strict();
-export const compraSchema = z.object({ idPersonaje: entero.min(1), numInventario: entero.min(1), posicion: entero.optional() }).strict();</code></pre></figure>
+
+export const updateItemSchema = createItemSchema.partial().strict()
+  .refine((v) =&gt; Object.keys(v).length &gt; 0, 'Enviá al menos un campo');
+
+export const buyItemSchema = z.object({ idPersonaje: entero.min(1), numInventario: entero.min(1), posicion: entero.optional() }).strict();</code></pre></figure>
   <div class="tbl"><table>
     <thead><tr><th>Método</th><th>Efecto</th></tr></thead>
     <tbody>
       <tr><td><code>.trim()</code></td><td>Limpia espacios (transforma el dato, no solo lo valida).</td></tr>
       <tr><td><code>.int().min().max()</code></td><td>Entero en rango. El máximo coincide con el <code>integer</code> de la BD: sin él, un valor enorme llegaría a PostgreSQL y fallaría con un 500.</td></tr>
       <tr><td><code>.optional()</code> / <code>.nullable()</code></td><td>Campo ausente / valor <code>null</code> permitido (<code>idTienda</code>).</td></tr>
-      <tr><td><code>.strict()</code></td><td>Rechaza campos no declarados. Evita ataques de <i>mass assignment</i> como mandar <code>idUsuario</code> o <code>dinero</code> extra.</td></tr>
-      <tr><td><code>.partial()</code></td><td>Todos los campos opcionales: se usa para los <code>PUT</code> (<code>validateUpdateItem</code>, línea 17).</td></tr>
-      <tr><td><code>.extend()</code></td><td>Agrega campos a un esquema base (<code>create = fields.extend({ idUsuarioAnfitrion })</code>).</td></tr>
+      <tr><td><code>.strict()</code></td><td>Rechaza campos no declarados: evita el <i>mass assignment</i> (mandar <code>idUsuario</code> o <code>dinero</code> de más). Sin <code>.strict()</code>, Zod los <b>descarta</b> en silencio: es lo que pasa hoy en los esquemas de personaje, anfitrión y jugador (el fix <code>7b4bbb0</code> se lo quitó porque <code>requireOwnJugadorForPersonaje</code> inyecta <code>dinero</code>, <code>xp</code> y <code>nivel</code> en el body y <code>.strict()</code> rechazaba la petición).</td></tr>
+      <tr><td><code>.partial()</code></td><td>Todos los campos opcionales. Así <code>updateItemSchema</code> se <b>deriva</b> de <code>createItemSchema</code> (líneas 16-19) y las reglas no se escriben dos veces.</td></tr>
+      <tr><td><code>.extend()</code></td><td>Agrega campos a un esquema base (<code>createMatchSchema = matchFieldsSchema.extend({ idUsuarioAnfitrion })</code>).</td></tr>
       <tr><td><code>.refine(fn, msg)</code></td><td>Regla personalizada sobre varios campos (privada ⇒ contraseña).</td></tr>
-      <tr><td><code>safeParse</code> vs <code>parse</code></td><td><code>safeParse</code> devuelve <code>{ success, data | error }</code> sin lanzar; <code>parse</code> lanza <code>ZodError</code>.</td></tr>
+      <tr><td><code>safeParse</code> vs <code>parse</code></td><td><code>safeParse</code> devuelve <code>{ success, data | error }</code> sin lanzar (lo usa <code>validatePayload</code>); <code>parse</code> lanza <code>ZodError</code>.</td></tr>
+      <tr><td><code>z.ZodType&lt;CrearPersonajeDTO&gt;</code></td><td>Anotación que obliga al esquema a producir exactamente ese DTO (<code>character.schema.ts:10</code>).</td></tr>
     </tbody>
   </table></div>
+  <p>Detalle de nombres: cada esquema tiene también un alias en español (<code>export const crearObjetoSchema = createItemSchema</code>), igual que servicios y entidades.</p>
 
-  <h4>4. DTOs: entidad ≠ lo que viaja por HTTP</h4>
+  <h4>5. DTOs: entidad ≠ lo que viaja por HTTP</h4>
   <p>En <code>src/types/*.dto.ts</code> cada recurso tiene tres tipos con propósito distinto:</p>
 <figure class="src"><figcaption>src/types/match.dto.ts (resumen)</figcaption>
 <pre><code>export type EstadoPartida = 'activa' | 'finalizada';
@@ -1329,39 +1389,71 @@ export interface PartidaPublicaDTO { idPartida: number; nombre: string; estado: 
                                      limiteJugadores: number; esPrivada: boolean;
                                      idUsuarioAnfitrion: number; nicknameAnfitrion: string; }   // SIN contraseña</code></pre></figure>
   <ul>
-    <li><b>Entrada</b> (<code>Crear…DTO</code>, <code>Actualizar…DTO</code>): solo lo que el cliente puede enviar. No incluye ids autogenerados ni campos calculados.</li>
-    <li><b>Salida</b> (<code>…PublicoDTO</code>): lo que se puede mostrar. Se arma con funciones <code>toPublic…</code> (<code>toPublicMatch</code>, <code>toPublicCharacter</code>, <code>toPublicItem</code>, <code>toPublicClass</code>) y <b>nunca</b> incluye <code>contrasena</code>.</li>
-    <li>Cambiar una columna interna no rompe la API mientras el DTO se mantenga.</li>
+    <li><b>Entrada</b> (<code>Crear…DTO</code>, <code>Actualizar…DTO</code>): solo lo que el cliente puede enviar.</li>
+    <li><b>Salida</b> (<code>…PublicoDTO</code>): lo que se puede mostrar, armado con <code>toPublicMatch</code>, <code>toPublicCharacter</code>, <code>toPublicItem</code>, <code>toPublicClass</code>. <b>Nunca</b> incluye <code>contrasena</code>.</li>
+    <li>El esquema y el DTO se mantienen alineados: los esquemas de entrada se escriben contra el DTO (<code>z.ZodType&lt;CrearPersonajeDTO&gt;</code>) y los servicios reciben el tipo ya validado.</li>
   </ul>
 
-  <h4>5. El contrato con el frontend</h4>
+  <h4>6. El contrato con el frontend</h4>
   <ul>
-    <li><code>frontend/src/interfaces.ts</code> refleja las entidades (<code>Usuario</code>, <code>Partida</code>, <code>Sesion</code>, <code>Objeto</code>…) con comentarios <code>CP</code>/<code>CF</code> del DER (por ejemplo <code>estadoSesion: number; // 1 = en curso, 2 = finalizada</code>, línea 33).</li>
-    <li>Cada <code>services/*.service.ts</code> deriva sus tipos con utilidades de TypeScript: <code>CreateItemData = Omit&lt;PublicItem, 'idObjeto' | 'idPersonaje' | 'numInventario'&gt;</code> (<code>item.service.ts:21</code>), <code>UpdateItemData = Partial&lt;CreateItemData&gt;</code>, <code>CreateClassData = Omit&lt;Clase, 'idClase'&gt;</code>.</li>
+    <li><code>frontend/src/interfaces.ts</code> refleja las entidades con comentarios <code>CP</code>/<code>CF</code> del DER (por ejemplo <code>estadoSesion: number; // 1 = en curso, 2 = finalizada</code>, línea 33).</li>
+    <li>Cada <code>services/*.service.ts</code> deriva sus tipos con utilidades de TypeScript: <code>CreateItemData = Omit&lt;PublicItem, 'idObjeto' | 'idPersonaje' | 'numInventario'&gt;</code> (<code>item.service.ts:21</code>), <code>UpdateItemData = Partial&lt;CreateItemData&gt;</code>.</li>
     <li>El contrato está <b>duplicado a mano</b> (DTOs del backend e interfaces del frontend); no hay un paquete compartido. Se mantiene con revisión y con los tests de componentes y E2E.</li>
   </ul>
 
-  <h4>6. Quién convierte cada error en un código HTTP</h4>
+  <h4>7. Del error al código HTTP: <code>shared/error-handler.ts</code></h4>
+<figure class="src"><figcaption>src/shared/error-handler.ts:32-45 y 75-101 (resumen)</figcaption>
+<pre><code>const errorRegistry = new Map&lt;ErrorConstructor, ErrorRule&gt;();
+export function registerError(ctor, rule: { status: number; message?: string | ((err) =&gt; string) }) { errorRegistry.set(ctor, rule); }
+
+registerError(ValidationError, { status: 400 });
+registerError(ZodError, { status: 400, message: (err) =&gt; err.issues.map(i =&gt; `${i.path.join('.')}: ${i.message}`).join('; ') });
+registerError(ItemNotFoundError, { status: 404 });
+registerError(InsufficientMoneyError, { status: 409 });
+registerError(UniqueConstraintViolationException, { status: 409, message: 'Ese registro ya existe' });
+
+export function handleControllerError(error: unknown, res: Response, fallbackMessage: string): void {
+  if (error instanceof HttpError) { res.status(error.status).json({ message: error.message }); return; }
+  for (const [ctor, rule] of errorRegistry.entries()) {
+    if (error instanceof ctor) { res.status(rule.status).json({ message: … }); return; }
+  }
+  console.error(fallbackMessage, error);  res.status(500).json({ message: fallbackMessage });
+}</code></pre></figure>
+  <p>Antes, cada controlador tenía su cadena de <code>if (error instanceof …)</code>. Ahora hay <b>una tabla</b>: para que un error nuevo devuelva 404, se agrega una línea <code>registerError(MiError, { status: 404 })</code> y no se toca ningún controlador (principio abierto/cerrado).</p>
   <div class="tbl"><table>
-    <thead><tr><th>Se lanza…</th><th>Se captura en…</th><th>Resultado</th></tr></thead>
+    <thead><tr><th>Se lanza…</th><th>Se resuelve en…</th><th>Resultado</th></tr></thead>
     <tbody>
-      <tr><td><code>ErrorValidacion*</code> (match, class, item, personaje)</td><td><code>catch</code> del controlador</td><td class="http err">400</td></tr>
-      <tr><td><code>ZodError</code> (esquemas dentro de servicios)</td><td><code>handleErrors</code> <code>app.ts:178</code></td><td class="http err">400</td></tr>
-      <tr><td><code>HttpError(status, msg)</code> (<code>conflict()</code>, <code>hostedGame</code>, <code>ownedCharacter</code>)</td><td><code>handleErrors</code> <code>app.ts:177</code></td><td class="http err">400 / 403 / 404 / 409</td></tr>
-      <tr><td>Errores de dominio (<code>DineroInsuficienteError</code>, <code>InventarioLlenoError</code>…)</td><td><code>catch</code> de <code>item.controller.ts:142-175</code></td><td class="http err">404 / 409</td></tr>
-      <tr><td><code>UniqueConstraintViolationException</code>, <code>ForeignKeyConstraintViolationException</code></td><td><code>persistenceError</code> o <code>handleErrors</code> <code>app.ts:179-180</code></td><td class="http err">409</td></tr>
-      <tr><td>JSON mal formado (<code>SyntaxError</code>) / cuerpo &gt; 64 KB</td><td><code>handleErrors</code> <code>app.ts:181,183</code></td><td class="http err">400 / 413</td></tr>
-      <tr><td>Cualquier otro</td><td><code>handleErrors</code> <code>app.ts:184-185</code></td><td class="http err">500 con mensaje genérico y <code>console.error</code></td></tr>
+      <tr><td><code>ValidationError</code> (y el alias <code>ErrorValidacion*</code> que usan los servicios)</td><td>registro, <code>error-handler.ts:41</code></td><td class="http err">400</td></tr>
+      <tr><td><code>ZodError</code> (<code>schema.parse</code> en servicios)</td><td>registro, líneas 42-45; en <code>game.routes.ts</code>, <code>handleErrors</code> <code>app.ts:178</code></td><td class="http err">400</td></tr>
+      <tr><td><code>HttpError(status, msg)</code> (<code>conflict()</code>, <code>hostedGame</code>, <code>ownedCharacter</code>)</td><td><code>error-handler.ts:76-79</code> o <code>app.ts:177</code></td><td class="http err">400 / 403 / 404 / 409</td></tr>
+      <tr><td>Errores de dominio «no encontrado» (<code>HostNotFoundError</code>, <code>ReferenceNotFoundError</code>, <code>ItemNotFoundError</code>…)</td><td>registro, líneas 48-54</td><td class="http err">404</td></tr>
+      <tr><td>Errores de dominio de conflicto (<code>NicknameInUseError</code>, <code>InsufficientMoneyError</code>, <code>InventoryFullError</code>…)</td><td>registro, líneas 57-64</td><td class="http err">409</td></tr>
+      <tr><td><code>UniqueConstraintViolationException</code>, <code>ForeignKeyConstraintViolationException</code></td><td>registro, líneas 65-69</td><td class="http err">409</td></tr>
+      <tr><td>Cualquier clase cuyo nombre contenga «ValidationError» o «ErrorValidacion»</td><td>red de seguridad, líneas 92-96</td><td class="http err">400</td></tr>
+      <tr><td>JSON mal formado / cuerpo &gt; 64 KB</td><td><code>handleErrors</code> <code>app.ts:181,183</code></td><td class="http err">400 / 413</td></tr>
+      <tr><td>Cualquier otro</td><td>líneas 99-100 y <code>app.ts:184-185</code></td><td class="http err">500 con mensaje genérico y <code>console.error</code></td></tr>
     </tbody>
   </table></div>
-  <p>Clave de diseño: <b>el 500 nunca expone el detalle</b>. Lo que pasó queda en el log del servidor y el cliente solo recibe «No se pudo completar la operación».</p>
+  <p>Clave de diseño: <b>el 500 nunca expone el detalle</b>. Lo que pasó queda en el log del servidor y el cliente recibe solo el mensaje genérico. En el mismo archivo hay un middleware <code>validateParamId</code> (líneas 106-121) para validar ids de ruta, pero hoy los controladores siguen usando su <code>getId</code> local y los routers todavía no lo montan.</p>
+
+  <h4>8. Del error al usuario: <code>ErrorRenderer</code> en el frontend</h4>
+  <p>El backend ya devuelve el código HTTP correcto; el frontend decide <b>cómo mostrarlo</b>. <code>frontend/src/components/ui/ErrorRenderer.tsx</code> hace lo mismo que el registro del backend, pero del lado de la pantalla:</p>
+  <ul>
+    <li><code>classifyError(error)</code> (línea 13) acepta un <code>string</code>, un <code>Error</code> o un <code>ApiError</code> y devuelve <code>{ category, title, message, alertType }</code>. Mira primero el <code>status</code> (0 → red, 401/403 → permisos, 404, 409, 400) y, si no hay, busca palabras clave en el mensaje con expresiones regulares («no encontrado», «ya existe», «debe ser»…). Lo que no encaja es <code>server</code>.</li>
+    <li>Categorías: <code>validation</code> y <code>conflict</code> → alerta amarilla; <code>not_found</code> → informativa; <code>auth</code>, <code>network</code> y <code>server</code> → roja.</li>
+    <li><code>renderAppError(error)</code> elige la función <code>renderValidationError</code>, <code>renderConflictError</code>, etc. y <code>ErrorBanner</code> es el componente que la envuelve. Todas terminan en <code>Alert</code>.</li>
+    <li><code>NoticeModal.tsx</code> la usa: si no recibe <code>titulo</code> ni <code>tipo</code>, los saca de <code>classifyError(mensaje)</code> (por ejemplo «Conflicto de Regla de Negocio» para un 409).</li>
+  </ul>
+  <p>Cadena completa: <code>schema</code> (Zod) → <code>validatePayload</code> lanza <code>ValidationError</code> → <code>handleControllerError</code> responde 400 → <code>api.ts</code> lanza <code>ApiError(status, mensaje en castellano)</code> → <code>classifyError</code> → alerta con el título y color adecuados. Prueba: <code>ErrorRenderer.test.tsx</code>.</p>
 
   <div class="say"><b class="t">Preguntas probables</b>
     <div class="qa">
       <p><b>¿Por qué Zod y no <code>class-validator</code> u otro?</b> Esquemas declarativos, inferencia de tipos (<code>z.infer</code>) y un único objeto sirve de validador y de tipo. En <code>user.schema.ts</code> se exportan tipos con <code>z.infer&lt;typeof createUserSchema&gt;</code>.</p>
-      <p><b>¿Qué es <i>mass assignment</i>?</b> Que el cliente envíe campos de más y el servidor los guarde sin mirar (por ejemplo <code>dinero</code> o <code>idUsuario</code>). <code>.strict()</code> y los DTOs lo evitan; además <code>requireOwnJugadorForPersonaje</code> pisa los valores sensibles.</p>
+      <p><b>¿Por qué sacaron los validators por clase?</b> Eran casi iguales: parsear, juntar mensajes y lanzar un error propio. Ahora hay un solo <code>validatePayload</code> y los esquemas quedan como datos en <code>schemas/</code>.</p>
+      <p><b>¿Qué es <i>mass assignment</i>?</b> Que el cliente envíe campos de más y el servidor los guarde sin mirar (por ejemplo <code>dinero</code> o <code>idUsuario</code>). <code>.strict()</code> lo rechaza; sin <code>.strict()</code> (personajes, anfitriones y jugadores), Zod descarta lo que no está en el esquema; y <code>requireOwnJugadorForPersonaje</code> fija los valores sensibles.</p>
+      <p><b>¿Cómo sabe el frontend qué tipo de error mostrar?</b> <code>classifyError</code> mira el <code>status</code> del <code>ApiError</code> y, si hace falta, el texto del mensaje; el resultado decide el título y el color de la alerta.</p>
       <p><b>¿Por qué el frontend también valida?</b> Por experiencia de usuario: avisa sin ir al servidor. No reemplaza la validación del backend.</p>
-      <p><b>Pruebas:</b> <code>src/tests/user.schema.test.ts</code> (rechaza <code>idUsuario</code> por <code>.strict()</code>, rechaza <code>{}</code> en update), <code>src/tests/errors.test.ts</code> (413 y 400), <code>src/tests/host.validator.test.ts</code>.</p>
+      <p><b>Pruebas:</b> <code>src/tests/user.schema.test.ts</code> (rechaza <code>idUsuario</code> por <code>.strict()</code>, rechaza <code>{}</code> en update), <code>src/tests/errors.test.ts</code> (413 y 400), <code>src/tests/host.validator.test.ts</code>, y <code>frontend/src/components/ui/__tests__/ErrorRenderer.test.tsx</code> para cómo se muestran los errores.</p>
     </div>
   </div>
 </section>
@@ -1374,7 +1466,7 @@ export interface PartidaPublicaDTO { idPartida: number; nombre: string; estado: 
     <thead><tr><th>Código</th><th>Quién lo genera</th><th>Ejemplo</th></tr></thead>
     <tbody>
       <tr><td class="http ok">200 / 201 / 204</td><td>Controlador o ruta</td><td>Partida creada (201), sesión borrada (204).</td></tr>
-      <tr><td class="http err">400</td><td>Zod, validadores, <code>routeId</code>/<code>getId</code></td><td>«Las partidas privadas requieren contraseña», «ID inválido».</td></tr>
+      <tr><td class="http err">400</td><td>Zod (<code>validatePayload</code>, <code>validate</code>), <code>routeId</code>/<code>getId</code></td><td>«Las partidas privadas requieren contraseña», «ID inválido».</td></tr>
       <tr><td class="http err">401</td><td><code>requireAuth</code>, login</td><td>«Iniciá sesión para continuar», «Usuario o contraseña incorrecta».</td></tr>
       <tr><td class="http err">403</td><td><code>authorization.ts</code>, defensa CSRF</td><td>«Ese personaje pertenece a otro jugador», «Origen no permitido».</td></tr>
       <tr><td class="http err">404</td><td>Servicios y controladores</td><td>«Partida no encontrada».</td></tr>
@@ -1385,7 +1477,7 @@ export interface PartidaPublicaDTO { idPartida: number; nombre: string; estado: 
 </section>
 
 <footer>
-  Material para la defensa de Desarrollo de Software. Las citas <code>archivo:línea</code> corresponden al commit <code>8604cc1</code>; si se modifica el código, conviene revisar las líneas con <code>grep -n</code>.
+  Material para la defensa de Desarrollo de Software. Las citas <code>archivo:línea</code> corresponden al commit <code>14fe1e4</code> de <code>main</code>; si se modifica el código, conviene revisar las líneas con <code>grep -n</code>.
 </footer>
 </div>
 </body>
