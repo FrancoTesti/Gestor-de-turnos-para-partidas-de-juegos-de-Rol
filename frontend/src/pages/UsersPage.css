@@ -1,0 +1,211 @@
+.users-page {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  font-size: 2rem;
+}
+
+.btn-back {
+  margin-bottom: 1rem;
+}
+
+/* Stats */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border-color: var(--accent);
+}
+
+.stat-label {
+  margin: 0 0 0.5rem 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.stat-value {
+  margin: 0;
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: var(--text-h);
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  background: var(--bg-card);
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border);
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+}
+
+/* Form View */
+.form-view {
+  display: flex;
+  justify-content: center;
+  padding: 2rem 0;
+}
+
+.form-container {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  max-width: 520px;
+  width: 100%;
+  box-shadow: var(--shadow-lg);
+}
+
+.form-container h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+/* Detail View */
+.detail-view {
+  padding: 1rem 0;
+}
+
+.detail-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 2rem;
+  box-shadow: var(--shadow);
+}
+
+.detail-card h2 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.85rem 1rem;
+  background: var(--bg-card-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.detail-row label {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.detail-row span {
+  color: var(--text);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+/* Responsive Mobile First */
+.page-header { flex-direction: column; align-items: stretch; }
+.page-header h1 { font-size: 1.5rem; }
+.btn { width: 100%; }
+.stats { grid-template-columns: 1fr; }
+.detail-row { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+.detail-actions { flex-direction: column; }
+.detail-actions .btn { width: 100%; }
+
+@media (min-width: 768px) {
+  .page-header { flex-direction: row; align-items: center; }
+  .page-header h1 { font-size: 2rem; }
+  .btn { width: auto; }
+  .stats { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+  .detail-row { flex-direction: row; align-items: center; gap: 0; }
+  .detail-actions { flex-direction: row; }
+  .detail-actions .btn { width: auto; }
+}
+
+/* Pop-up modal para detalle de usuario */
+.usuario-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.usuario-modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+

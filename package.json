@@ -1,0 +1,51 @@
+{
+  "name": "gestor-turnos-backend",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "nodemon --exec ts-node src/app.ts",
+    "start": "node dist/app.js",
+    "build": "tsc",
+    "build:all": "npm run build && npm --prefix frontend ci --include=dev && npm --prefix frontend run build",
+    "test": "vitest run src/tests",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:integration": "npm run build && c8 --reporter=text --reporter=json-summary --reports-dir=coverage/integracion --check-coverage --lines 70 --statements 70 --branches 68 --functions 66 node --test --test-concurrency=1 dist/integration/game.test.js",
+    "docs:check": "node scripts/verify-doc-links.mjs",
+    "demo:datos": "node scripts/demo-data.mjs",
+    "test:e2e": "npm run build && playwright test",
+    "test:integration": "npm run build && node --test --test-concurrency=1 dist/integration/game.test.js",
+    "passwords:migrate": "ts-node src/scripts/migrate-passwords.ts",
+    "schema:create": "ts-node ./node_modules/@mikro-orm/cli/cli.js schema:create --run",
+    "schema:dump": "ts-node src/validate-entities.ts",
+    "db:rls": "node scripts/enable-rls.mjs",
+    "db:probar": "node scripts/test-supabase-connection.mjs"
+  },
+  "dependencies": {
+    "@mikro-orm/core": "^6.6.16",
+    "@mikro-orm/postgresql": "^6.6.16",
+    "@types/express": "^5.0.6",
+    "@types/pg": "^8.23.1",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "pg": "^8.23.1",
+    "prompt-sync": "^4.2.0",
+    "reflect-metadata": "^0.2.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.10.2",
+    "@mikro-orm/cli": "^6.6.16",
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.2.0",
+    "@types/prompt-sync": "^4.2.3",
+    "@types/react": "^19.2.17",
+    "@vitest/coverage-v8": "^4.1.11",
+    "c8": "^12.0.0",
+    "nodemon": "^3.1.14",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.11"
+  },
+  "mikro-orm": {
+    "useTsNode": true
+  }
+}

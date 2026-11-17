@@ -1,0 +1,110 @@
+import { type Request, type Response } from 'express';
+import { handleControllerError } from '../shared/error-handler';
+import {
+  CharacterService,
+  PersonajeService,
+} from '../services/character.service';
+import { validatePayload } from '../shared/validate';
+import { createCharacterSchema, updateCharacterSchema } from '../schemas/character.schema';
+
+type IdParams = {
+  id: string;
+};
+
+function getId(idParam: string): number | null {
+  if (!/^\d+$/.test(idParam)) return null;
+  const id = Number(idParam);
+  return Number.isSafeInteger(id) && id > 0 ? id : null;
+}
+
+export const obtenerId = getId;
+
+export class CharacterController {
+  private characterService: CharacterService;
+
+  constructor(characterService: CharacterService) {
+    this.characterService = characterService;
+  }
+
+  async getAll(req: Request, res: Response): Promise<void> {
+    try {
+      const idClaseQuery = req.query.idClase ? Number(req.query.idClase) : undefined;
+      const filtros = idClaseQuery && !isNaN(idClaseQuery) ? { idClase: idClaseQuery } : undefined;
+
+      const personajes = await this.characterService.getAll(filtros);
+      res.json(personajes);
+    } catch (error) {
+      handleControllerError(error, res, 'Error al obtener los personajes');
+    }
+  }
+
+  async getById(req: Request<IdParams>, res: Response): Promise<void> {
+    const id = getId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ message: 'ID de personaje inválido' });
+      return;
+    }
+
+    try {
+      const personaje = await this.characterService.getById(id);
+      if (!personaje) {
+        res.status(404).json({ message: 'Personaje no encontrado' });
+        return;
+      }
+      res.json(personaje);
+    } catch (error) {
+      handleControllerError(error, res, 'Error al obtener el personaje');
+    }
+  }
+
+  async createCharacter(req: Request, res: Response): Promise<void> {
+    try {
+      const data = validatePayload(createCharacterSchema, req.body);
+      const nuevoPersonaje = await this.characterService.createCharacter(data);
+      res.status(201).json(nuevoPersonaje);
+    } catch (error) {
+      handleControllerError(error, res, 'Error interno al crear el personaje');
+    }
+  }
+
+  async updateCharacter(req: Request<IdParams>, res: Response): Promise<void> {
+    const id = getId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ message: 'ID de personaje inválido' });
+      return;
+    }
+
+    try {
+      const data = validatePayload(updateCharacterSchema, req.body);
+      const personajeActualizado = await this.characterService.updateCharacter(id, data);
+      if (!personajeActualizado) {
+        res.status(404).json({ message: 'Personaje no encontrado' });
+        return;
+      }
+      res.json(personajeActualizado);
+    } catch (error) {
+      handleControllerError(error, res, 'Error interno al actualizar el personaje');
+    }
+  }
+
+  async deleteCharacter(req: Request<IdParams>, res: Response): Promise<void> {
+    const id = getId(req.params.id);
+    if (id === null) {
+      res.status(400).json({ message: 'ID de personaje inválido' });
+      return;
+    }
+
+    try {
+      const eliminado = await this.characterService.deleteCharacter(id);
+      if (!eliminado) {
+        res.status(404).json({ message: 'Personaje no encontrado' });
+        return;
+      }
+      res.status(204).send();
+    } catch (error) {
+      handleControllerError(error, res, 'Error al eliminar el personaje');
+    }
+  }
+}
+
+export const PersonajeController = CharacterController;

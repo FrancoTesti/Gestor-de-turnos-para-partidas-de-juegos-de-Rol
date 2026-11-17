@@ -1,0 +1,207 @@
+// app.ts — Punto de entrada del backend.
+// Inicializa MikroORM, arma Express y monta las rutas de la API.
+import 'reflect-metadata';
+import 'dotenv/config';
+import express, { type ErrorRequestHandler } from 'express';
+import { MikroORM, RequestContext } from '@mikro-orm/postgresql';
+import config from './mikro-orm.config';
+import { createUserRouter, crearUsuarioRouter } from './routes/user.routes';
+import { createClassRouter, crearClaseRouter } from './routes/class.routes';
+import { createItemRouter, crearObjetoRouter } from './routes/item.routes';
+import { createShopRouter, crearTiendaRouter } from './routes/shop.routes';
+import { createPlayerRouter, crearJugadorRouter } from './routes/player.routes';
+import { createHostRouter, crearAnfitrionRouter } from './routes/host.routes';
+import { createMatchRouter, crearPartidaRouter } from './routes/match.routes';
+import { createCharacterRouter, crearPersonajeRouter } from './routes/character.routes';
+import { createAuth } from './security/auth';
+import { HttpError } from './security/authorization';
+import { createGameRouter, crearJuegoRouter } from './routes/game.routes';
+
+import { existsSync } from 'node:fs';
+import path from 'node:path';
+import { ZodError } from 'zod';
+import { ForeignKeyConstraintViolationException, UniqueConstraintViolationException } from '@mikro-orm/core';
+
+export function createApp(orm: MikroORM) {
+  const app = express();
+
+  // Detrás del proxy del proveedor (Render, Railway...) la IP real llega en X-Forwarded-For. Sin esto
+  // todos los usuarios compartirían la misma IP y el mismo límite de intentos de login.
+  // Solo en producción: sin proxy delante, confiar en ese encabezado permitiría falsificar la IP.
+  if (process.env.NODE_ENV === 'production') app.set('trust proxy', 1);
+
+  // Middleware CORS para permitir peticiones desde el frontend
+  const allowedOrigin = (process.env.CORS_ORIGIN ?? 'http://localhost:5173').trim().replace(/\/+$/, '');
+  const allowedOrigins = [allowedOrigin];
+  if (allowedOrigin === 'http://localhost:5173') {
+    allowedOrigins.push('http://127.0.0.1:5173');
+  } else if (allowedOrigin === 'http://127.0.0.1:5173') {
+    allowedOrigins.push('http://localhost:5173');
+  }
+
+  app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header('Access-Control-Allow-Origin', origin);
+    } else {
+      res.header('Access-Control-Allow-Origin', allowedOrigin);
+    }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('X-Content-Type-Options', 'nosniff');
+    res.header('Cache-Control', 'no-store');
+    res.header('Vary', 'Origin');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+      res.sendStatus(204);
+      return;
+    }
+    next();
+  });
+
+  // Parsea el body JSON de los POST/PUT
+  app.use(express.json({ limit: '64kb' }));
+  app.use((req, res, next) => {
+    // Defensa CSRF: un POST/PUT/DELETE solo se acepta desde el frontend autorizado (CORS_ORIGIN) o desde
+    // el propio servidor, que es el caso de la app publicada con el frontend servido por la API.
+    // Un sitio ajeno manda su propio Origin, que no coincide con ninguno de los dos.
+    const origenPropio = `${req.protocol}://${req.get('host')}`;
+    const origenValido = req.headers.origin && (allowedOrigins.includes(req.headers.origin) || req.headers.origin === origenPropio);
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && req.headers.origin && !origenValido) {
+      res.status(403).json({ message: 'Origen no permitido' }); return;
+    }
+    next();
+  });
+
+  // Cada request trabaja con su propia copia (fork) del EntityManager.
+  app.use((req, res, next) => RequestContext.create(orm.em, next));
+
+  // Rutas de estado
+  app.get('/api/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      message: 'API del Gestor de Turnos para Juegos de Rol funcionando correctamente',
+      timestamp: new Date().toISOString(),
+      endpoints: [
+        '/api/usuarios', '/api/clases', '/api/objetos', '/api/tiendas',
+        '/api/jugadores', '/api/anfitriones', '/api/partidas', '/api/personajes',
+      ],
+    });
+  });
+
+  // Rutas de la API
+  const auth = createAuth(orm.em);
+  app.use('/api/auth', auth.router);
+  app.use('/api', auth.requireAuth, createGameRouter(orm.em));
+  app.use('/api/usuarios', auth.requireAuth, createUserRouter(orm.em));
+  app.use('/api/clases', auth.requireAuth, createClassRouter(orm.em));
+  app.use('/api/objetos', auth.requireAuth, createItemRouter(orm.em));
+  app.use('/api/tiendas', auth.requireAuth, createShopRouter(orm.em));
+  app.use('/api/jugadores', auth.requireAuth, createPlayerRouter(orm.em));
+  app.use('/api/anfitriones', auth.requireAuth, createHostRouter(orm.em));
+  app.use('/api/partidas', auth.requireAuth, createMatchRouter(orm.em));
+  app.use('/api/personajes', auth.requireAuth, createCharacterRouter(orm.em));
+
+  // Frontend compilado (frontend/dist): se sirve desde el mismo origen que la API, porque la cookie
+  // de sesión es SameSite=Strict. En desarrollo no existe esa carpeta y Vite atiende el frontend.
+  const frontendDist = path.resolve(__dirname, '../frontend/dist');
+  if (existsSync(path.join(frontendDist, 'index.html'))) {
+    app.use(express.static(frontendDist, {
+      index: false,
+      setHeaders: (res, archivo) => {
+        // Los archivos de Vite llevan hash en el nombre; el HTML debe revalidarse siempre.
+        res.setHeader('Cache-Control', archivo.endsWith('.html') ? 'no-cache' : 'public, max-age=3600');
+      },
+    }));
+    // Fallback para las rutas de React (/dashboard, /profiles...) al recargar la página.
+    app.get(/^\/(?!api(\/|$)).*/, (_req, res) => {
+      res.setHeader('Cache-Control', 'no-cache');
+      res.sendFile(path.join(frontendDist, 'index.html'));
+    });
+  }
+
+  // 404
+  app.use((req, res) => {
+    res.status(404).json({ message: `No existe la ruta ${req.method} ${req.path}` });
+  });
+
+  app.use(handleErrors);
+  return app;
+}
+
+export const largePayloadMessage = 'Los datos enviados superan el límite de 64 KB. Acortá el texto e intentá de nuevo.';
+export const mensajeCuerpoGrande = largePayloadMessage;
+
+export function formatZodError(err: ZodError): string {
+  const mensajesPorCampo = new Map<string, string>();
+  for (const issue of err.issues) {
+    const campo = issue.path.join('.');
+    const nombreCampo = campo === 'numSesion' ? 'número de sesión'
+      : campo === 'idPartida' ? 'partida'
+      : campo === 'duracionSesion' ? 'duración de sesión'
+      : campo === 'numMision' ? 'número de misión'
+      : campo === 'numInventario' ? 'número de inventario'
+      : campo === 'precio' ? 'precio'
+      : campo === 'limiteJugadores' ? 'límite de jugadores'
+      : campo === 'dineroTotal' || campo === 'dinero' ? 'dinero'
+      : campo === 'xpTotal' || campo === 'xp' ? 'XP'
+      : campo === 'cantidadEspacio' ? 'capacidad de inventario'
+      : campo || 'valor';
+
+    if (issue.code === 'too_big') {
+      const max = (issue.maximum ?? 2147483647).toLocaleString('es-AR');
+      if (!mensajesPorCampo.has(campo) || (issue.maximum && issue.maximum < 9007199254740991)) {
+        mensajesPorCampo.set(campo, `El ${nombreCampo} es demasiado grande. Debe ser menor o igual a ${max}.`);
+      }
+    } else if (issue.code === 'too_small') {
+      if (campo === 'idPartida' || campo === 'numSesion') {
+        mensajesPorCampo.set('sesion', 'Debes seleccionar una sesión en curso para la misión.');
+      } else {
+        const min = issue.minimum ?? 1;
+        mensajesPorCampo.set(campo, `El ${nombreCampo} debe ser mayor o igual a ${min}.`);
+      }
+    } else if (issue.code === 'invalid_type') {
+      mensajesPorCampo.set(campo, `El ${nombreCampo} tiene un formato o tipo inválido.`);
+    } else {
+      mensajesPorCampo.set(campo, `${campo ? campo + ': ' : ''}${issue.message}`);
+    }
+  }
+  return Array.from(mensajesPorCampo.values()).join('; ');
+}
+
+export const formatearZodError = formatZodError;
+
+// Traduce los errores conocidos a respuestas HTTP. Se exporta para que las pruebas
+// monten routers sueltos con el mismo tratamiento de errores que la aplicación real.
+export const handleErrors: ErrorRequestHandler = (err, _req, res, _next) => {
+  if (err instanceof HttpError) { res.status(err.status).json({ message: err.message }); return; }
+  if (err instanceof ZodError) { res.status(400).json({ message: formatZodError(err) }); return; }
+  if (err instanceof UniqueConstraintViolationException) { res.status(409).json({ message: 'Ese registro ya existe' }); return; }
+  if (err instanceof ForeignKeyConstraintViolationException) { res.status(409).json({ message: 'El registro tiene datos relacionados; eliminarlos primero' }); return; }
+  if (err instanceof SyntaxError) { res.status(400).json({ message: 'JSON inválido' }); return; }
+  // express.json rechaza los cuerpos de más de 64 KB con este tipo; sin este caso terminaba en 500.
+  if (err?.type === 'entity.too.large') { res.status(413).json({ message: largePayloadMessage }); return; }
+  console.error(err);
+  res.status(500).json({ message: 'No se pudo completar la operación' });
+};
+
+export const manejarErrores = handleErrors;
+
+async function main() {
+  const orm = await MikroORM.init(config);
+  const app = createApp(orm);
+
+  const port = Number(process.env.PORT ?? 3000);
+  app.listen(port, () => {
+    console.log(`API escuchando en http://localhost:${port}`);
+    console.log(`Jugadores: GET http://localhost:${port}/api/jugadores`);
+    console.log(`Anfitriones: GET http://localhost:${port}/api/anfitriones`);
+    console.log(`Partidas: GET http://localhost:${port}/api/partidas`);
+    console.log(`Personajes: GET http://localhost:${port}/api/personajes`);
+  });
+}
+
+if (require.main === module) main().catch((err) => {
+  console.error('No se pudo iniciar el servidor:', err);
+  process.exit(1);
+});

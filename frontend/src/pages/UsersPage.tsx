@@ -1,0 +1,94 @@
+import { useState, useEffect } from 'react';
+import { useUser } from '../context/UserContext';
+import UserList from '../components/usuarios/UserList';
+import UserDetail from '../components/usuarios/UserDetail';
+import UserForm, { type UserFormData } from '../components/usuarios/UserForm';
+import { NoticeModal } from '../components/ui';
+import type { Usuario } from '../interfaces';
+import { api } from '../services/api';
+import './UsersPage.css';
+
+export default function UsersPage() {
+  const { usuarios, usuarioLogueado, recargar, rolDe, logout, cargandoSesion } = useUser();
+  const [selected, setSelected] = useState<Usuario>();
+  const [editing, setEditing] = useState(false);
+  const [error, setError] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selected && !editing) {
+        setSelected(undefined);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selected, editing]);
+
+  const own = selected?.idUsuario === usuarioLogueado?.idUsuario;
+  const save = async (data: UserFormData) => {
+    try {
+      setError('');
+      setBusy(true);
+      const { idUsuario: _id, ...payload } = data;
+      await api(selected ? `/usuarios/${selected.idUsuario}` : '/usuarios', selected ? 'PUT' : 'POST', payload);
+      if (selected && payload.contrasena) await logout();
+      else await recargar();
+      setEditing(false); setSelected(undefined);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'No se pudo guardar');
+    } finally {
+      setBusy(false);
+    }
+  };
+  const remove = async (id: number) => {
+    if (!window.confirm('¿Eliminar tu cuenta? Si tiene personajes o partidas, primero deberás resolver esas relaciones.')) return;
+    setBusy(true); setError('');
+    try { await api(`/usuarios/${id}`, 'DELETE'); await logout(); }
+    catch (e) { setError(e instanceof Error ? e.message : 'No se pudo eliminar'); }
+    finally { setBusy(false); }
+  };
+  return <section className="users-page">
+    <h1>Gestión de Usuarios</h1>
+    {error && <p role="alert">{error}</p>}
+    <NoticeModal
+      isOpen={Boolean(error)}
+      titulo="Aviso de Usuarios"
+      mensaje={error}
+      onClose={() => setError('')}
+    />
+    {usuarioLogueado && rolDe(usuarioLogueado.idUsuario) === 'anfitrion' && !editing && <button className="btn-primary" onClick={() => { setSelected(undefined); setEditing(true); }}>Nuevo usuario</button>}
+    {editing ? (
+      <UserForm usuario={selected} onGuardar={save} onCancelar={() => setEditing(false)} />
+    ) : (
+      <>
+        <UserList
+          usuarios={usuarios}
+          onSeleccionar={setSelected}
+          cargando={busy || (cargandoSesion && usuarios.length === 0)}
+          usuarioSeleccionadoId={selected?.idUsuario}
+        />
+        {selected && (
+          <div
+            className="usuario-modal-overlay"
+            onClick={() => setSelected(undefined)}
+            role="dialog"
+            aria-modal="true"
+          >
+            <div
+              className="usuario-modal-content"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UserDetail
+                usuario={selected}
+                onCerrar={() => setSelected(undefined)}
+                onEditar={own ? () => setEditing(true) : undefined}
+                onEliminar={own ? remove : undefined}
+              />
+            </div>
+          </div>
+        )}
+      </>
+    )}
+  </section>;
+}

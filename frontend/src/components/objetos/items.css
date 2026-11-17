@@ -1,0 +1,427 @@
+.seccion-header,
+.objeto-filtros,
+.objeto-acciones,
+.objeto-campos-numericos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.seccion-header {
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.seccion-header h1,
+.objeto-card h3,
+.objeto-detalle h2 {
+  margin: 0.25rem 0;
+}
+
+.objeto-filtros {
+  margin-bottom: 1.25rem;
+  background: var(--bg-card);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  align-items: flex-end;
+}
+
+.objeto-filtros label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.objeto-filtros input,
+.objeto-filtros select {
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
+  font: inherit;
+  font-size: 0.95rem;
+}
+
+.objeto-filtros input {
+  box-sizing: border-box;
+  flex: 1 1 12rem;
+  min-width: 0;
+}
+
+.objetos-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.objeto-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.5rem;
+}
+
+.objeto-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg-card);
+  box-shadow: 0 4px 16px -2px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.objeto-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.objeto-card.seleccionado {
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 0 0 2px var(--accent), var(--accent-glow);
+}
+
+.objeto-card-contenido {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  padding: 1.35rem 1.25rem;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  line-height: 1.45;
+}
+
+.objeto-tipo {
+  color: var(--accent-text, var(--accent));
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.objeto-acciones {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem 1.25rem;
+  margin-top: auto;
+}
+
+.objeto-acciones:empty {
+  display: none;
+  padding: 0;
+}
+
+.objeto-acciones button {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  cursor: pointer;
+}
+
+.objeto-acciones .peligro,
+.detalle-error {
+  color: var(--error-text);
+}
+
+.objeto-detalle dl {
+  display: grid;
+  gap: 0.65rem;
+  background: var(--bg-card-secondary);
+  padding: 1rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.objeto-detalle dl div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.objeto-detalle dt {
+  font-weight: 700;
+  color: var(--text-h);
+}
+
+.objeto-detalle dd {
+  margin: 0;
+  color: var(--text);
+}
+
+.btn-comprar {
+  width: 100%;
+  border: 0;
+  border-radius: var(--radius-sm);
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.35);
+  transition: all 0.2s ease;
+}
+
+.btn-comprar:hover:not(:disabled) {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  transform: translateY(-1px);
+}
+
+.btn-comprar:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-comprar.btn-ya-comprado {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3) !important;
+  cursor: not-allowed !important;
+  opacity: 0.9 !important;
+  pointer-events: none;
+}
+
+.compra-formulario {
+  display: grid;
+  gap: 0.85rem;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.compra-formulario h3,
+.compra-precio {
+  margin: 0;
+  color: var(--text-h);
+}
+
+.compra-formulario label {
+  display: grid;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.compra-formulario input,
+.compra-formulario select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
+  font: inherit;
+}
+
+.compra-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.compra-acciones .btn-comprar {
+  margin-top: 0;
+}
+
+.objeto-formulario {
+  display: grid;
+  gap: 1.15rem;
+}
+
+.objeto-formulario .form-group {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.objeto-formulario .form-group > span {
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.objeto-formulario input,
+.objeto-formulario select,
+.objeto-formulario textarea {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem;
+  color: var(--text-h);
+  background: var(--bg-card-secondary);
+  font: inherit;
+}
+
+.objeto-formulario .error-text {
+  color: var(--error-text);
+  font-size: 0.875rem;
+}
+
+.objeto-formulario .form-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.objeto-campos-numericos > * {
+  flex: 1;
+}
+
+.estado-lista {
+  padding: 2.5rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-md);
+  text-align: center;
+  color: var(--text-muted);
+  background: var(--bg-card);
+}
+
+/* Responsive */
+.seccion-header,
+.objeto-filtros {
+  align-items: stretch;
+  flex-direction: column;
+}
+
+.objeto-campos-numericos {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.objeto-campos-numericos input {
+  width: 120px;
+}
+
+.objetos-layout {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 768px) {
+  .objeto-filtros {
+    padding: 0.75rem;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+  }
+
+  .objeto-filtros input,
+  .objeto-filtros select {
+    box-sizing: border-box;
+    padding: 0.55rem 0.8rem;
+    font-size: 0.875rem;
+    min-height: 2.35rem;
+  }
+
+  .objeto-filtros input[type="search"] {
+    width: 100%;
+    min-width: 0;
+    padding: 0.55rem 0.8rem;
+  }
+
+  .objeto-campos-numericos {
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .objeto-campos-numericos input {
+    width: 100%;
+    flex: 1;
+  }
+
+  .objeto-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .objeto-card-contenido {
+    padding: 1rem 0.85rem;
+  }
+
+  .objeto-acciones {
+    padding: 0.5rem 0.85rem 0.85rem;
+  }
+
+  .objeto-acciones button {
+    padding: 0.4rem 0.65rem;
+    font-size: 0.825rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .seccion-header {
+    align-items: center;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .objeto-filtros {
+    align-items: flex-end;
+    flex-direction: row;
+  }
+
+  .objetos-layout {
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
+  }
+
+  .panel-detalle {
+    position: sticky;
+    top: 5.5rem;
+    max-height: calc(100vh - 7rem);
+    overflow-y: auto;
+  }
+}
+
+/* Ocultar panel estático duplicado en mobile */
+@media (max-width: 768px) {
+  .panel-detalle-desktop {
+    display: none !important;
+  }
+}
+
+/* Modal Popup en Mobile para que aparezca directamente sin tener que scrollear abajo de todo */
+.objeto-modal-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .objeto-modal-mobile {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1100;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    box-sizing: border-box;
+  }
+
+  .objeto-modal-mobile-content {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    max-width: 540px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    padding: 1.25rem 1rem;
+    box-sizing: border-box;
+    animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}

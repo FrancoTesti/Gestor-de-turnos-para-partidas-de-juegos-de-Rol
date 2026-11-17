@@ -1,0 +1,592 @@
+/**
+ * PersonajesPage — Módulo Alejandro Ciesco
+ * Gestión completa de Personajes con CRUD integrado a la API real.
+ *
+ * Reglas de acceso:
+ *  - Todos los usuarios logueados pueden ver el listado y filtrar por clase.
+ *  - Jugadores: pueden crear personajes propios, editarlos y eliminarlos.
+ *  - La creación fija automáticamente idUsuarioJugador al usuario logueado,
+ *    previniendo que un jugador cree personajes de otra cuenta.
+ *  - Anfitriones: solo pueden visualizar (no crear ni editar personajes ajenos).
+ *
+ * Validaciones de backend propagadas al usuario:
+ *  - Partida llena (limiteJugadores alcanzado)
+ *  - Contraseña de partida privada incorrecta
+ *  - Ya tenés un personaje en esa partida
+ *  - Jugador inactivo
+ *  - Personaje con historial de sesiones (no se puede eliminar)
+ *  - Personaje con objetos en inventario (venderlos primero)
+ */
+import { useEffect, useState } from 'react';
+import type { Clase, Personaje } from '../interfaces';
+import { useUser } from '../context/UserContext';
+import { api } from '../services/api';
+import CharacterDetail from '../components/personajes/CharacterDetail';
+import CharacterList from '../components/personajes/CharacterList';
+import Loading from '../components/ui/Loading';
+import { CloseIcon, NoticeModal } from '../components/ui';
+import {
+  updateCharacter,
+  createCharacter,
+  deleteCharacter,
+  getCharacters,
+  type UpdateCharacterData,
+  type CreateCharacterData,
+} from '../services/character.service';
+import { getClasses } from '../services/class.service';
+
+interface PartidaSimple {
+  idPartida: number;
+  nombre: string;
+  estado: string;
+  limiteJugadores: number;
+  esPrivada: boolean;
+  idUsuarioAnfitrion?: number;
+}
+
+function getErrorMessage(e: unknown): string {
+  return e instanceof Error ? e.message : 'Error inesperado';
+}
+
+function stripEmojis(texto: string): string {
+  return texto.replace(/^(?:⚠️|✅)\s*/u, '').trim();
+}
+const limpiarEmojis = stripEmojis;
+
+export function CharactersPage() {
+  const { usuarioLogueado, jugadores, anfitriones, esJugador: ctxEsJugador, esAnfitrion: ctxEsAnfitrion, rolDe } = useUser();
+  const userId = usuarioLogueado?.idUsuario ?? 0;
+  const esJugador = Boolean(ctxEsJugador || (jugadores ?? []).some(jugador => jugador.idUsuario === userId) || (rolDe && rolDe(userId) === 'jugador'));
+  const esAnfitrion = Boolean(ctxEsAnfitrion || (anfitriones ?? []).some(anf => anf.idUsuario === userId) || (rolDe && rolDe(userId) === 'anfitrion'));
+  const tieneAmbosRoles = esJugador && esAnfitrion;
+
+  // Modo activo según el rol (si tiene ambos roles, permite alternar)
+  const [rolManual, setRolManual] = useState<'jugador' | 'anfitrion' | null>(null);
+  const modoRol: 'jugador' | 'anfitrion' = tieneAmbosRoles
+    ? (rolManual ?? (esJugador ? 'jugador' : 'anfitrion'))
+    : (esAnfitrion ? 'anfitrion' : 'jugador');
+
+  // Navegabilidad Anfitrión: Partidas -> Jugadores -> Personajes
+  const [partidaAnfitrionId, setPartidaAnfitrionId] = useState<number | ''>('');
+  const [jugadorAnfitrionId, setJugadorAnfitrionId] = useState<number | ''>('');
+
+  const [personajes, setPersonajes] = useState<Personaje[]>([]);
+  const [clases, setClases] = useState<Clase[]>([]);
+  const [partidas, setPartidas] = useState<PartidaSimple[]>([]);
+  const [seleccionado, setSeleccionado] = useState<Personaje | null>(null);
+  const [cargando, setCargando] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [enEdicion, setEnEdicion] = useState<Personaje | null>(null);
+
+  // Campos del formulario
+  const [nombreFicticio, setNombreFicticio] = useState('');
+  const [raza, setRaza] = useState('');
+  const [idClase, setIdClase] = useState<number | ''>('');
+  const [idPartida, setIdPartida] = useState<number | ''>('');
+  const [contrasenaPartida, setContrasenaPartida] = useState('');
+  const [guardando, setGuardando] = useState(false);
+  const [errorForm, setErrorForm] = useState<string | null>(null);
+  const [errorAviso, setErrorAviso] = useState<string | null>(null);
+
+  const [revision, setRevision] = useState(0);
+  function cargar() {
+    setCargando(true);
+    setError(null);
+    setRevision(value => value + 1);
+  }
+
+  useEffect(() => {
+    let activo = true;
+    Promise.all([
+      getCharacters(),
+      getClasses(),
+      api<PartidaSimple[]>('/partidas'),
+    ])
+      .then(([p, c, pt]) => { if (activo) { setPersonajes(p); setClases(c); setPartidas(pt); } })
+      .catch((e) => { if (activo) setError(getErrorMessage(e)); })
+      .finally(() => { if (activo) setCargando(false); });
+    return () => { activo = false; };
+  }, [revision]);
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === 'Escape' && mostrarFormulario) {
+        setMostrarFormulario(false);
+        setEnEdicion(null);
+        setErrorForm(null);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mostrarFormulario]);
+
+  function abrirFormularioCrear() {
+    setEnEdicion(null);
+    setNombreFicticio('');
+    setRaza('');
+    setIdClase(clases[0]?.idClase ?? '');
+    setIdPartida(partidas.filter((p) => p.estado === 'activa')[0]?.idPartida ?? '');
+    setContrasenaPartida('');
+    setErrorForm(null);
+    setMostrarFormulario(true);
+  }
+
+  function abrirFormularioEditar(p: Personaje) {
+    setEnEdicion(p);
+    setNombreFicticio(p.nombreFicticio);
+    setRaza(p.raza);
+    setIdClase(p.idClase);
+    setIdPartida(p.idPartida);
+    setContrasenaPartida('');
+    setErrorForm(null);
+    setMostrarFormulario(true);
+  }
+
+  const partidaSeleccionada = partidas.find((p) => p.idPartida === Number(idPartida));
+  const requiereContrasena = !enEdicion && (partidaSeleccionada?.esPrivada ?? false);
+
+  async function handleGuardar(e: React.FormEvent) {
+    e.preventDefault();
+    setErrorForm(null);
+    if (!nombreFicticio.trim()) { setErrorForm('El nombre ficticio es obligatorio.'); return; }
+    if (!raza.trim()) { setErrorForm('La raza es obligatoria.'); return; }
+    if (!idClase) { setErrorForm('Seleccioná una clase.'); return; }
+    if (!enEdicion && !idPartida) { setErrorForm('Seleccioná una partida.'); return; }
+    if (requiereContrasena && !contrasenaPartida) { setErrorForm('La partida es privada. Ingresá la contraseña.'); return; }
+
+    setGuardando(true);
+    try {
+      if (enEdicion) {
+        const data: UpdateCharacterData = {
+          nombreFicticio: nombreFicticio.trim(),
+          raza: raza.trim(),
+          idClase: Number(idClase),
+        };
+        const actualizado = await updateCharacter(enEdicion.idPersonaje, data);
+        setPersonajes((prev) => prev.map((p) => p.idPersonaje === actualizado.idPersonaje ? actualizado : p));
+        setSeleccionado(actualizado);
+        setMensaje('Personaje actualizado correctamente.');
+      } else {
+        const data: CreateCharacterData = {
+          nombreFicticio: nombreFicticio.trim(),
+          raza: raza.trim(),
+          idClase: Number(idClase),
+          idUsuarioJugador: userId,
+          idPartida: Number(idPartida),
+          ...(contrasenaPartida ? { contrasenaPartida } : {}),
+        };
+        const nuevo = await createCharacter(data);
+        setPersonajes((prev) => [...prev, nuevo]);
+        setSeleccionado(nuevo);
+        setMensaje('Personaje creado correctamente. El inventario inicial ya está disponible.');
+      }
+      setMostrarFormulario(false);
+      setEnEdicion(null);
+    } catch (err) {
+      const msg = getErrorMessage(err);
+      setErrorForm(msg);
+      setErrorAviso(msg);
+    } finally {
+      setGuardando(false);
+    }
+  }
+
+  async function handleEliminar(idPersonaje: number) {
+    setError(null);
+    setMensaje(null);
+    try {
+      await deleteCharacter(idPersonaje);
+      setPersonajes((prev) => prev.filter((p) => p.idPersonaje !== idPersonaje));
+      if (seleccionado?.idPersonaje === idPersonaje) setSeleccionado(null);
+      setMensaje('Personaje eliminado.');
+    } catch (e) {
+      const msg = getErrorMessage(e);
+      setError(msg);
+      setErrorAviso(msg);
+    }
+  }
+
+  const partidasActivas = partidas.filter((p) => p.estado === 'activa');
+
+  return (
+    <section style={{ padding: '0.5rem 0' }}>
+      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+        <div>
+          <p style={{ fontSize: '0.8rem', color: 'var(--accent)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em', margin: 0 }}>
+            Juego de Rol
+          </p>
+          <h1 style={{ margin: '0.25rem 0 0' }}>Personajes</h1>
+        </div>
+        {!mostrarFormulario && esJugador && (
+          <button type="button" className="btn-purple" onClick={abrirFormularioCrear}>
+            + Crear Personaje
+          </button>
+        )}
+      </header>
+
+      {tieneAmbosRoles && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1.25rem' }}>
+          <button
+            type="button"
+            className={modoRol === 'jugador' ? 'btn-purple' : 'btn-secondary'}
+            onClick={() => { setRolManual('jugador'); setSeleccionado(null); }}
+          >
+            Mis Personajes (Rol Jugador)
+          </button>
+          <button
+            type="button"
+            className={modoRol === 'anfitrion' ? 'btn-purple' : 'btn-secondary'}
+            onClick={() => { setRolManual('anfitrion'); setSeleccionado(null); }}
+          >
+            Navegación de Partidas (Rol Anfitrión)
+          </button>
+        </div>
+      )}
+
+      {mensaje && (
+        <p role="status" style={{ color: 'var(--success-text)', background: 'var(--success-bg)', border: '1px solid var(--success-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', fontWeight: 500 }}>
+          {limpiarEmojis(mensaje)}
+        </p>
+      )}
+      {error && (
+        <div role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.85rem 1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span>{limpiarEmojis(error)}</span>
+          <button type="button" onClick={cargar} className="btn-secondary">Reintentar</button>
+        </div>
+      )}
+
+      {mostrarFormulario && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-titulo-personaje"
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            width: '100vw',
+            height: '100vh',
+            background: 'rgba(0, 0, 0, 0.75)',
+            backdropFilter: 'blur(5px)',
+            zIndex: 1000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '1rem',
+            boxSizing: 'border-box',
+          }}
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setMostrarFormulario(false);
+              setEnEdicion(null);
+              setErrorForm(null);
+            }
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg-card)',
+              border: '1px solid var(--border)',
+              padding: '1.75rem',
+              borderRadius: 'var(--radius-md)',
+              maxWidth: '640px',
+              width: '100%',
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxSizing: 'border-box',
+              boxShadow: 'var(--shadow-lg)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <h2 id="modal-titulo-personaje" style={{ margin: 0, fontSize: '1.5rem', color: 'var(--text-h)' }}>
+                {enEdicion ? 'Editar Personaje' : 'Crear Nuevo Personaje'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => { setMostrarFormulario(false); setEnEdicion(null); setErrorForm(null); }}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  fontSize: '1.4rem',
+                  cursor: 'pointer',
+                  padding: '0.25rem 0.5rem',
+                  lineHeight: 1,
+                }}
+                aria-label="Cerrar modal"
+              >
+                <CloseIcon size={18} />
+              </button>
+            </div>
+            {errorForm && (
+              <p role="alert" style={{ color: 'var(--error-text)', background: 'var(--error-bg)', border: '1px solid var(--error-border)', padding: '0.65rem 0.85rem', borderRadius: 'var(--radius-sm)' }}>
+                {errorForm}
+              </p>
+            )}
+            <form onSubmit={(e) => void handleGuardar(e)} style={{ display: 'grid', gap: '1rem' }}>
+              <label>
+                Nombre ficticio *
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: Thorin EscudoDeRoble"
+                  value={nombreFicticio}
+                  onChange={(e) => setNombreFicticio(e.target.value)}
+                  disabled={guardando}
+                  style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                />
+              </label>
+              <label>
+                Raza *
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: Enano, Elfo, Humano..."
+                  value={raza}
+                  onChange={(e) => setRaza(e.target.value)}
+                  disabled={guardando}
+                  style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                />
+              </label>
+              <label>
+                Clase de personaje *
+                <select
+                  required
+                  value={idClase}
+                  onChange={(e) => setIdClase(Number(e.target.value))}
+                  disabled={guardando}
+                  style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                >
+                  <option value="">Seleccionar clase…</option>
+                  {clases.map((c) => (
+                    <option key={c.idClase} value={c.idClase}>{c.nombreClase}</option>
+                  ))}
+                </select>
+              </label>
+              {!enEdicion && (
+                <>
+                  <label>
+                    Partida *
+                    <select
+                      required
+                      value={idPartida}
+                      onChange={(e) => { setIdPartida(Number(e.target.value)); setContrasenaPartida(''); }}
+                      disabled={guardando}
+                      style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                    >
+                      <option value="">Seleccionar partida activa…</option>
+                      {partidasActivas.map((p) => {
+                        const ocupados = personajes.filter((pj) => pj.idPartida === p.idPartida).length;
+                        const disponibles = Math.max(0, p.limiteJugadores - ocupados);
+                        return (
+                          <option key={p.idPartida} value={p.idPartida}>
+                            {p.nombre} (#{p.idPartida}) — {p.esPrivada ? 'Privada' : 'Pública'} — Cupos: {disponibles}/{p.limiteJugadores} disponibles
+                          </option>
+                        );
+                      })}
+                    </select>
+                  </label>
+
+                  {partidaSeleccionada && (
+                    <div style={{ background: 'var(--bg-card-secondary)', border: '1px solid var(--border-subtle)', padding: '0.85rem', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem', color: 'var(--text)' }}>
+                      <p style={{ margin: '0.2rem 0' }}>
+                        <strong style={{ color: 'var(--text-h)' }}>Partida:</strong> {partidaSeleccionada.nombre} (#{partidaSeleccionada.idPartida})
+                      </p>
+                      <p style={{ margin: '0.2rem 0' }}>
+                        <strong style={{ color: 'var(--text-h)' }}>Acceso:</strong> {partidaSeleccionada.esPrivada ? 'Privada (requiere contraseña)' : 'Pública (acceso directo)'}
+                      </p>
+                      {(() => {
+                        const ocupados = personajes.filter((pj) => pj.idPartida === partidaSeleccionada.idPartida).length;
+                        const disponibles = Math.max(0, partidaSeleccionada.limiteJugadores - ocupados);
+                        return (
+                          <p style={{ margin: '0.2rem 0', color: disponibles > 0 ? 'var(--success-text)' : 'var(--error-text)', fontWeight: 600 }}>
+                            <strong style={{ color: 'var(--text-h)' }}>Cupos:</strong> {disponibles} de {partidaSeleccionada.limiteJugadores} disponibles {disponibles === 0 && '— ¡Partida llena!'}
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  )}
+                </>
+              )}
+              {requiereContrasena && (
+                <label>
+                  Contraseña de la partida privada *
+                  <input
+                    type="password"
+                    required
+                    placeholder="Ingresá la contraseña"
+                    value={contrasenaPartida}
+                    onChange={(e) => setContrasenaPartida(e.target.value)}
+                    disabled={guardando}
+                    style={{ display: 'block', width: '100%', marginTop: '0.35rem' }}
+                  />
+                </label>
+              )}
+              <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem', justifyContent: 'flex-end' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  disabled={guardando}
+                  onClick={() => { setMostrarFormulario(false); setEnEdicion(null); setErrorForm(null); }}
+                >
+                  Cancelar
+                </button>
+                <button type="submit" className="btn-purple" disabled={guardando}>
+                  {guardando ? 'Guardando…' : enEdicion ? 'Actualizar' : 'Crear Personaje'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {cargando ? (
+        <Loading message="Cargando personajes..." />
+      ) : modoRol === 'anfitrion' && esAnfitrion ? (
+        <div style={{ display: 'grid', gap: '1.25rem' }}>
+          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '1.25rem' }}>
+            <h2 style={{ margin: '0 0 0.5rem 0', fontSize: '1.2rem', color: 'var(--text-h)' }}>
+              Navegabilidad de Anfitrión
+            </h2>
+            <p style={{ margin: '0 0 1rem 0', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
+              Navegación jerárquica: <strong>Anfitrión</strong> → <strong>Partidas</strong> → <strong>Jugadores</strong> → <strong>Personajes</strong>
+            </p>
+
+            <div style={{ display: 'grid', gap: '1rem', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))' }}>
+              <div>
+                <label htmlFor="select-partida-anfitrion" style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                  1. Seleccionar Partida
+                </label>
+                <select
+                  id="select-partida-anfitrion"
+                  aria-label="1. Seleccionar Partida"
+                  value={partidaAnfitrionId}
+                  onChange={(e) => {
+                    const id = e.target.value ? Number(e.target.value) : '';
+                    setPartidaAnfitrionId(id);
+                    setJugadorAnfitrionId('');
+                    setSeleccionado(null);
+                  }}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                >
+                  <option value="">Seleccionar partida...</option>
+                  {partidas
+                    .filter((p) => !p.idUsuarioAnfitrion || p.idUsuarioAnfitrion === userId)
+                    .map((p) => (
+                      <option key={p.idPartida} value={p.idPartida}>
+                        {p.nombre} (#{p.idPartida}) — {p.estado === 'activa' ? 'Activa' : p.estado === 'finalizada' ? 'Finalizada' : p.estado}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              {partidaAnfitrionId !== '' && (
+                <div>
+                  <label htmlFor="select-jugador-anfitrion" style={{ display: 'block', fontWeight: 600, fontSize: '0.85rem', marginBottom: '0.35rem' }}>
+                    2. Seleccionar Jugador de la partida
+                  </label>
+                  {(() => {
+                    const pjsDePartida = personajes.filter((p) => p.idPartida === Number(partidaAnfitrionId));
+                    const idsJugadores = Array.from(new Set(pjsDePartida.map((p) => p.idUsuarioJugador)));
+                    if (idsJugadores.length === 0) {
+                      return <p style={{ margin: '0.5rem 0', fontSize: '0.85rem', color: 'var(--text-muted)' }}>No hay jugadores con personajes en esta partida.</p>;
+                    }
+                    return (
+                      <select
+                        id="select-jugador-anfitrion"
+                        aria-label="2. Seleccionar Jugador de la partida"
+                        value={jugadorAnfitrionId}
+                        onChange={(e) => {
+                          const id = e.target.value ? Number(e.target.value) : '';
+                          setJugadorAnfitrionId(id);
+                          setSeleccionado(null);
+                        }}
+                        style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border)' }}
+                      >
+                        <option value="">Seleccionar jugador...</option>
+                        {idsJugadores.map((idJug) => {
+                          const pjsDelJugador = pjsDePartida.filter((p) => p.idUsuarioJugador === idJug);
+                          const primerPj = pjsDelJugador[0];
+                          const nombreJugador = (primerPj as any)?.jugadorNombre || `Jugador #${idJug}`;
+                          return (
+                            <option key={idJug} value={idJug}>
+                              {nombreJugador} ({pjsDelJugador.length} personaje{pjsDelJugador.length > 1 ? 's' : ''})
+                            </option>
+                          );
+                        })}
+                      </select>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {partidaAnfitrionId !== '' && jugadorAnfitrionId !== '' ? (
+            <div>
+              <h3 style={{ margin: '0.5rem 0 1rem 0' }}>
+                3. Personajes del jugador seleccionado en esta partida
+              </h3>
+              <CharacterList
+                personajes={personajes.filter(
+                  (p) => p.idPartida === Number(partidaAnfitrionId) && p.idUsuarioJugador === Number(jugadorAnfitrionId),
+                )}
+                clases={clases}
+                partidas={partidas}
+                personajeSeleccionadoId={seleccionado?.idPersonaje}
+                cargando={cargando}
+                onSeleccionar={(p) => setSeleccionado(p)}
+              />
+            </div>
+          ) : partidaAnfitrionId !== '' ? (
+            <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--bg-card-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                Seleccioná un jugador de la partida arriba para navegar sus personajes.
+              </p>
+            </div>
+          ) : (
+            <div style={{ padding: '2rem', textAlign: 'center', background: 'var(--bg-card-secondary)', borderRadius: 'var(--radius-md)' }}>
+              <p style={{ margin: 0, color: 'var(--text-muted)' }}>
+                Seleccioná una de tus partidas arriba para ver sus jugadores y personajes.
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        <CharacterList
+          personajes={personajes.filter((p) => p.idUsuarioJugador === userId)}
+          clases={clases}
+          partidas={partidas}
+          personajeSeleccionadoId={seleccionado?.idPersonaje}
+          cargando={cargando}
+          onSeleccionar={(p) => setSeleccionado(p)}
+          onEditar={esJugador ? (p) => { if (p.idUsuarioJugador === userId) abrirFormularioEditar(p); } : undefined}
+          onEliminar={esJugador ? (id) => {
+            const p = personajes.find((x) => x.idPersonaje === id);
+            if (p && p.idUsuarioJugador === userId) void handleEliminar(id);
+          } : undefined}
+        />
+      )}
+
+      {seleccionado && (
+        <aside style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', maxWidth: '540px', width: '100%', boxSizing: 'border-box', boxShadow: 'var(--shadow)' }}>
+          <CharacterDetail
+            personaje={seleccionado}
+            clases={clases}
+            partidas={partidas}
+            onVolver={() => setSeleccionado(null)}
+            onEditar={esJugador && seleccionado.idUsuarioJugador === userId ? (p) => abrirFormularioEditar(p) : undefined}
+          />
+        </aside>
+      )}
+
+      <NoticeModal mensaje={errorAviso} onClose={() => setErrorAviso(null)} />
+    </section>
+  );
+}
+
+export const PersonajesPage = CharactersPage;
+export default CharactersPage;
+
